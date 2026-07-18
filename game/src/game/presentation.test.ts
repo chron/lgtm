@@ -43,6 +43,13 @@ describe("getCardPresentation", () => {
       ...baseRun,
       cycle: {
         ...baseRun.cycle,
+        tasks: baseRun.cycle.tasks.map((task) => ({
+          ...task,
+          requirements: task.requirements.map((requirement) => ({
+            ...requirement,
+            verified: requirement.discipline === "frontend" ? requirement.target - 3 : 0,
+          })),
+        })),
         hand: [...baseRun.cycle.hand, { cardId: "frontend-3", instanceId: "test-frontend-3" }],
       },
     };
@@ -57,7 +64,7 @@ describe("getCardPresentation", () => {
     expect(presentation?.cue).toMatchObject({
       developerId: "irene",
       level: "micro",
-      title: "Heads Down",
+      title: "Quietly Done",
     });
   });
 });

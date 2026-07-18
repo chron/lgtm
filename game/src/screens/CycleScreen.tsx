@@ -369,12 +369,10 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
           <div className="passive-rack" aria-label="Squad passives">
             {run.squad.map((developerId) => {
               const developer = getDeveloper(developerId);
-              const triggered = cycle.triggeredPassiveIds.includes(developerId);
               return (
                 <PassiveChip
                   key={developer.id}
                   developerId={developer.id}
-                  spent={triggered}
                   mood={portraitMood(developer.id)}
                   reacting={reactingPassiveIds.includes(developer.id)}
                 />

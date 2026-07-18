@@ -27,7 +27,7 @@ export const developers: readonly Developer[] = [
     name: "Paul",
     role: "Prototyper",
     passiveName: "Move Fast",
-    passiveRules: "The first non-final Task shipped each Day restores 1 Focus.",
+    passiveRules: "Whenever a non-final Task ships, gain 1 Focus.",
     startingCardId: "vibe-code",
     accent: "oklch(0.68 0.19 31)",
     art: {
@@ -41,7 +41,7 @@ export const developers: readonly Developer[] = [
     name: "Odin",
     role: "Architect",
     passiveName: "I Have Concerns",
-    passiveRules: "The first Review each Day verifies 1 extra Work.",
+    passiveRules: "Every Review also Stuns that Task's intent.",
     startingCardId: "design-review",
     accent: "oklch(0.55 0.19 292)",
     art: {
@@ -54,8 +54,8 @@ export const developers: readonly Developer[] = [
     id: "irene",
     name: "Irene",
     role: "Quiet Assassin",
-    passiveName: "Heads Down",
-    passiveRules: "The first Verified Work card each Day adds 1 extra Work.",
+    passiveName: "Quietly Done",
+    passiveRules: "Whenever Verified Work completes a requirement, draw 1 card.",
     startingCardId: "already-fixed",
     accent: "oklch(0.61 0.14 167)",
     art: {
@@ -69,7 +69,7 @@ export const developers: readonly Developer[] = [
     name: "Madi",
     role: "Tinkerer",
     passiveName: "Custom Setup",
-    passiveRules: "The first AI-assisted Work card each Day adds 1 extra Work.",
+    passiveRules: "Every AI Assisted card installs Script 1 on its target.",
     startingCardId: "agent-swarm",
     accent: "oklch(0.64 0.2 343)",
     art: {

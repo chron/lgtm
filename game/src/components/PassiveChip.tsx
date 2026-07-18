@@ -5,21 +5,20 @@ import { CharacterPortrait } from "./CharacterPortrait";
 
 interface PassiveChipProps {
   developerId: DeveloperId;
-  spent: boolean;
   mood?: CharacterMood;
   reacting?: boolean;
 }
 
-export function PassiveChip({ developerId, spent, mood = "idle", reacting }: PassiveChipProps) {
+export function PassiveChip({ developerId, mood = "idle", reacting }: PassiveChipProps) {
   const tooltipId = useId();
   const developer = getDeveloper(developerId);
 
   return (
     <button
-      className={`passive-chip${spent ? " is-spent" : ""}${reacting ? " is-reacting" : ""}`}
+      className={`passive-chip${reacting ? " is-reacting" : ""}`}
       style={{ "--character-accent": developer.accent } as React.CSSProperties}
       type="button"
-      aria-label={`${developer.name}, ${developer.passiveName}, ${spent ? "used" : "ready"}`}
+      aria-label={`${developer.name}, ${developer.passiveName}`}
       aria-describedby={tooltipId}
     >
       <CharacterPortrait developerId={developerId} mood={mood} mode="dock" decorative eager />
@@ -28,7 +27,7 @@ export function PassiveChip({ developerId, spent, mood = "idle", reacting }: Pas
           {developer.name} · {developer.passiveName}
         </strong>
         <span>{developer.passiveRules}</span>
-        <b>{spent ? "Used" : "Ready"}</b>
+        <b>Always on</b>
       </span>
     </button>
   );

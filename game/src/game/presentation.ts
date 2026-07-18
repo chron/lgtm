@@ -68,7 +68,10 @@ function applyResolution(
   resolution: Exclude<ReturnType<typeof resolveCardTarget>, { legal: false }>,
 ): TaskState {
   if (resolution.kind === "review") {
-    return verifyTask(task, resolution.amount);
+    return {
+      ...verifyTask(task, resolution.amount),
+      stunned: resolution.stun || task.stunned,
+    };
   }
 
   if (resolution.kind === "tactic") {

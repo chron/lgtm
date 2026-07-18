@@ -38,6 +38,7 @@ export type CardResolution =
       scriptRunAmount: number;
       blockGained: number;
       techDebtAdded: number;
+      cardsDrawn: number;
       pitchedIn: boolean;
       triggeredPassiveIds: DeveloperId[];
       label: string;
@@ -50,6 +51,7 @@ export type CardResolution =
       amount: number;
       blockGained: number;
       techDebtAdded: number;
+      stun: boolean;
       triggeredPassiveIds: DeveloperId[];
       label: string;
     }
@@ -167,11 +169,7 @@ export function taskShippingRewards(
   const nonTerminal = cycle.tasks.some(
     (candidate) => candidate.taskId !== taskId && candidate.status !== "shipped",
   );
-  const paulTriggers =
-    run.squad.includes("paul") &&
-    !cycle.triggeredPassiveIds.includes("paul") &&
-    nonTerminal &&
-    cycle.focus < 3;
+  const paulTriggers = run.squad.includes("paul") && nonTerminal;
   const mergeQueue = run.tools.includes("merge-queue");
   return {
     cardsDrawn: mergeQueue ? 2 : 0,
@@ -249,12 +247,11 @@ export function resolveCardTarget(
       return { legal: false, reason: "This Task has no Unverified Work." };
     }
 
-    const odinBonus =
-      run.squad.includes("odin") && !cycle.triggeredPassiveIds.includes("odin") ? 1 : 0;
-    if (odinBonus) {
+    const stun = run.squad.includes("odin") && Boolean(getScheduledIntent(cycle, task));
+    if (stun) {
       triggeredPassiveIds = addTriggeredPassive(triggeredPassiveIds, "odin");
     }
-    const amount = Math.min(available, card.amount + odinBonus);
+    const amount = Math.min(available, card.amount);
     const blockGained = (card.block ?? 0) + (run.tools.includes("test-suite") ? amount : 0);
     return {
       kind: "review",
@@ -264,8 +261,13 @@ export function resolveCardTarget(
       amount,
       blockGained,
       techDebtAdded: 0,
+      stun,
       triggeredPassiveIds,
-      label: [`Verify ${amount}`, blockGained ? `Block ${blockGained}` : undefined]
+      label: [
+        `Verify ${amount}`,
+        stun ? "Stun" : undefined,
+        blockGained ? `Block ${blockGained}` : undefined,
+      ]
         .filter(Boolean)
         .join(" · "),
     };
@@ -320,43 +322,36 @@ export function resolveCardTarget(
         ? 1
         : card.amount;
 
-  if (
-    amount > 0 &&
-    workKind === "verified" &&
-    run.squad.includes("irene") &&
-    !cycle.triggeredPassiveIds.includes("irene")
-  ) {
-    amount += 1;
-    triggeredPassiveIds = addTriggeredPassive(triggeredPassiveIds, "irene");
-  }
-
-  if (
-    !pitchedIn &&
-    card.tags.includes("ai-assisted") &&
-    run.squad.includes("madi") &&
-    !cycle.triggeredPassiveIds.includes("madi")
-  ) {
-    amount += 1;
-    triggeredPassiveIds = addTriggeredPassive(triggeredPassiveIds, "madi");
-  }
-
   const aiAssisted = card.tags.includes("ai-assisted");
   if (aiAssisted && run.tools.includes("enterprise-ai-licence")) {
     amount += 2;
   }
 
-  amount = Math.min(amount, remainingWork(requirement));
-  const scriptPowerAdded = card.automation?.kind === "install" ? card.automation.power : 0;
+  const workRemaining = remainingWork(requirement);
+  amount = Math.min(amount, workRemaining);
+  const madiScript = aiAssisted && run.squad.includes("madi") ? 1 : 0;
+  if (madiScript) {
+    triggeredPassiveIds = addTriggeredPassive(triggeredPassiveIds, "madi");
+  }
+  const scriptPowerAdded =
+    (card.automation?.kind === "install" ? card.automation.power : 0) + madiScript;
   const scriptBlockAdded =
     card.automation?.kind === "install" ? (card.automation.blockPower ?? 0) : 0;
   const blockGained = card.block ?? 0;
   const scriptRunAmount =
-    card.automation?.kind === "install" && run.tools.includes("ci-runner")
+    scriptPowerAdded > 0 && run.tools.includes("ci-runner")
       ? Math.min(
-          card.automation.power * scriptMultiplier,
+          scriptPowerAdded * scriptMultiplier,
           Math.max(0, remainingWork(requirement) - amount),
         )
       : 0;
+  const cardsDrawn =
+    amount > 0 && workKind === "verified" && amount === workRemaining && run.squad.includes("irene")
+      ? 1
+      : 0;
+  if (cardsDrawn) {
+    triggeredPassiveIds = addTriggeredPassive(triggeredPassiveIds, "irene");
+  }
   const techDebtAdded = aiAssisted && run.tools.includes("enterprise-ai-licence") ? 1 : 0;
   const pitchLabel = pairedPitchIn
     ? `Pairing · ${amount} Verified`
@@ -376,6 +371,7 @@ export function resolveCardTarget(
             scriptBlockAdded > 0 ? `Guard +${scriptBlockAdded}` : undefined,
             blockGained > 0 ? `Block ${blockGained}` : undefined,
             techDebtAdded > 0 ? `Debt +${techDebtAdded}` : undefined,
+            cardsDrawn > 0 ? `Draw ${cardsDrawn}` : undefined,
           ]
             .filter(Boolean)
             .join(" · ")
@@ -383,6 +379,9 @@ export function resolveCardTarget(
             pitchedIn ? pitchLabel : `${disciplineLabel(target.discipline)} +${amount} ${workKind}`,
             blockGained > 0 ? `Block ${blockGained}` : undefined,
             techDebtAdded > 0 ? `Debt +${techDebtAdded}` : undefined,
+            scriptPowerAdded > 0 ? `Script +${scriptPowerAdded}` : undefined,
+            scriptRunAmount > 0 ? `Run +${scriptRunAmount}` : undefined,
+            cardsDrawn > 0 ? `Draw ${cardsDrawn}` : undefined,
           ]
             .filter(Boolean)
             .join(" · ");
@@ -400,6 +399,7 @@ export function resolveCardTarget(
     scriptRunAmount,
     blockGained,
     techDebtAdded,
+    cardsDrawn,
     pitchedIn,
     triggeredPassiveIds,
     label,

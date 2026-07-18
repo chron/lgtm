@@ -366,9 +366,10 @@ function applyTaskShipping(
     hand: [...cycle.hand, ...nextDraw.drawn],
     discardPile: nextDraw.discardPile,
     block: damage.block,
-    triggeredPassiveIds: paulTriggers
-      ? [...cycle.triggeredPassiveIds, "paul"]
-      : cycle.triggeredPassiveIds,
+    triggeredPassiveIds:
+      paulTriggers && !cycle.triggeredPassiveIds.includes("paul")
+        ? [...cycle.triggeredPassiveIds, "paul"]
+        : cycle.triggeredPassiveIds,
   };
   let nextRun: RunState = {
     ...run,
@@ -665,7 +666,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const tasks = cycle.tasks.map((task) => {
         if (task.taskId !== resolution.taskId) return task;
         if (resolution.kind === "review") {
-          return verifyTask(task, resolution.amount);
+          return {
+            ...verifyTask(task, resolution.amount),
+            stunned: resolution.stun || task.stunned,
+          };
         }
         if (resolution.kind === "tactic") {
           return { ...task, stunned: resolution.stun || task.stunned };
@@ -694,14 +698,27 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...cycle.triggeredPassiveIds,
         ...resolution.triggeredPassiveIds.filter((id) => !cycle.triggeredPassiveIds.includes(id)),
       ];
+      const passiveDraw =
+        resolution.kind === "work" && resolution.cardsDrawn > 0
+          ? drawCards(
+              cycle.drawPile,
+              cycle.discardPile,
+              resolution.cardsDrawn,
+              state.run.tools.includes("noise-cancelling-headphones"),
+            )
+          : undefined;
       const nextCycle: CycleState = {
         ...cycle,
         focus: cycle.focus - resolution.cost,
         block: cycle.block + resolution.blockGained,
         techDebtAdded: cycle.techDebtAdded + resolution.techDebtAdded,
         tasks,
-        hand: cycle.hand.filter((candidate) => candidate.instanceId !== instance.instanceId),
-        discardPile: [...cycle.discardPile, instance],
+        drawPile: passiveDraw?.drawPile ?? cycle.drawPile,
+        hand: [
+          ...cycle.hand.filter((candidate) => candidate.instanceId !== instance.instanceId),
+          ...(passiveDraw?.drawn ?? []),
+        ],
+        discardPile: [...(passiveDraw?.discardPile ?? cycle.discardPile), instance],
         triggeredPassiveIds,
       };
       let nextRun: RunState = { ...state.run, cycle: nextCycle };

@@ -272,14 +272,43 @@ describe("gameReducer", () => {
     expect(formatIntent({ kind: "interruption" })).toBe("+1 Distraction");
   });
 
-  it("applies Review and Odin's first Review bonus deterministically", () => {
+  it("makes every Odin Review Stun its Task's intent", () => {
     let state = startCycle(["paul", "odin", "madi"]);
     state = playCard(state, "vibe-code", "status-composer", "frontend");
     state = playCard(state, "design-review", "status-composer");
 
     const frontend = state.run?.cycle?.tasks[0]?.requirements[0];
-    expect(frontend).toMatchObject({ verified: 5, unverified: 0 });
+    expect(frontend).toMatchObject({ verified: 4, unverified: 0 });
+    expect(state.run?.cycle?.tasks[0]?.stunned).toBe(true);
     expect(state.run?.cycle?.triggeredPassiveIds).toEqual(["madi", "odin"]);
+  });
+
+  it("does not ration Odin's Stun to one Review per Day", () => {
+    let state = startCycleAt("cycle-2", ["paul", "odin", "madi"]);
+    if (!state.run?.cycle) throw new Error("Expected an active Cycle");
+    state = {
+      ...state,
+      run: {
+        ...state.run,
+        cycle: {
+          ...state.run.cycle,
+          focus: 2,
+          tasks: state.run.cycle.tasks.map((task) => ({
+            ...task,
+            requirements: task.requirements.map((requirement, index) => ({
+              ...requirement,
+              unverified: index === 0 ? 3 : 0,
+            })),
+          })),
+        },
+      },
+    };
+
+    state = playCard(state, "review-3", "status-composer");
+    state = playCard(state, "review-3", "reconnect-logic");
+
+    expect(state.run?.cycle?.tasks.map((task) => task.stunned)).toEqual([true, true]);
+    expect(state.run?.cycle?.tasks.map((task) => task.requirements[0]?.verified)).toEqual([3, 3]);
   });
 
   it("ships every Ready Task with exact Defect, Morale, and credit consequences", () => {
@@ -362,6 +391,7 @@ describe("gameReducer", () => {
   it("adds Tech Debt when one Task ships with two or more Defects", () => {
     let state = startCycleAt("cycle-2");
     state = playCard(state, "vibe-code", "status-composer", "frontend");
+    state = playCard(state, "flexible-2", "status-composer", "frontend");
     state = playCard(state, "agent-swarm", "status-composer", "backend");
     const initialDeckSize = state.run?.deck.length ?? 0;
 
@@ -383,14 +413,17 @@ describe("gameReducer", () => {
   it("lets Review pay down the Tech Debt consequence before shipping", () => {
     let state = startCycleAt("cycle-2");
     state = playCard(state, "vibe-code", "status-composer", "frontend");
+    state = playCard(state, "flexible-2", "status-composer", "frontend");
     state = playCard(state, "agent-swarm", "status-composer", "backend");
+    if (!state.run?.cycle) throw new Error("Expected an active Cycle");
+    state = { ...state, run: { ...state.run, cycle: { ...state.run.cycle, focus: 1 } } };
     state = addCardToHand(state, "review-3");
     state = playCard(state, "review-3", "status-composer");
     state = gameReducer(state, { type: "SHIP_TASK", taskId: "status-composer" });
 
-    expect(state.run?.techDebt).toBe(3);
-    expect(state.run?.cycle).toMatchObject({ defects: 2, techDebtAdded: 3 });
-    expect(state.run?.deck.at(-1)?.cardId).toBe("tech-debt");
+    expect(state.run?.techDebt).toBe(2);
+    expect(state.run?.cycle).toMatchObject({ defects: 2, techDebtAdded: 2 });
+    expect(state.run?.deck.at(-1)?.cardId).not.toBe("tech-debt");
   });
 
   it("installs a Script that adds Verified Work at the start of each new Day", () => {
@@ -463,8 +496,8 @@ describe("gameReducer", () => {
     );
   });
 
-  it("restores Focus only for Paul's first shipped Task each Day", () => {
-    let state = startCycleAt("cycle-2", ["paul", "odin", "madi"]);
+  it("restores Focus for every non-final Task Paul ships", () => {
+    let state = startCycleAt("cycle-3", ["paul", "odin", "madi"]);
     if (!state.run?.cycle) throw new Error("Expected an active Cycle");
     state = {
       ...state,
@@ -486,15 +519,61 @@ describe("gameReducer", () => {
       },
     };
 
-    state = gameReducer(state, { type: "SHIP_TASK", taskId: "status-composer" });
+    state = gameReducer(state, { type: "SHIP_TASK", taskId: "billing-webhook" });
     expect(state.run?.cycle?.focus).toBe(1);
-    state = gameReducer(state, { type: "SHIP_TASK", taskId: "reconnect-logic" });
+    state = gameReducer(state, { type: "SHIP_TASK", taskId: "onboarding-polish" });
+    expect(state.run?.cycle?.focus).toBe(2);
+    state = gameReducer(state, { type: "SHIP_TASK", taskId: "deploy-pipeline" });
 
     const shippingEvents = state.run?.history.filter((event) => event.kind === "task-shipped");
-    expect(shippingEvents?.map((event) => event.focusGained)).toEqual([1, 0]);
+    expect(shippingEvents?.map((event) => event.focusGained)).toEqual([1, 1, 0]);
   });
 
-  it("does not spend Paul's ship passive while Focus is already full", () => {
+  it("installs a Script for every AI Assisted card Madi plays", () => {
+    let state = startCycleAt("cycle-2", ["paul", "odin", "madi"]);
+    state = playCard(state, "vibe-code", "status-composer", "frontend");
+    state = playCard(state, "agent-swarm", "status-composer", "frontend");
+
+    expect(state.run?.cycle?.tasks[0]?.requirements[0]).toMatchObject({ scriptPower: 2 });
+    expect(state.run?.cycle?.triggeredPassiveIds).toContain("madi");
+  });
+
+  it("draws after every requirement Irene completes with Verified Work", () => {
+    let state = startCycleAt("cycle-2", ["paul", "odin", "irene"]);
+    if (!state.run?.cycle) throw new Error("Expected an active Cycle");
+    state = {
+      ...state,
+      run: {
+        ...state.run,
+        cycle: {
+          ...state.run.cycle,
+          tasks: state.run.cycle.tasks.map((task) => ({
+            ...task,
+            requirements: task.requirements.map((requirement) => ({
+              ...requirement,
+              verified:
+                (task.taskId === "status-composer" && requirement.discipline === "frontend") ||
+                (task.taskId === "reconnect-logic" && requirement.discipline === "infra")
+                  ? requirement.target - 3
+                  : 0,
+            })),
+          })),
+        },
+      },
+    };
+    if (!state.run?.cycle) throw new Error("Expected an active Cycle");
+    const startingDrawPile = state.run.cycle.drawPile.length;
+
+    state = playCard(state, "frontend-3", "status-composer", "frontend");
+    state = playCard(state, "infra-3", "reconnect-logic", "infra");
+
+    expect(state.run?.cycle?.drawPile).toHaveLength(startingDrawPile - 2);
+    expect(state.run?.cycle?.triggeredPassiveIds).toContain("irene");
+    expect(state.run?.cycle?.tasks[0]?.requirements[0]?.verified).toBe(5);
+    expect(state.run?.cycle?.tasks[1]?.requirements[1]?.verified).toBe(4);
+  });
+
+  it("lets Paul's ship passive overfill Focus", () => {
     let state = startCycleAt("cycle-2", ["paul", "odin", "madi"]);
     if (!state.run?.cycle) throw new Error("Expected an active Cycle");
     state = {
@@ -520,8 +599,9 @@ describe("gameReducer", () => {
     };
 
     state = gameReducer(state, { type: "SHIP_TASK", taskId: "status-composer" });
-    expect(state.run?.cycle?.triggeredPassiveIds).not.toContain("paul");
-    expect(state.run?.history.at(-1)).toMatchObject({ focusGained: 0 });
+    expect(state.run?.cycle?.focus).toBe(4);
+    expect(state.run?.cycle?.triggeredPassiveIds).toContain("paul");
+    expect(state.run?.history.at(-1)).toMatchObject({ focusGained: 1 });
   });
 
   it("does not restore Focus for the final Task in a Cycle", () => {
@@ -865,7 +945,7 @@ describe("gameReducer", () => {
     expect(state.run?.cycle).toMatchObject({ block: 3 });
     expect(state.run?.cycle?.tasks[0]?.requirements[0]).toMatchObject({
       verified: 3,
-      unverified: 2,
+      unverified: 1,
     });
   });
 
@@ -908,7 +988,7 @@ describe("gameReducer", () => {
     };
 
     state = gameReducer(state, { type: "SHIP_TASK", taskId: "status-composer" });
-    expect(state.run?.cycle?.focus).toBe(4);
+    expect(state.run?.cycle?.focus).toBe(5);
     expect(state.run?.cycle?.hand.map((card) => card.instanceId)).toEqual([
       "merge-draw-1",
       "merge-draw-2",
