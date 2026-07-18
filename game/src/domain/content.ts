@@ -596,6 +596,100 @@ const cycles: readonly CycleDefinition[] = [
     ],
   },
   {
+    id: "production-incident",
+    name: "Production Incident",
+    kind: "incident",
+    primaryTaskId: "restore-service",
+    maxDays: 4,
+    tasks: [
+      {
+        id: "restore-service",
+        name: "Restore Service",
+        role: "primary",
+        requirements: [
+          { discipline: "backend", target: 7 },
+          { discipline: "infra", target: 7 },
+        ],
+        intents: [
+          { kind: "spawn", taskId: "pager-storm", taskName: "Pager Storm" },
+          { kind: "crunch", moraleLoss: 3 },
+          { kind: "spawn", taskId: "status-page", taskName: "Status Page" },
+          { kind: "crunch", moraleLoss: 5 },
+        ],
+      },
+      {
+        id: "pager-storm",
+        name: "Pager Storm",
+        role: "complication",
+        requirements: [{ discipline: "infra", target: 4 }],
+        intents: [
+          { kind: "interruption" },
+          { kind: "interruption" },
+          { kind: "crunch", moraleLoss: 2 },
+        ],
+      },
+      {
+        id: "status-page",
+        name: "Status Page",
+        role: "complication",
+        requirements: [{ discipline: "frontend", target: 4 }],
+        intents: [
+          { kind: "crunch", moraleLoss: 2 },
+          { kind: "scope", discipline: "frontend", amount: 3 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "cascade-incident",
+    name: "Cascade Failure",
+    kind: "incident",
+    primaryTaskId: "stabilise-platform",
+    maxDays: 4,
+    tasks: [
+      {
+        id: "stabilise-platform",
+        name: "Stabilise Platform",
+        role: "primary",
+        requirements: [
+          { discipline: "frontend", target: 4 },
+          { discipline: "backend", target: 8 },
+          { discipline: "infra", target: 8 },
+        ],
+        intents: [
+          { kind: "spawn", taskId: "memory-leak", taskName: "Mystery Memory Leak" },
+          { kind: "crunch", moraleLoss: 4 },
+          { kind: "spawn", taskId: "rollback-needed", taskName: "Rollback Needed" },
+          { kind: "crunch", moraleLoss: 6 },
+        ],
+      },
+      {
+        id: "memory-leak",
+        name: "Mystery Memory Leak",
+        role: "complication",
+        requirements: [{ discipline: "infra", target: 5 }],
+        intents: [
+          { kind: "scope", discipline: "infra", amount: 3 },
+          { kind: "crunch", moraleLoss: 3 },
+          { kind: "scope", discipline: "infra", amount: 3 },
+        ],
+      },
+      {
+        id: "rollback-needed",
+        name: "Rollback Needed",
+        role: "complication",
+        requirements: [
+          { discipline: "backend", target: 4 },
+          { discipline: "infra", target: 3 },
+        ],
+        intents: [
+          { kind: "blocked", discipline: "backend" },
+          { kind: "crunch", moraleLoss: 3 },
+        ],
+      },
+    ],
+  },
+  {
     id: "final-release",
     name: "Final Release",
     maxDays: 5,
@@ -652,7 +746,7 @@ export const mapNodes: readonly MapNode[] = [
     id: "incident-1",
     kind: "incident",
     title: "Production Incident",
-    cycleId: "presence-upgrade",
+    cycleId: "production-incident",
     position: { x: 50, y: 28 },
   },
   {
@@ -698,7 +792,7 @@ export const mapNodes: readonly MapNode[] = [
     id: "incident-2",
     kind: "incident",
     title: "Everything Is Fine",
-    cycleId: "growth-spurt",
+    cycleId: "cascade-incident",
     position: { x: 50, y: 72 },
   },
   {
@@ -798,6 +892,8 @@ export function formatIntent(intent: IntentDefinition): string {
       return "+1 Distraction";
     case "crunch":
       return `Crunch · −${intent.moraleLoss} Morale`;
+    case "spawn":
+      return `Spawn · ${intent.taskName}`;
   }
 }
 
@@ -814,6 +910,8 @@ export function describeIntent(intent: IntentDefinition): string {
         return "Adds 1 Distraction to tomorrow's draw.";
       case "crunch":
         return `Deals ${intent.moraleLoss} Morale damage. Block absorbs it first.`;
+      case "spawn":
+        return `Adds ${intent.taskName} as a new Complication Task.`;
     }
   })();
 

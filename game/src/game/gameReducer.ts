@@ -19,6 +19,7 @@ import type {
   Discipline,
   MapNodeKind,
   RunState,
+  TaskDefinition,
   TaskState,
   ToolId,
 } from "../domain/models";
@@ -142,11 +143,11 @@ function createCardReward(run: RunState, sourceNodeId: string): RunState {
 
 function createToolReward(run: RunState, sourceNodeId: string): RunState {
   const remaining = toolIds.filter((toolId) => !run.tools.includes(toolId));
-  if (remaining.length < 3) return run;
+  if (remaining.length === 0) return run;
 
   let rngState = run.rngState;
   const picks: ToolId[] = [];
-  for (let index = 0; index < 3; index += 1) {
+  for (let index = 0; index < Math.min(3, remaining.length); index += 1) {
     const pick = sampleOne(
       remaining.filter((toolId) => !picks.includes(toolId)),
       rngState,
@@ -160,7 +161,7 @@ function createToolReward(run: RunState, sourceNodeId: string): RunState {
     rngState,
     pendingToolReward: {
       sourceNodeId,
-      toolIds: picks as [ToolId, ToolId, ToolId],
+      toolIds: picks,
     },
   };
 }
@@ -204,6 +205,22 @@ function drawCards(
   return { drawPile, discardPile, drawn };
 }
 
+function createTaskState(task: TaskDefinition, spawnedDay: number): TaskState {
+  return {
+    taskId: task.id,
+    status: "open",
+    stunned: false,
+    spawnedDay,
+    requirements: task.requirements.map((requirement) => ({
+      ...requirement,
+      verified: 0,
+      unverified: 0,
+      scriptPower: 0,
+      scriptBlock: 0,
+    })),
+  };
+}
+
 function createCycleState(run: RunState, nodeId: string, cycleId: string): CycleState {
   const definition = getCycle(cycleId);
   const firstDraw = drawCards(run.deck, [], 5, run.tools.includes("noise-cancelling-headphones"));
@@ -214,18 +231,9 @@ function createCycleState(run: RunState, nodeId: string, cycleId: string): Cycle
     day: 1,
     focus: 3,
     block: 0,
-    tasks: definition.tasks.map((task) => ({
-      taskId: task.id,
-      status: "open",
-      stunned: false,
-      requirements: task.requirements.map((requirement) => ({
-        ...requirement,
-        verified: 0,
-        unverified: 0,
-        scriptPower: 0,
-        scriptBlock: 0,
-      })),
-    })),
+    tasks: definition.tasks
+      .filter((task) => task.role !== "complication")
+      .map((task) => createTaskState(task, 1)),
     drawPile: firstDraw.drawPile,
     hand: firstDraw.drawn,
     discardPile: firstDraw.discardPile,
@@ -302,6 +310,9 @@ function finishCycle(
 
   if (report.outcome === "shipped") {
     nextRun = createCardReward(nextRun, cycle.nodeId);
+    if (report.toolReward) {
+      nextRun = createToolReward(nextRun, cycle.nodeId);
+    }
   }
   return { screen: { name: "report", report }, run: nextRun };
 }
@@ -316,14 +327,16 @@ function completeShippedCycle(run: RunState, cycle: CycleState): GameState {
     moraleDelta,
     creditsGained,
     cycle.techDebtAdded,
+    definition.kind === "incident",
   );
 
   return finishCycle(run, cycle, report, run.morale, creditsGained);
 }
 
 function missCycle(run: RunState, cycle: CycleState): GameState {
-  const finalMorale = run.morale - 3;
-  const missedDebt = 3;
+  const incident = getCycle(cycle.cycleId).kind === "incident";
+  const finalMorale = run.morale - (incident ? 5 : 3);
+  const missedDebt = incident ? 4 : 3;
   const missedCycle = { ...cycle, techDebtAdded: cycle.techDebtAdded + missedDebt };
   const penalizedRun = addTechDebt({ ...run, morale: finalMorale, cycle: missedCycle }, missedDebt);
   const report = createCycleReport(
@@ -506,6 +519,23 @@ function endDay(run: RunState, cycle: CycleState): GameState {
           morale -= damage.moraleLoss;
         }
         break;
+      case "spawn": {
+        const complication = definition.tasks.find(
+          (task) => task.id === intent.taskId && task.role === "complication",
+        );
+        const activeComplications = tasks.filter((task) => {
+          const taskDefinition = definition.tasks.find((candidate) => candidate.id === task.taskId);
+          return task.status !== "shipped" && taskDefinition?.role === "complication";
+        }).length;
+        if (
+          complication &&
+          activeComplications < 3 &&
+          !tasks.some((task) => task.taskId === complication.id)
+        ) {
+          tasks = [...tasks, createTaskState(complication, cycle.day + 1)];
+        }
+        break;
+      }
     }
 
     if (morale <= 0) break;
@@ -538,11 +568,12 @@ function endDay(run: RunState, cycle: CycleState): GameState {
       deadlineRun = shipped.run;
       deadlineCycle = shipped.cycle;
       if (deadlineRun.morale <= 0) return taskShippingDefeat(deadlineRun);
+      if (isCycleShipped(deadlineCycle)) {
+        return completeShippedCycle(deadlineRun, deadlineCycle);
+      }
     }
 
-    return isCycleShipped(deadlineCycle)
-      ? completeShippedCycle(deadlineRun, deadlineCycle)
-      : missCycle(deadlineRun, deadlineCycle);
+    return missCycle(deadlineRun, deadlineCycle);
   }
 
   const distractions: CardInstance[] = Array.from({ length: interruptions }, (_, index) => ({
@@ -747,7 +778,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (state.screen.name !== "report" || !state.run) return state;
       return {
         ...state,
-        screen: state.run.pendingCardReward ? { name: "reward" } : { name: "map" },
+        screen: state.run.pendingToolReward
+          ? { name: "tool-reward" }
+          : state.run.pendingCardReward
+            ? { name: "reward" }
+            : { name: "map" },
       };
 
     case "CHOOSE_CARD_REWARD": {
@@ -810,7 +845,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         return state;
       }
       return {
-        screen: { name: "map" },
+        screen: state.run.pendingCardReward ? { name: "reward" } : { name: "map" },
         run: {
           ...state.run,
           tools: [...state.run.tools, action.toolId],

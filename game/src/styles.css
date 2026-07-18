@@ -928,6 +928,10 @@ main:focus {
   background: color-mix(in oklch, var(--mint) 30%, var(--panel));
 }
 
+.task-panel--complication:not(.is-ready, .is-shipped) {
+  background: color-mix(in oklch, var(--pink) 12%, var(--panel));
+}
+
 .task-panel.is-shipped {
   background: color-mix(in oklch, var(--mint) 18%, var(--panel));
   box-shadow: 3px 3px 0 color-mix(in oklch, var(--ink) 74%, transparent);
@@ -1669,6 +1673,7 @@ main:focus {
 }
 
 .squad-status-rack > b,
+.status-incident,
 .status-buff,
 .status-debuff {
   padding: 0.22rem 0.4rem;
@@ -1681,6 +1686,11 @@ main:focus {
 
 .status-buff {
   background: var(--blue);
+}
+
+.status-incident {
+  color: var(--panel);
+  background: var(--coral);
 }
 
 .status-debuff {

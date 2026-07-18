@@ -78,11 +78,13 @@ export type IntentDefinition =
   | { kind: "regression"; discipline: Discipline; amount: number }
   | { kind: "blocked"; discipline: Discipline }
   | { kind: "interruption" }
-  | { kind: "crunch"; moraleLoss: number };
+  | { kind: "crunch"; moraleLoss: number }
+  | { kind: "spawn"; taskId: string; taskName: string };
 
-interface TaskDefinition {
+export interface TaskDefinition {
   id: string;
   name: string;
+  role?: "primary" | "complication";
   requirements: readonly RequirementDefinition[];
   intents: readonly IntentDefinition[];
 }
@@ -90,6 +92,8 @@ interface TaskDefinition {
 export interface CycleDefinition {
   id: string;
   name: string;
+  kind?: "incident";
+  primaryTaskId?: string;
   maxDays: number;
   tasks: readonly TaskDefinition[];
 }
@@ -107,6 +111,7 @@ export interface TaskState {
   taskId: string;
   status: "open" | "ready" | "shipped";
   stunned: boolean;
+  spawnedDay: number;
   requirements: RequirementState[];
 }
 
@@ -136,7 +141,7 @@ interface CardRewardState {
 
 interface ToolRewardState {
   sourceNodeId: string;
-  toolIds: readonly [ToolId, ToolId, ToolId];
+  toolIds: readonly ToolId[];
 }
 
 type RunHistoryEvent =
@@ -181,6 +186,7 @@ interface TaskReport {
   taskId: string;
   name: string;
   completed: boolean;
+  cleared: boolean;
   verifiedWork: number;
   unverifiedWork: number;
 }
@@ -197,6 +203,7 @@ export interface CycleReport {
   moraleDelta: number;
   creditsGained: number;
   techDebtAdded: number;
+  toolReward: boolean;
   resolvedIntents: string[];
 }
 

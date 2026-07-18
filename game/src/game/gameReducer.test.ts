@@ -7,7 +7,7 @@ import type { GameState } from "./gameReducer";
 function startCycle(
   squad: readonly [DeveloperId, DeveloperId, DeveloperId] = ["paul", "irene", "madi"],
   seed = 0x5eed1234,
-  nodeId: "cycle-1" | "cycle-2" | "cycle-3" | "final-release" = "cycle-1",
+  nodeId: "cycle-1" | "cycle-2" | "cycle-3" | "incident-1" | "final-release" = "cycle-1",
 ): GameState {
   let state = gameReducer(initialGameState, { type: "START_RUN", seed });
   for (const developerId of squad) {
@@ -40,6 +40,10 @@ function startCycle(
         "event-4",
       ],
     },
+    "incident-1": {
+      currentNodeId: "cycle-2",
+      completedNodeIds: ["cycle-1", "event-1", "cycle-2"],
+    },
   } as const;
   const path = pathToNode[nodeId];
   state = {
@@ -62,7 +66,7 @@ function shipReadyCycle(seed = 0x5eed1234): GameState {
 }
 
 function startCycleAt(
-  nodeId: "cycle-1" | "cycle-2" | "cycle-3" | "final-release",
+  nodeId: "cycle-1" | "cycle-2" | "cycle-3" | "incident-1" | "final-release",
   squad: readonly [DeveloperId, DeveloperId, DeveloperId] = ["paul", "irene", "madi"],
   seed = 0x5eed1234,
 ): GameState {
@@ -281,6 +285,118 @@ describe("gameReducer", () => {
     expect(scopeIntents.length).toBeGreaterThan(0);
     expect(scopeIntents.every((intent) => intent.amount >= 3)).toBe(true);
     expect(formatIntent({ kind: "interruption" })).toBe("+1 Distraction");
+    expect(formatIntent({ kind: "spawn", taskId: "pager-storm", taskName: "Pager Storm" })).toBe(
+      "Spawn · Pager Storm",
+    );
+  });
+
+  it("starts an Incident with its primary Task and spawns an age-zero Complication", () => {
+    let state = startCycleAt("incident-1", ["paul", "odin", "irene"]);
+    expect(state.run?.cycle?.cycleId).toBe("production-incident");
+    expect(state.run?.cycle?.tasks.map((task) => task.taskId)).toEqual(["restore-service"]);
+
+    state = gameReducer(state, { type: "END_DAY" });
+
+    expect(state.run?.cycle?.day).toBe(2);
+    expect(state.run?.cycle?.tasks.map((task) => [task.taskId, task.spawnedDay])).toEqual([
+      ["restore-service", 1],
+      ["pager-storm", 2],
+    ]);
+
+    state = gameReducer(state, { type: "END_DAY" });
+    expect(state.run?.cycle?.resolvedIntents).toContain("+1 Distraction");
+  });
+
+  it("lets Stun cancel an Incident spawn intent", () => {
+    let state = startCycleAt("incident-1", ["paul", "odin", "irene"]);
+    state = playCard(state, "not-reproducible", "restore-service");
+    state = gameReducer(state, { type: "END_DAY" });
+
+    expect(state.run?.cycle?.tasks.map((task) => task.taskId)).toEqual(["restore-service"]);
+    expect(state.run?.cycle?.resolvedIntents).toContain("Stunned · Spawn · Pager Storm");
+  });
+
+  it("ends an Incident when its primary Task ships and queues Tool then card rewards", () => {
+    let state = startCycleAt("incident-1", ["paul", "odin", "irene"], 24680);
+    state = gameReducer(state, { type: "END_DAY" });
+    if (!state.run?.cycle) throw new Error("Expected an active Incident");
+    state = {
+      ...state,
+      run: {
+        ...state.run,
+        cycle: {
+          ...state.run.cycle,
+          tasks: state.run.cycle.tasks.map((task) =>
+            task.taskId === "restore-service"
+              ? {
+                  ...task,
+                  status: "ready" as const,
+                  requirements: task.requirements.map((requirement) => ({
+                    ...requirement,
+                    verified: requirement.target,
+                  })),
+                }
+              : task,
+          ),
+        },
+      },
+    };
+
+    state = gameReducer(state, { type: "SHIP_TASK", taskId: "restore-service" });
+    expect(state.screen.name).toBe("report");
+    if (state.screen.name !== "report") throw new Error("Expected an Incident report");
+    expect(state.screen.report).toMatchObject({ outcome: "shipped", toolReward: true });
+    expect(state.screen.report.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ taskId: "restore-service", completed: true }),
+        expect.objectContaining({ taskId: "pager-storm", completed: false, cleared: true }),
+      ]),
+    );
+    expect(state.run?.pendingToolReward?.toolIds).toHaveLength(3);
+    expect(state.run?.pendingCardReward?.cardIds).toHaveLength(3);
+    expect(state.run?.history.at(-2)).toMatchObject({
+      kind: "task-shipped",
+      focusGained: 0,
+    });
+
+    state = gameReducer(state, { type: "CONTINUE_REPORT" });
+    expect(state.screen.name).toBe("tool-reward");
+    const toolId = state.run?.pendingToolReward?.toolIds[0];
+    if (!toolId) throw new Error("Expected a Tool reward");
+    state = gameReducer(state, { type: "CHOOSE_TOOL_REWARD", toolId });
+    expect(state.screen.name).toBe("reward");
+    expect(state.run?.tools).toContain(toolId);
+    expect(state.run?.pendingCardReward).not.toBeNull();
+    state = gameReducer(state, { type: "SKIP_CARD_REWARD" });
+    expect(state.screen.name).toBe("map");
+  });
+
+  it("applies the larger Incident miss penalty without offering rewards", () => {
+    let state = startCycleAt("incident-1", ["paul", "odin", "irene"]);
+    if (!state.run?.cycle) throw new Error("Expected an active Incident");
+    state = {
+      ...state,
+      run: {
+        ...state.run,
+        morale: 20,
+        cycle: { ...state.run.cycle, startingMorale: 20 },
+      },
+    };
+    for (let day = 0; day < 4; day += 1) {
+      state = gameReducer(state, { type: "END_DAY" });
+    }
+
+    expect(state.screen.name).toBe("report");
+    if (state.screen.name !== "report") throw new Error("Expected an Incident report");
+    expect(state.screen.report).toMatchObject({
+      outcome: "missed",
+      moraleDelta: -17,
+      techDebtAdded: 4,
+      toolReward: false,
+    });
+    expect(state.run?.morale).toBe(3);
+    expect(state.run?.pendingToolReward).toBeNull();
+    expect(state.run?.pendingCardReward).toBeNull();
   });
 
   it("makes every Odin Review Stun its Task's intent", () => {

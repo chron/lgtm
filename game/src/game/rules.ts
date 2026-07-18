@@ -83,6 +83,10 @@ export function isTaskReady(task: TaskState): boolean {
 }
 
 export function isCycleShipped(cycle: CycleState): boolean {
+  const primaryTaskId = getCycle(cycle.cycleId).primaryTaskId;
+  if (primaryTaskId) {
+    return cycle.tasks.some((task) => task.taskId === primaryTaskId && task.status === "shipped");
+  }
   return cycle.tasks.every((task) => task.status === "shipped");
 }
 
@@ -117,7 +121,7 @@ export function getScheduledIntent(cycle: CycleState, task: TaskState) {
   const definition = getCycle(cycle.cycleId).tasks.find(
     (candidate) => candidate.id === task.taskId,
   );
-  return definition?.intents[cycle.day - 1];
+  return definition?.intents[cycle.day - task.spawnedDay];
 }
 
 export function getCurrentIntent(cycle: CycleState, task: TaskState) {
@@ -169,7 +173,8 @@ export function taskShippingRewards(
   const nonTerminal = cycle.tasks.some(
     (candidate) => candidate.taskId !== taskId && candidate.status !== "shipped",
   );
-  const paulTriggers = run.squad.includes("paul") && nonTerminal;
+  const endsIncident = getCycle(cycle.cycleId).primaryTaskId === taskId;
+  const paulTriggers = run.squad.includes("paul") && nonTerminal && !endsIncident;
   const mergeQueue = run.tools.includes("merge-queue");
   return {
     cardsDrawn: mergeQueue ? 2 : 0,
@@ -430,6 +435,7 @@ export function createCycleReport(
   moraleDelta: number,
   creditsGained: number,
   techDebtAdded: number,
+  toolReward = false,
 ): CycleReport {
   const definition = getCycle(cycle.cycleId);
   return {
@@ -443,6 +449,7 @@ export function createCycleReport(
         taskId: task.taskId,
         name: taskDefinition?.name ?? task.taskId,
         completed: task.status === "shipped",
+        cleared: toolReward && taskDefinition?.role === "complication" && task.status !== "shipped",
         verifiedWork: task.requirements.reduce((sum, requirement) => sum + requirement.verified, 0),
         unverifiedWork: taskUnverifiedWork(task),
       };
@@ -453,6 +460,7 @@ export function createCycleReport(
     moraleDelta,
     creditsGained,
     techDebtAdded,
+    toolReward,
     resolvedIntents: cycle.resolvedIntents,
   };
 }

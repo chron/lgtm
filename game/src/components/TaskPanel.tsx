@@ -14,6 +14,7 @@ interface TaskPanelProps {
   run: RunState;
   task: TaskState;
   taskName: string;
+  taskRole?: "primary" | "complication";
   selectedCard?: CardInstance;
   hoveredTargetKey?: string;
   resolving?: boolean;
@@ -26,6 +27,7 @@ export function TaskPanel({
   run,
   task,
   taskName,
+  taskRole,
   selectedCard,
   hoveredTargetKey,
   resolving,
@@ -55,11 +57,12 @@ export function TaskPanel({
 
   return (
     <article
-      className={`task-panel${ready ? " is-ready" : ""}${shipped ? " is-shipped" : ""}${resolving ? " is-resolving" : ""}`}
+      className={`task-panel${taskRole ? ` task-panel--${taskRole}` : ""}${ready ? " is-ready" : ""}${shipped ? " is-shipped" : ""}${resolving ? " is-resolving" : ""}`}
     >
       <header className="task-panel__header">
         <div>
           <span className="task-panel__state">
+            {taskRole ? `${taskRole} · ` : ""}
             {shipped ? "Shipped" : ready ? "Ready" : "Open"}
           </span>
           <h2>{taskName}</h2>

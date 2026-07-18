@@ -47,7 +47,7 @@ export function ReportScreen({ dispatch, report }: ReportScreenProps) {
         {report.tasks.map((task) => (
           <div key={task.taskId}>
             <strong>{task.name}</strong>
-            <span>{task.completed ? "Shipped" : "Open"}</span>
+            <span>{task.completed ? "Shipped" : task.cleared ? "Cleared" : "Open"}</span>
             <small>
               {task.verifiedWork} Verified · {task.unverifiedWork} Unverified
             </small>
@@ -56,7 +56,9 @@ export function ReportScreen({ dispatch, report }: ReportScreenProps) {
       </div>
 
       <div className="reward-placeholder">
-        <strong>{shipped ? "Card reward next" : "No card reward"}</strong>
+        <strong>
+          {shipped ? (report.toolReward ? "Tool and card next" : "Card reward next") : "No reward"}
+        </strong>
         <span>{report.creditsGained > 0 ? `+${report.creditsGained} Credits` : "No Credits"}</span>
       </div>
 

@@ -390,6 +390,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
             data-target-kind={squadTargetable ? "squad" : undefined}
             aria-label={squadTargetable ? squadResolution.label : "Squad status"}
           >
+            {definition.kind === "incident" && <span className="status-incident">Incident</span>}
             {cycle.block > 0 && <span className="status-buff">Block {cycle.block}</span>}
             {cycle.blockedDisciplines.map((discipline) => (
               <span className="status-debuff" key={discipline}>
@@ -416,7 +417,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
 
       <div
         className={`task-board task-board--${Math.min(cycle.tasks.length, 4)}`}
-        aria-label="Cycle Tasks"
+        aria-label={definition.kind === "incident" ? "Incident Tasks" : "Cycle Tasks"}
       >
         {cycle.tasks.map((task) => {
           const taskDefinition = definition.tasks.find((candidate) => candidate.id === task.taskId);
@@ -426,6 +427,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
               run={run}
               task={task}
               taskName={taskDefinition?.name ?? task.taskId}
+              taskRole={taskDefinition?.role}
               selectedCard={selectedCard}
               hoveredTargetKey={aim?.hoveredTargetKey}
               resolving={ceremonyItem?.taskId === task.taskId}
