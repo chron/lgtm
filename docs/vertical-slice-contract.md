@@ -39,26 +39,25 @@ This document defines the smallest coherent version of the software-engineering 
 
 ### RECOMMENDED
 
-- Starting deck size: **12 cards** — three character cards plus nine neutral Basics.
+- Starting deck size: **10 cards** — three character cards plus seven neutral Basics.
 - Recommended Basic package:
-  - two **Frontend 3** cards;
-  - two **Backend 3** cards;
-  - two **Infra 3** cards;
+  - one **Frontend 3** card;
+  - one **Backend 3** card;
+  - one **Infra 3** card;
   - two **Flexible 2** cards;
-  - one **Review 3** card.
-- All nine Basics cost **1 Focus**.
+  - one **Review 3** card;
+  - one **Standup Cover** card.
+- All seven Basics cost **1 Focus**.
 - `Frontend 3`, `Backend 3`, and `Infra 3` create 3 Verified Work in a matching requirement. They may use the Pitch In rule against another discipline.
 - `Flexible 2` creates 2 Verified Work in any requirement without a mismatch penalty.
 - `Review 3` converts up to 3 Unverified Work on one Task into Verified Work.
+- `Standup Cover` grants 4 Block and targets the squad rather than a Task.
 - Basics are intentionally plain and slightly inefficient. Adding stronger cards and removing Basics should be an immediately legible form of deck growth.
 - Character cards may be engines, utility, or high-upside bargains with visible costs. They do not need to cover basic discipline output because the neutral package keeps every squad functional.
 - Reward pools should express working style rather than merely repeat discipline colours. A backend developer can still provide planning, review, automation, or risk-control cards.
-- Passive text should fit in one short sentence and trigger no more than once per Day unless it is a simple static modifier.
-- The first playable roster should be **Paul, Odin, Irene, and Madi**, with the player choosing three. This creates four meaningfully different squads while testing speed, architecture, reliable execution, infrastructure, AI tooling, and experimentation. Matt and Elspeth are the next two additions for the full slice.
-
-### OPEN
-
-- Does each developer need a single splashy Signature card outside the normal reward pool, or can ordinary rare cards carry that role?
+- Passive text should fit in one short sentence. Repeatable triggers are encouraged when they create an engine; Focus, hand size, Exhaust, target order, Tech Debt, and encounter pressure should constrain them before arbitrary once-per-Day caps do.
+- The first playable roster should be **Paul, Odin, Irene, and Madi**, with the player choosing three. This creates four meaningfully different squads while testing speed, architecture, reliable execution, infrastructure, AI tooling, and experimentation. The remaining roster expands in mechanically coherent waves after these engines are proven.
+- The full kit and archetype contract lives in [Character Kits and Deck Archetypes](./character-kits-and-archetypes.md). Each developer ultimately owns one fixed Starter, five normal reward cards, and one rare build-around.
 
 ## Cycle state
 

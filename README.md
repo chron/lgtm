@@ -16,6 +16,13 @@ bun run dev
 
 The Portless development URL is `https://backlog.localhost/`. To run plain Vite instead, use `bun run dev:plain`.
 
+## Design contracts
+
+- [Vertical Slice Gameplay Contract](docs/vertical-slice-contract.md)
+- [Character Kits and Deck Archetypes](docs/character-kits-and-archetypes.md)
+- [Visual Design](DESIGN.md)
+- [Product Direction](PRODUCT.md)
+
 ## Checks
 
 ```sh
