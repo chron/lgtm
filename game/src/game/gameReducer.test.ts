@@ -23,11 +23,22 @@ function startCycle(
     },
     "cycle-3": {
       currentNodeId: "event-2",
-      completedNodeIds: ["cycle-1", "event-1", "cycle-2", "event-2"],
+      completedNodeIds: ["cycle-1", "event-1", "cycle-2", "incident-1", "event-2"],
     },
     "final-release": {
-      currentNodeId: "cycle-3",
-      completedNodeIds: ["cycle-1", "event-1", "cycle-2", "event-2", "cycle-3"],
+      currentNodeId: "event-4",
+      completedNodeIds: [
+        "cycle-1",
+        "event-1",
+        "cycle-2",
+        "incident-1",
+        "event-2",
+        "cycle-3",
+        "event-3",
+        "cycle-4",
+        "incident-2",
+        "event-4",
+      ],
     },
   } as const;
   const path = pathToNode[nodeId];
@@ -820,9 +831,26 @@ describe("gameReducer", () => {
 
   it.each([
     ["event-1", "event", ["cycle-1"]],
-    ["shop-1", "shop", ["cycle-1"]],
+    ["shop-1", "shop", ["cycle-1", "event-1", "cycle-2", "incident-1"]],
     ["cycle-2", "cycle", ["cycle-1", "event-1"]],
-    ["retro-1", "retro", ["cycle-1", "event-1", "cycle-2", "event-2", "cycle-3", "final-release"]],
+    ["incident-1", "cycle", ["cycle-1", "event-1", "cycle-2"]],
+    [
+      "retro-1",
+      "retro",
+      [
+        "cycle-1",
+        "event-1",
+        "cycle-2",
+        "incident-1",
+        "event-2",
+        "cycle-3",
+        "event-3",
+        "cycle-4",
+        "incident-2",
+        "event-4",
+        "final-release",
+      ],
+    ],
   ] as const)("routes %s to the %s placeholder", (nodeId, screenName, predecessors) => {
     let state = startMap(predecessors);
     state = gameReducer(state, { type: "VISIT_NODE", nodeId });
@@ -840,7 +868,7 @@ describe("gameReducer", () => {
     expect(state.run?.completedNodeIds).toContain("event-1");
 
     const beforeLockedVisit = state;
-    state = gameReducer(state, { type: "VISIT_NODE", nodeId: "shop-1" });
+    state = gameReducer(state, { type: "VISIT_NODE", nodeId: "cycle-optional-1" });
     expect(state).toBe(beforeLockedVisit);
 
     state = gameReducer(state, { type: "VISIT_NODE", nodeId: "cycle-2" });

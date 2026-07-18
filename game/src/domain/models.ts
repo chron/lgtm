@@ -200,7 +200,7 @@ export interface CycleReport {
   resolvedIntents: string[];
 }
 
-export type MapNodeKind = "cycle" | "boss" | "event" | "shop" | "retro";
+export type MapNodeKind = "cycle" | "incident" | "boss" | "event" | "shop" | "retro";
 
 interface MapPosition {
   x: number;

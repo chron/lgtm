@@ -630,7 +630,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       const runAtNode = { ...state.run, currentNodeId: node.id };
 
-      if ((node.kind === "cycle" || node.kind === "boss") && node.cycleId) {
+      if (
+        (node.kind === "cycle" || node.kind === "incident" || node.kind === "boss") &&
+        node.cycleId
+      ) {
         const cycle = createCycleState(runAtNode, node.id, node.cycleId);
         return {
           screen: { name: "cycle", nodeId: node.id, cycleId: node.cycleId },
@@ -648,7 +651,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         screen: { name: node.kind, nodeId: node.id } as Extract<
           Screen,
-          { name: Exclude<MapNodeKind, "cycle" | "boss" | "retro"> }
+          { name: Exclude<MapNodeKind, "cycle" | "incident" | "boss" | "retro"> }
         >,
         run: runAtNode,
       };

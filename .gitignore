@@ -6,6 +6,7 @@ tmp/
 *.local
 *.log
 *.tsbuildinfo
+__pycache__/
 
 # Beads / Dolt files (added by bd init)
 .dolt/

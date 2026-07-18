@@ -526,7 +526,7 @@ main:focus {
 .map-canvas {
   position: relative;
   width: min(880px, 100%);
-  min-height: 1120px;
+  min-height: 1800px;
   margin: 0 auto;
 }
 
@@ -634,6 +634,11 @@ main:focus {
 
 .map-node--event .map-node__glyph {
   background: var(--pink);
+}
+
+.map-node--incident .map-node__glyph {
+  color: var(--panel);
+  background: var(--coral);
 }
 
 .map-node--boss .map-node__glyph {
@@ -2853,7 +2858,7 @@ main:focus {
 
   .map-canvas {
     width: 100%;
-    min-height: 1020px;
+    min-height: 1700px;
   }
 
   .map-node {

@@ -28,11 +28,46 @@ describe("authored act map", () => {
         .map((node) => node.id);
 
     expect(availableFrom(null, [])).toEqual(["cycle-1"]);
-    expect(availableFrom("cycle-1", ["cycle-1"])).toEqual(["event-1", "shop-1"]);
+    expect(availableFrom("cycle-1", ["cycle-1"])).toEqual(["event-1", "cycle-optional-1"]);
     expect(availableFrom("event-1", ["cycle-1", "event-1"])).toEqual(["cycle-2"]);
-    expect(availableFrom("cycle-2", ["cycle-1", "event-1", "cycle-2"])).toEqual([
-      "event-2",
-      "shop-2",
-    ]);
+    expect(availableFrom("cycle-2", ["cycle-1", "event-1", "cycle-2"])).toEqual(["incident-1"]);
+  });
+
+  it("builds every route from seven mandatory fights plus up to two optional fights", () => {
+    const nodesById = new Map(mapNodes.map((node) => [node.id, node]));
+    const outgoing = new Map<string, string[]>();
+    for (const edge of mapEdges) {
+      outgoing.set(edge.fromNodeId, [...(outgoing.get(edge.fromNodeId) ?? []), edge.toNodeId]);
+    }
+
+    const routes: string[][] = [];
+    const visit = (nodeId: string, route: string[]) => {
+      const nextRoute = [...route, nodeId];
+      if (nodeId === "final-release") {
+        routes.push(nextRoute);
+        return;
+      }
+      for (const childId of outgoing.get(nodeId) ?? []) visit(childId, nextRoute);
+    };
+    visit("cycle-1", []);
+
+    expect(routes).toHaveLength(16);
+    const fightCounts = routes.map(
+      (route) =>
+        route.filter((nodeId) => {
+          const kind = nodesById.get(nodeId)?.kind;
+          return kind === "cycle" || kind === "incident" || kind === "boss";
+        }).length,
+    );
+    expect(Math.min(...fightCounts)).toBe(7);
+    expect(Math.max(...fightCounts)).toBe(9);
+    expect(new Set(fightCounts)).toEqual(new Set([7, 8, 9]));
+
+    for (const route of routes) {
+      expect(route.filter((nodeId) => nodesById.get(nodeId)?.kind === "incident")).toHaveLength(2);
+      expect(route.filter((nodeId) => nodesById.get(nodeId)?.kind === "boss")).toEqual([
+        "final-release",
+      ]);
+    }
   });
 });
