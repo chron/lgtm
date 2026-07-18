@@ -498,6 +498,7 @@ main:focus {
   z-index: 3;
   margin-bottom: 0.9rem;
   align-items: center;
+  justify-content: flex-start;
 }
 
 .map-screen .display-title {
@@ -2854,6 +2855,16 @@ main:focus {
   .map-screen {
     padding-right: 0;
     padding-left: 0;
+  }
+
+  .map-screen .screen-heading {
+    flex-wrap: wrap;
+    gap: 0.8rem 2rem;
+  }
+
+  .map-screen .collection-entry-group {
+    flex: 0 0 100%;
+    justify-content: flex-start;
   }
 
   .map-canvas {
