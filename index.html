@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Ship Shape: Style Frames</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow+Condensed:wght@600;700;800;900&family=Bricolage+Grotesque:opsz,wght@12..96,400;500;600;700;800&family=Chivo:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-direction="canvas">
+    <header class="lab-header">
+      <a class="lab-mark" href="#top" aria-label="Ship Shape style frames">
+        <span>SHIP</span><i></i><span>SHAPE</span>
+      </a>
+
+      <nav class="direction-tabs" role="tablist" aria-label="Art direction">
+        <button
+          class="direction-tab is-active"
+          role="tab"
+          aria-selected="true"
+          aria-controls="frames"
+          data-set-direction="canvas"
+        >
+          <b>01</b> Live Canvas
+        </button>
+        <button
+          class="direction-tab"
+          role="tab"
+          aria-selected="false"
+          aria-controls="frames"
+          data-set-direction="broadcast"
+        >
+          <b>02</b> Launch Broadcast
+        </button>
+        <button
+          class="direction-tab"
+          role="tab"
+          aria-selected="false"
+          aria-controls="frames"
+          data-set-direction="code"
+        >
+          <b>03</b> Code Cartoon
+        </button>
+      </nav>
+
+      <div class="direction-count" aria-live="polite"><b>01</b><span>/ 03</span></div>
+    </header>
+
+    <main id="top">
+      <section class="direction-intro" aria-labelledby="direction-title">
+        <div class="intro-index" aria-hidden="true">01</div>
+        <div>
+          <p class="direction-kicker">ART DIRECTION</p>
+          <h1 id="direction-title">Live Canvas</h1>
+          <p id="direction-note">Remote-native space, cartoon confidence.</p>
+        </div>
+        <div class="intro-marks" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+      </section>
+
+      <div class="frames" id="frames" role="tabpanel">
+        <section class="frame squad-frame" aria-labelledby="squad-title">
+          <header class="game-bar">
+            <span class="screen-number">01</span>
+            <h2 id="squad-title">SQUAD</h2>
+            <div class="bar-status"><strong>3/3</strong><span>READY</span></div>
+          </header>
+
+          <div class="squad-stage">
+            <div class="roster" aria-label="Developer roster">
+              <button class="roster-person is-selected" type="button" data-person="paul" aria-pressed="true">
+                <span class="mini-avatar avatar-paul">P</span><b>Paul</b>
+              </button>
+              <button class="roster-person is-selected" type="button" data-person="odin" aria-pressed="true">
+                <span class="mini-avatar avatar-odin">O</span><b>Odin</b>
+              </button>
+              <button class="roster-person" type="button" data-person="irene" aria-pressed="false">
+                <span class="mini-avatar avatar-irene">I</span><b>Irene</b>
+              </button>
+              <button class="roster-person is-selected" type="button" data-person="madi" aria-pressed="true">
+                <span class="mini-avatar avatar-madi">M</span><b>Madi</b>
+              </button>
+              <button class="roster-person" type="button" data-person="matt" aria-pressed="false">
+                <span class="mini-avatar avatar-matt">M</span><b>Matt</b>
+              </button>
+              <button class="roster-person" type="button" data-person="elspeth" aria-pressed="false">
+                <span class="mini-avatar avatar-elspeth">E</span><b>Elspeth</b>
+              </button>
+            </div>
+
+            <div class="lineup" aria-label="Selected squad">
+              <article class="fighter fighter-odin">
+                <div class="fighter-number">02</div>
+                <div class="fighter-art" aria-hidden="true">
+                  <span class="hair"></span><span class="head"></span><span class="body"></span><b>O</b>
+                </div>
+                <div class="fighter-name"><b>ODIN</b><span>ARCHITECT</span></div>
+              </article>
+
+              <article class="fighter fighter-paul is-lead">
+                <div class="fighter-number">01</div>
+                <div class="fighter-art" aria-hidden="true">
+                  <span class="hair"></span><span class="head"></span><span class="body"></span><b>P</b>
+                </div>
+                <div class="fighter-name"><b>PAUL</b><span>PROTOTYPER</span></div>
+              </article>
+
+              <article class="fighter fighter-madi">
+                <div class="fighter-number">03</div>
+                <div class="fighter-art" aria-hidden="true">
+                  <span class="hair"></span><span class="head"></span><span class="body"></span><b>M</b>
+                </div>
+                <div class="fighter-name"><b>MADI</b><span>TINKERER</span></div>
+              </article>
+            </div>
+
+            <div class="squad-lockup">
+              <div class="squad-title-block">
+                <span>FAST</span><span>AI</span><span>CHAOS</span>
+                <strong>VIBE<br />ARCHITECTS</strong>
+              </div>
+              <button class="primary-action" type="button">LOCK IN <span>→</span></button>
+            </div>
+          </div>
+        </section>
+
+        <section class="frame cycle-frame" aria-labelledby="cycle-title">
+          <header class="game-bar">
+            <span class="screen-number">02</span>
+            <h2 id="cycle-title">CYCLE</h2>
+            <div class="cycle-day"><span>DAY</span><strong>3</strong><i>/5</i></div>
+            <button class="icon-action" type="button" aria-label="Open deck">DECK <b>14</b></button>
+          </header>
+
+          <div class="cycle-stage">
+            <aside class="team-rail" aria-label="Squad status">
+              <div class="rail-person">
+                <span class="mini-avatar avatar-paul">P</span>
+                <div><b>PAUL</b><i style="--value: 76%"></i></div>
+              </div>
+              <div class="rail-person">
+                <span class="mini-avatar avatar-odin">O</span>
+                <div><b>ODIN</b><i style="--value: 92%"></i></div>
+              </div>
+              <div class="rail-person">
+                <span class="mini-avatar avatar-madi">M</span>
+                <div><b>MADI</b><i style="--value: 64%"></i></div>
+              </div>
+              <div class="morale">
+                <span>MORALE</span><strong>17</strong><i>/24</i>
+              </div>
+            </aside>
+
+            <div class="project-zone">
+              <div class="intent">
+                <span>NEXT</span>
+                <b>SCOPE CREEP</b>
+                <strong>+3</strong>
+              </div>
+              <div class="project-card">
+                <div class="project-topline"><span>PROJECT</span><b>07</b></div>
+                <h3>REALTIME<br />COLLABORATION</h3>
+                <div class="requirements">
+                  <div class="requirement req-front">
+                    <span><b>FRONTEND</b><i>6/8</i></span><div><i style="--value: 75%"></i></div>
+                  </div>
+                  <div class="requirement req-back">
+                    <span><b>BACKEND</b><i>4/6</i></span><div><i style="--value: 66%"></i></div>
+                  </div>
+                  <div class="requirement req-infra">
+                    <span><b>INFRA</b><i>2/4</i></span><div><i style="--value: 50%"></i></div>
+                  </div>
+                </div>
+                <div class="defect-count"><span>DEFECTS</span><b>2</b></div>
+                <div class="project-nodes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+              </div>
+            </div>
+
+            <div class="hand" aria-label="Cards in hand">
+              <button class="play-card owner-paul" type="button">
+                <span class="card-cost">1</span><span class="card-owner">PAUL</span>
+                <b>VIBE<br />CODE</b>
+                <p>Create 5 progress. Add 1 unverified.</p><i>AI</i>
+              </button>
+              <button class="play-card owner-odin" type="button">
+                <span class="card-cost">2</span><span class="card-owner">ODIN</span>
+                <b>DESIGN<br />REVIEW</b>
+                <p>Verify 4. Draw 1.</p><i>BACKEND</i>
+              </button>
+              <button class="play-card owner-madi" type="button">
+                <span class="card-cost">1</span><span class="card-owner">MADI</span>
+                <b>AGENT<br />SWARM</b>
+                <p>Create 2 temporary cards.</p><i>AI</i>
+              </button>
+              <button class="play-card owner-team" type="button">
+                <span class="card-cost">0</span><span class="card-owner">TEAM</span>
+                <b>SHIP<br />IT</b>
+                <p>Complete now. Keep all defects.</p><i>RISKY</i>
+              </button>
+            </div>
+
+            <div class="cycle-actions">
+              <div class="focus"><span>FOCUS</span><strong>3</strong></div>
+              <button class="end-day" type="button">END DAY <span>→</span></button>
+            </div>
+          </div>
+        </section>
+
+        <section class="frame retro-frame" aria-labelledby="retro-title">
+          <header class="game-bar">
+            <span class="screen-number">03</span>
+            <h2 id="retro-title">RETRO</h2>
+            <div class="retro-result"><span>RELEASE</span><strong>SHIPPED</strong></div>
+          </header>
+
+          <div class="retro-stage">
+            <div class="retro-column went-well">
+              <h3>WENT WELL</h3>
+              <article class="sticky sticky-yellow" style="--r: -2deg; --x: 4%"><b>FAST!</b><span>Prototype landed on day one</span><i>PAUL</i></article>
+              <article class="sticky sticky-blue" style="--r: 1.5deg; --x: 18%"><b>ZERO</b><span>Incidents overnight</span><i>IRENE</i></article>
+              <article class="sticky sticky-pink" style="--r: -1deg; --x: 1%"><b>+12</b><span>AI cards verified</span><i>MADI</i></article>
+            </div>
+
+            <div class="retro-column didnt">
+              <h3>DIDN'T</h3>
+              <article class="sticky sticky-pink" style="--r: 2deg; --x: 11%"><b>7</b><span>Defects escaped</span><i>ODIN</i></article>
+              <article class="sticky sticky-yellow" style="--r: -1.2deg; --x: 0%"><b>WHY?</b><span>Auth rewritten twice</span><i>ELSPETH</i></article>
+              <article class="sticky sticky-blue" style="--r: 1deg; --x: 22%"><b>2AM</b><span>Last deployment</span><i>TOBY</i></article>
+            </div>
+
+            <div class="retro-column actions">
+              <h3>ACTIONS</h3>
+              <article class="sticky sticky-blue" style="--r: -1deg; --x: 7%"><b>TEST</b><span>The generated code</span><i>ODIN</i></article>
+              <article class="sticky sticky-pink" style="--r: 1.8deg; --x: 16%"><b>LESS</b><span>Production on Fridays</span><i>ELSPETH</i></article>
+              <article class="sticky sticky-yellow" style="--r: -2deg; --x: 2%"><b>MORE</b><span>Sharkimedes</span><i>PAUL</i></article>
+            </div>
+
+            <div class="cursor cursor-paul" aria-hidden="true"><i></i><span>Paul</span></div>
+            <div class="cursor cursor-odin" aria-hidden="true"><i></i><span>Odin</span></div>
+            <div class="cursor cursor-madi" aria-hidden="true"><i></i><span>Madi</span></div>
+
+            <div class="retro-summary">
+              <span>MORALE <b>4</b></span>
+              <span>DEFECTS <b>7</b></span>
+              <span>TOOLS <b>3</b></span>
+            </div>
+            <button class="primary-action retro-action" type="button">NEW RUN <span>→</span></button>
+          </div>
+        </section>
+      </div>
+
+      <footer class="lab-footer">
+        <p>Same squad. Same cycle. Three visual systems.</p>
+        <a href="#top">TOP ↑</a>
+      </footer>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

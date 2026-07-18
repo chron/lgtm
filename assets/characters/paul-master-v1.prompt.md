@@ -1,0 +1,17 @@
+# Paul master portrait v1
+
+Built-in image generation using five identity reference photos supplied by Paul.
+
+```text
+Use case: stylized-concept
+Asset type: master game character portrait for a bright software-engineering deckbuilder
+Input images: Images 1 through 5 are identity, face, hairstyle, body-build, glasses, expression, and wardrobe references for the same adult man. They are references only, not edit targets.
+Primary request: Create a highly polished, recognisable cartoon character portrait of the man in the reference photos as Paul, an energetic, mischievous full-stack prototyper and team lead. Preserve his recognisable rectangular glasses, short swept-up dark-blond hair with lighter tips, neat medium ginger-brown beard, friendly expressive eyes, broad smile, and lean build.
+Subject: One character only, thigh-up. Dynamic relaxed pose with a slight forward lean, shoulders turned three-quarter toward camera, one open hand gesturing as if he has just had an exciting idea. Friendly, capable, confident, and a little chaotic. Outfit is a bold coral, mustard, cream, and charcoal floral button-up shirt with simplified graphic flowers, dark trousers, and no green clothing.
+Style/medium: Original western Saturday-morning television animation character art. Bold graphic shapes, chunky variable charcoal ink outlines, simplified but recognisable facial planes, expressive silhouette, crisp 2-to-3-tone cel shading, small controlled hand-drawn texture. Clean enough to sit beside chunky UI and break outside its frame. Not anime, not photorealistic, not a direct imitation of any existing game or franchise.
+Composition/framing: Portrait canvas, thigh-up character centered with generous clear padding around hair, elbows, and hands. Entire silhouette remains inside the canvas. Eye-level view. No crop through the head or hands.
+Lighting/mood: Bright, cheerful, high-key animation lighting. Affectionate, kinetic, mischievous.
+Color palette: Warm skin, dark charcoal outlines, sandy blond hair, ginger-brown beard, coral/mustard/cream patterned shirt, black trousers.
+Scene/backdrop: Perfectly flat solid #00ff00 chroma-key background for local background removal. The background must be one uniform color with no shadows, gradients, texture, reflections, floor plane, or lighting variation.
+Constraints: Preserve identity and distinctive facial proportions across the references. Crisp opaque character edges, generous padding. Do not use #00ff00 anywhere in the subject. No cast shadow, contact shadow, glow, text, logos, watermark, props, other people, extra objects, or scenery. No extra fingers or limbs.
+```

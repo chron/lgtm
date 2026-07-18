@@ -1,0 +1,35 @@
+{
+  "name": "backlog-game",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "portless run --name backlog vite",
+    "dev:plain": "vite",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b --pretty false",
+    "lint": "oxlint src --react-plugin --jsx-a11y-plugin --tsconfig tsconfig.app.json",
+    "format": "oxfmt --write src index.html package.json vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json",
+    "format:check": "oxfmt --check src index.html package.json vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json",
+    "knip": "knip",
+    "check": "bun run typecheck && bun run lint && bun run format:check && bun run knip && bun test",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "knip": "^6.27.0",
+    "oxfmt": "^0.59.0",
+    "oxlint": "^1.74.0",
+    "portless": "^0.15.4",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
+  }
+}
