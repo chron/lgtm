@@ -13,7 +13,7 @@ export function RunVitals({ floating, run }: RunVitalsProps) {
     <div className={`run-vitals${floating ? " run-vitals--floating" : ""}`} aria-label="Run status">
       <span>
         <small>Morale</small>
-        <b>{run.morale}</b>
+        <b>{run.morale}/10</b>
       </span>
       <span>
         <small>Credits</small>

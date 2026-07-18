@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.6" fill="#282640" opacity="0.16" />
+    </pattern>
+    <clipPath id="frame">
+      <rect width="1200" height="630" rx="0" />
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#frame)">
+    <rect width="1200" height="630" fill="#f8f4e8" />
+    <rect width="1200" height="630" fill="url(#dots)" />
+
+    <path d="M670 -70 1275 25 1162 710 557 615Z" fill="#f26a5a" />
+    <path d="M680 -26 1243 62" fill="none" stroke="#282640" stroke-width="9" />
+    <path d="M600 603 1163 691" fill="none" stroke="#282640" stroke-width="9" />
+    <path d="M724 92 1125 92" fill="none" stroke="#282640" stroke-width="6" />
+    <path d="m1100 69 38 23-38 23" fill="#ffd23f" stroke="#282640" stroke-width="6" stroke-linejoin="round" />
+
+    <rect x="70" y="60" width="454" height="52" rx="4" fill="#f39acb" stroke="#282640" stroke-width="5" />
+    <text x="91" y="94" fill="#282640" font-family="Avenir Next, Avenir, sans-serif" font-size="19" font-weight="800" letter-spacing="1.7">SOFTWARE ENGINEERING DECKBUILDER</text>
+
+    <text x="82" y="299" fill="#282640" stroke="#282640" stroke-width="13" font-family="Avenir Next Condensed, Avenir Next, sans-serif" font-size="205" font-weight="900" letter-spacing="-10">BACK</text>
+    <text x="70" y="287" fill="#ffd23f" stroke="#282640" stroke-width="5" font-family="Avenir Next Condensed, Avenir Next, sans-serif" font-size="205" font-weight="900" letter-spacing="-10">BACK</text>
+    <text x="82" y="476" fill="#282640" stroke="#282640" stroke-width="13" font-family="Avenir Next Condensed, Avenir Next, sans-serif" font-size="205" font-weight="900" letter-spacing="-10">LOG!</text>
+    <text x="70" y="464" fill="#ffd23f" stroke="#282640" stroke-width="5" font-family="Avenir Next Condensed, Avenir Next, sans-serif" font-size="205" font-weight="900" letter-spacing="-10">LOG!</text>
+
+    <rect x="79" y="529" width="430" height="65" rx="5" fill="#282640" />
+    <rect x="70" y="520" width="430" height="65" rx="5" fill="#98ddb9" stroke="#282640" stroke-width="5" />
+    <text x="96" y="563" fill="#282640" font-family="Avenir Next, Avenir, sans-serif" font-size="30" font-weight="900">SHIP FAST. FIX IT LIVE.</text>
+
+    <circle cx="815" cy="377" r="200" fill="#92cce0" stroke="#282640" stroke-width="7" />
+    <circle cx="1010" cy="395" r="224" fill="#ffd23f" stroke="#282640" stroke-width="7" />
+
+    <path d="M554 170c42-24 80-25 116-4" fill="none" stroke="#282640" stroke-width="7" stroke-linecap="round" />
+    <path d="m648 141 31 28-39 11" fill="#98ddb9" stroke="#282640" stroke-width="7" stroke-linejoin="round" />
+  </g>
+</svg>

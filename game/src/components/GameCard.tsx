@@ -8,7 +8,7 @@ interface GameCardProps {
   effectiveCost: number;
   selected: boolean;
   disabled?: boolean;
-  onSelect: () => void;
+  onSelect?: () => void;
   onPointerDown?: PointerEventHandler<HTMLButtonElement>;
   onPointerMove?: PointerEventHandler<HTMLButtonElement>;
   onPointerUp?: PointerEventHandler<HTMLButtonElement>;
@@ -66,7 +66,7 @@ export function GameCard({
       style={{ "--card-accent": cardAccent } as React.CSSProperties}
       type="button"
       disabled={disabled || unplayable}
-      aria-pressed={unplayable ? undefined : selected}
+      aria-pressed={unplayable || !onSelect ? undefined : selected}
       onClick={unplayable ? undefined : onSelect}
       onPointerDown={unplayable ? undefined : onPointerDown}
       onPointerMove={unplayable ? undefined : onPointerMove}

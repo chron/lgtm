@@ -13,3 +13,6 @@ __pycache__/
 *.db
 .beads-credential-key
 .beads/proxieddb/
+
+# Local Cloudflare CLI state
+.wrangler/

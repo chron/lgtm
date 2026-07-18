@@ -79,7 +79,7 @@
 }
 
 .collection-browser__close:active,
-.collection-card:not(:disabled):active,
+button.collection-card:not(:disabled):active,
 .collection-entry:not(:disabled):active,
 .card-pile--button:not(:disabled):active {
   box-shadow: 2px 2px 0 var(--ink);

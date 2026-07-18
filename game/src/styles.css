@@ -421,6 +421,7 @@ main:focus {
   height: calc(100% + 2.5rem);
   margin-top: -2.5rem;
   overflow: visible;
+  transform-origin: center bottom;
   filter: grayscale(1) saturate(0.2)
     drop-shadow(4px 5px 0 color-mix(in oklch, var(--ink) 75%, transparent));
   transition:
@@ -508,6 +509,7 @@ main:focus {
 .map-viewport {
   position: relative;
   min-height: 0;
+  margin-right: 8px;
   border: var(--line);
   border-radius: 1.1rem 0.55rem 1.3rem 0.7rem;
   background-color: color-mix(in oklch, var(--panel) 88%, var(--blue));
@@ -1044,19 +1046,19 @@ main:focus {
 }
 
 .requirement.is-targetable {
-  border-color: var(--ink);
-  background: var(--yellow);
-  box-shadow: 3px 3px 0 var(--ink);
+  border-color: color-mix(in oklch, var(--ink) 22%, transparent);
+  background: color-mix(in oklch, var(--yellow) 30%, transparent);
+  box-shadow: none;
 }
 
 .requirement.is-targetable:hover {
-  transform: translateY(-2px);
+  background: color-mix(in oklch, var(--yellow) 44%, transparent);
 }
 
 .requirement.is-targetable.is-aimed {
-  background: var(--mint);
-  box-shadow: 6px 6px 0 var(--ink);
-  transform: translateY(-4px) scale(1.015);
+  border-color: color-mix(in oklch, var(--ink) 42%, transparent);
+  background: color-mix(in oklch, var(--mint) 58%, transparent);
+  box-shadow: none;
 }
 
 .requirement__line,
@@ -1670,6 +1672,17 @@ main:focus {
 
 .squad-status-rack.is-aimed {
   background: color-mix(in oklch, var(--yellow) 78%, transparent);
+}
+
+.cycle-hud.is-squad-targetable,
+.task-board.is-squad-targetable {
+  border-radius: 0.8rem;
+  background: color-mix(in oklch, var(--yellow) 10%, transparent);
+}
+
+.cycle-hud.is-squad-targetable.is-aimed,
+.task-board.is-squad-targetable.is-aimed {
+  background: color-mix(in oklch, var(--mint) 20%, transparent);
 }
 
 .squad-status-rack > b,

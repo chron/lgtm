@@ -1,8 +1,16 @@
 import { useEffect, useReducer, useRef, useState } from "react";
+import {
+  haveSameAchievements,
+  loadAchievements,
+  saveAchievements,
+  unlockVictoryAchievements,
+  type AchievementId,
+} from "../achievements/achievementStore";
 import { CardCollectionBrowser } from "../components/CardCollectionBrowser";
 import { RunVitals } from "../components/RunVitals";
 import { gameReducer, initialGameState } from "../game/gameReducer";
 import { CycleScreen } from "../screens/CycleScreen";
+import { AchievementsScreen } from "../screens/AchievementsScreen";
 import { EventScreen } from "../screens/EventScreen";
 import { MapScreen } from "../screens/MapScreen";
 import { ReportScreen } from "../screens/ReportScreen";
@@ -24,16 +32,31 @@ interface OpenCardCollection {
 export function App() {
   const [state, dispatch] = useReducer(gameReducer, initialGameState);
   const [cardCollection, setCardCollection] = useState<OpenCardCollection>();
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
+  const [unlockedAchievements, setUnlockedAchievements] = useState<readonly AchievementId[]>(() =>
+    loadAchievements(),
+  );
   const mainRef = useRef<HTMLElement>(null);
   const hasRun = Boolean(state.run);
+  const retroOutcome = state.screen.name === "retro" ? state.screen.outcome : undefined;
 
   useEffect(() => {
     mainRef.current?.focus();
-  }, [state.screen.name]);
+  }, [state.screen.name, achievementsOpen]);
 
   useEffect(() => {
     setCardCollection(undefined);
   }, [state.screen.name]);
+
+  useEffect(() => {
+    if (retroOutcome !== "victory" || !state.run) return;
+    setUnlockedAchievements((current) => {
+      const next = unlockVictoryAchievements(current, state.run?.squad ?? []);
+      if (haveSameAchievements(current, next)) return current;
+      saveAchievements(next);
+      return next;
+    });
+  }, [retroOutcome, state.run]);
 
   useEffect(() => {
     if (!hasRun) return;
@@ -50,70 +73,80 @@ export function App() {
   }, [hasRun]);
 
   let screen;
-  switch (state.screen.name) {
-    case "title":
-      screen = <TitleScreen dispatch={dispatch} />;
-      break;
-    case "squad":
-      screen = <SquadScreen dispatch={dispatch} run={state.run} />;
-      break;
-    case "map":
-      screen = (
-        <MapScreen
-          dispatch={dispatch}
-          run={state.run}
-          onInspectDeck={() =>
-            state.run && setCardCollection({ title: "Deck", cards: state.run.deck })
-          }
-        />
-      );
-      break;
-    case "cycle":
-      screen = (
-        <CycleScreen
-          dispatch={dispatch}
-          run={state.run}
-          onInspectCards={(title, cards, orderHidden) =>
-            setCardCollection({ title, cards, orderHidden })
-          }
-        />
-      );
-      break;
-    case "report":
-      screen = <ReportScreen dispatch={dispatch} report={state.screen.report} />;
-      break;
-    case "reward":
-      screen = <RewardScreen dispatch={dispatch} run={state.run} />;
-      break;
-    case "tool-reward":
-      screen = <ToolRewardScreen dispatch={dispatch} run={state.run} />;
-      break;
-    case "event":
-      screen = (
-        <EventScreen
-          dispatch={dispatch}
-          run={state.run}
-          onInspectDeck={() =>
-            state.run && setCardCollection({ title: "Deck", cards: state.run.deck })
-          }
-        />
-      );
-      break;
-    case "shop":
-      screen = (
-        <ShopScreen
-          dispatch={dispatch}
-          run={state.run}
-          onInspectDeck={() =>
-            state.run && setCardCollection({ title: "Deck", cards: state.run.deck })
-          }
-        />
-      );
-      break;
-    case "retro":
-      screen = <RetroScreen dispatch={dispatch} outcome={state.screen.outcome} />;
-      break;
-  }
+  if (achievementsOpen) {
+    screen = (
+      <AchievementsScreen
+        unlocked={unlockedAchievements}
+        onBack={() => setAchievementsOpen(false)}
+      />
+    );
+  } else
+    switch (state.screen.name) {
+      case "title":
+        screen = (
+          <TitleScreen dispatch={dispatch} onOpenAchievements={() => setAchievementsOpen(true)} />
+        );
+        break;
+      case "squad":
+        screen = <SquadScreen dispatch={dispatch} run={state.run} />;
+        break;
+      case "map":
+        screen = (
+          <MapScreen
+            dispatch={dispatch}
+            run={state.run}
+            onInspectDeck={() =>
+              state.run && setCardCollection({ title: "Deck", cards: state.run.deck })
+            }
+          />
+        );
+        break;
+      case "cycle":
+        screen = (
+          <CycleScreen
+            dispatch={dispatch}
+            run={state.run}
+            onInspectCards={(title, cards, orderHidden) =>
+              setCardCollection({ title, cards, orderHidden })
+            }
+          />
+        );
+        break;
+      case "report":
+        screen = <ReportScreen dispatch={dispatch} report={state.screen.report} />;
+        break;
+      case "reward":
+        screen = <RewardScreen dispatch={dispatch} run={state.run} />;
+        break;
+      case "tool-reward":
+        screen = <ToolRewardScreen dispatch={dispatch} run={state.run} />;
+        break;
+      case "event":
+        screen = (
+          <EventScreen
+            dispatch={dispatch}
+            run={state.run}
+            onInspectDeck={() =>
+              state.run && setCardCollection({ title: "Deck", cards: state.run.deck })
+            }
+          />
+        );
+        break;
+      case "shop":
+        screen = (
+          <ShopScreen
+            dispatch={dispatch}
+            run={state.run}
+            onInspectDeck={() =>
+              state.run && setCardCollection({ title: "Deck", cards: state.run.deck })
+            }
+          />
+        );
+        break;
+      case "retro":
+        screen = <RetroScreen dispatch={dispatch} outcome={state.screen.outcome} />;
+        break;
+    }
 
   return (
     <div className="app-shell">

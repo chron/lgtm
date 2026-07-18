@@ -19,6 +19,7 @@ import {
   resolveCardTarget,
 } from "../game/rules";
 import type { CardTarget } from "../game/rules";
+import { CombatTutorial } from "../tutorial/CombatTutorial";
 
 type CycleScreenProps = DispatchProps &
   RunProps & {
@@ -51,10 +52,8 @@ interface ReactionState extends CharacterCue {
 }
 
 export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps) {
-  const [selectedInstanceId, setSelectedInstanceId] = useState<string>();
   const [aim, setAim] = useState<AimState>();
   const aimRef = useRef<AimState | undefined>(undefined);
-  const suppressedClickRef = useRef<string | undefined>(undefined);
   const playCardRef = useRef<(instanceId: string, target: CardTarget) => void>(() => undefined);
   const reactionIdRef = useRef(0);
   const [ceremony, setCeremony] = useState<CeremonyState>();
@@ -63,14 +62,10 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
   const [reactingPassiveIds, setReactingPassiveIds] = useState<DeveloperId[]>([]);
   const cycle = run?.cycle;
   const maxDays = cycle ? getCycle(cycle.cycleId).maxDays : 0;
-  const activeInstanceId = aim?.instanceId ?? selectedInstanceId;
+  const activeInstanceId = aim?.instanceId;
   const selectedCard = cycle?.hand.find((instance) => instance.instanceId === activeInstanceId);
   const selectedOwnerId = selectedCard ? getCard(selectedCard.cardId).ownerId : undefined;
   const resolvingCard = reaction?.level === "hero";
-
-  useEffect(() => {
-    if (!selectedCard) setSelectedInstanceId(undefined);
-  }, [cycle?.day, selectedCard]);
 
   useEffect(() => {
     if (aim && !cycle?.hand.some((instance) => instance.instanceId === aim.instanceId)) {
@@ -99,9 +94,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
       updateAim(undefined);
       if (!target) return;
 
-      suppressedClickRef.current = currentAim.instanceId;
       playCardRef.current(currentAim.instanceId, target.target);
-      setSelectedInstanceId(undefined);
     }
 
     function handlePointerCancel() {
@@ -225,20 +218,12 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
     updateAim(undefined);
 
     if (target) {
-      suppressedClickRef.current = instanceId;
       commitCardPlay(instanceId, target.target);
-      setSelectedInstanceId(undefined);
     }
   }
 
   function cancelAim() {
     updateAim(undefined);
-  }
-
-  function playSelected(taskId: string, discipline?: Discipline) {
-    if (!selectedCard) return;
-    commitCardPlay(selectedCard.instanceId, { taskId, discipline });
-    setSelectedInstanceId(undefined);
   }
 
   function commitCardPlay(instanceId: string, target: CardTarget) {
@@ -256,17 +241,8 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
     }
   }
 
-  function chooseCard(instanceId: string) {
-    if (suppressedClickRef.current === instanceId) {
-      suppressedClickRef.current = undefined;
-      return;
-    }
-    setSelectedInstanceId((current) => (current === instanceId ? undefined : instanceId));
-  }
-
   function startEndDay() {
     if (!cycle) return;
-    setSelectedInstanceId(undefined);
     setReaction(undefined);
     setReactingPassiveIds([]);
     updateAim(undefined);
@@ -342,7 +318,6 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
   }
 
   function shipTask(taskId: string) {
-    setSelectedInstanceId(undefined);
     updateAim(undefined);
     dispatch({ type: "SHIP_TASK", taskId });
   }
@@ -362,7 +337,11 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
 
   return (
     <section className="screen cycle-screen" aria-label={definition.name}>
-      <header className="cycle-hud">
+      <header
+        className={`cycle-hud${squadTargetable ? " is-squad-targetable" : ""}${aim?.hoveredTargetKey === "squad" ? " is-aimed" : ""}`}
+        data-card-target={squadTargetable ? "squad" : undefined}
+        data-target-kind={squadTargetable ? "squad" : undefined}
+      >
         <RunVitals run={run} />
 
         <div className="squad-zone">
@@ -379,13 +358,8 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
               );
             })}
           </div>
-          <button
+          <div
             className={`squad-status-rack${squadTargetable ? " is-targetable" : ""}${aim?.hoveredTargetKey === "squad" ? " is-aimed" : ""}`}
-            type="button"
-            disabled={!squadTargetable}
-            onClick={() =>
-              selectedCard && commitCardPlay(selectedCard.instanceId, { kind: "squad" })
-            }
             data-card-target={squadTargetable ? "squad" : undefined}
             data-target-kind={squadTargetable ? "squad" : undefined}
             aria-label={squadTargetable ? squadResolution.label : "Squad status"}
@@ -398,7 +372,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
               </span>
             ))}
             {squadTargetable && <b>{squadResolution.label}</b>}
-          </button>
+          </div>
         </div>
 
         <div className="cycle-counters">
@@ -408,7 +382,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
               {cycle.day}/{definition.maxDays}
             </b>
           </span>
-          <span>
+          <span data-tutorial-anchor="focus">
             <small>Focus</small>
             <b>{cycle.focus}/3</b>
           </span>
@@ -416,8 +390,11 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
       </header>
 
       <div
-        className={`task-board task-board--${Math.min(cycle.tasks.length, 4)}`}
+        className={`task-board task-board--${Math.min(cycle.tasks.length, 4)}${squadTargetable ? " is-squad-targetable" : ""}${aim?.hoveredTargetKey === "squad" ? " is-aimed" : ""}`}
         aria-label={definition.kind === "incident" ? "Incident Tasks" : "Cycle Tasks"}
+        data-card-target={squadTargetable ? "squad" : undefined}
+        data-target-kind={squadTargetable ? "squad" : undefined}
+        data-tutorial-anchor="tasks"
       >
         {cycle.tasks.map((task) => {
           const taskDefinition = definition.tasks.find((candidate) => candidate.id === task.taskId);
@@ -432,7 +409,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
               hoveredTargetKey={aim?.hoveredTargetKey}
               resolving={ceremonyItem?.taskId === task.taskId}
               shippingDisabled={resolvingDay || resolvingCard}
-              onTarget={playSelected}
+              onTarget={() => undefined}
               onShip={shipTask}
             />
           );
@@ -454,7 +431,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
           <b>{cycle.drawPile.length}</b>
         </button>
 
-        <div className="hand" aria-label="Cards in hand">
+        <div className="hand" aria-label="Cards in hand" data-tutorial-anchor="hand">
           {cycle.hand.map((instance) => {
             const card = getCard(instance.cardId);
             const cost = effectiveCardCost(card, cycle, run.squad);
@@ -466,7 +443,6 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
                 effectiveCost={cost}
                 selected={activeInstanceId === instance.instanceId}
                 disabled={unplayable || resolvingDay || resolvingCard || cost > cycle.focus}
-                onSelect={() => chooseCard(instance.instanceId)}
                 onPointerDown={
                   unplayable ? undefined : (event) => beginAim(instance.instanceId, event)
                 }
@@ -487,6 +463,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
             <button
               className="button button--secondary cycle-action"
               type="button"
+              data-tutorial-anchor="end-day"
               disabled={resolvingDay || resolvingCard}
               onClick={startEndDay}
             >
@@ -537,6 +514,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
       )}
 
       {reaction && <CharacterReaction key={reaction.id} cue={reaction} />}
+      <CombatTutorial />
     </section>
   );
 }
