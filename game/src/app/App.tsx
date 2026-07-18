@@ -8,14 +8,30 @@ import { RetroScreen } from "../screens/RetroScreen";
 import { ShopScreen } from "../screens/ShopScreen";
 import { SquadScreen } from "../screens/SquadScreen";
 import { TitleScreen } from "../screens/TitleScreen";
+import { developers } from "../domain/content";
 
 export function App() {
   const [state, dispatch] = useReducer(gameReducer, initialGameState);
   const mainRef = useRef<HTMLElement>(null);
+  const hasRun = Boolean(state.run);
 
   useEffect(() => {
     mainRef.current?.focus();
   }, [state.screen.name]);
+
+  useEffect(() => {
+    if (!hasRun) return;
+    const preloaders = developers.flatMap((developer) =>
+      Object.values(developer.art).map((src) => {
+        const image = new Image();
+        image.src = src;
+        return image;
+      }),
+    );
+    return () => {
+      for (const image of preloaders) image.src = "";
+    };
+  }, [hasRun]);
 
   let screen;
   switch (state.screen.name) {
@@ -35,7 +51,7 @@ export function App() {
       screen = <ReportScreen dispatch={dispatch} report={state.screen.report} />;
       break;
     case "event":
-      screen = <EventScreen dispatch={dispatch} />;
+      screen = <EventScreen dispatch={dispatch} run={state.run} />;
       break;
     case "shop":
       screen = <ShopScreen dispatch={dispatch} run={state.run} />;
@@ -50,15 +66,18 @@ export function App() {
       <a className="skip-link" href="#main">
         Skip to game
       </a>
-      <header className="topbar">
-        <span className="wordmark">BACKLOG</span>
-        {state.run && state.screen.name !== "title" && (
-          <div className="run-stats" aria-label="Run status">
-            <span>Morale {state.run.morale}</span>
-            <span>${state.run.credits}</span>
-          </div>
-        )}
-      </header>
+      {state.run && !["title", "squad", "cycle"].includes(state.screen.name) && (
+        <div className="run-vitals run-vitals--floating" aria-label="Run status">
+          <span>
+            <small>Morale</small>
+            <b>{state.run.morale}</b>
+          </span>
+          <span>
+            <small>Credits</small>
+            <b>${state.run.credits}</b>
+          </span>
+        </div>
+      )}
       <main id="main" ref={mainRef} tabIndex={-1}>
         {screen}
       </main>

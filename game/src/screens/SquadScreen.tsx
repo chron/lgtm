@@ -1,5 +1,5 @@
 import type { DispatchProps, RunProps } from "../app/types";
-import { CharacterToken } from "../components/CharacterToken";
+import { CharacterPortrait } from "../components/CharacterPortrait";
 import { developers } from "../domain/content";
 
 type SquadScreenProps = DispatchProps & RunProps;
@@ -20,6 +20,7 @@ export function SquadScreen({ dispatch, run }: SquadScreenProps) {
         {developers.map((developer) => {
           const isSelected = selected.includes(developer.id);
           const isUnavailable = !isSelected && selected.length === 3;
+          const selectedIndex = selected.indexOf(developer.id);
 
           return (
             <button
@@ -36,12 +37,16 @@ export function SquadScreen({ dispatch, run }: SquadScreenProps) {
                 })
               }
             >
-              <CharacterToken developerId={developer.id} decorative />
-              <span>
+              <span className="developer-pick__stage" aria-hidden="true">
+                <CharacterPortrait developerId={developer.id} mode="selection" decorative eager />
+              </span>
+              <span className="developer-pick__copy">
                 <strong>{developer.name}</strong>
                 <small>{developer.role}</small>
+                <b>{developer.passiveName}</b>
+                <span>{developer.passiveRules}</span>
               </span>
-              <em>{isSelected ? "IN" : "+"}</em>
+              <em aria-hidden="true">{isSelected ? selectedIndex + 1 : "+"}</em>
             </button>
           );
         })}

@@ -1,5 +1,6 @@
 import { getDeveloper } from "../domain/content";
 import type { DeveloperId } from "../domain/models";
+import { CharacterPortrait } from "./CharacterPortrait";
 
 interface CharacterTokenProps {
   developerId: DeveloperId;
@@ -17,7 +18,7 @@ export function CharacterToken({ developerId, compact, decorative }: CharacterTo
       aria-label={decorative ? undefined : developer.name}
       aria-hidden={decorative || undefined}
     >
-      {developer.name.slice(0, 1)}
+      <CharacterPortrait developerId={developerId} mode="token" decorative />
     </span>
   );
 }

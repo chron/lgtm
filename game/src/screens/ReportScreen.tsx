@@ -18,16 +18,22 @@ export function ReportScreen({ dispatch, report }: ReportScreenProps) {
 
       <div className="report-grid">
         <div className="report-stat report-stat--yellow">
-          <strong>{report.shippedProgress}</strong>
-          <span>Work</span>
+          <div className="report-stat__content">
+            <strong>{report.shippedProgress}</strong>
+            <span>Work</span>
+          </div>
         </div>
         <div className="report-stat report-stat--pink">
-          <strong>{report.defects}</strong>
-          <span>Defects</span>
+          <div className="report-stat__content">
+            <strong>{report.defects}</strong>
+            <span>Defects</span>
+          </div>
         </div>
         <div className="report-stat report-stat--mint">
-          <strong>{report.moraleDelta}</strong>
-          <span>Morale</span>
+          <div className="report-stat__content">
+            <strong>{report.moraleDelta}</strong>
+            <span>Morale</span>
+          </div>
         </div>
       </div>
 

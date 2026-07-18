@@ -47,7 +47,7 @@ export function requirementProgress(requirement: RequirementState): number {
   return requirement.verified + requirement.unverified;
 }
 
-export function remainingWork(requirement: RequirementState): number {
+function remainingWork(requirement: RequirementState): number {
   return Math.max(0, requirement.target - requirementProgress(requirement));
 }
 
@@ -59,7 +59,7 @@ export function isCycleReady(cycle: CycleState): boolean {
   return cycle.tasks.every(isTaskReady);
 }
 
-export function taskUnverifiedWork(task: TaskState): number {
+function taskUnverifiedWork(task: TaskState): number {
   return task.requirements.reduce((total, requirement) => total + requirement.unverified, 0);
 }
 

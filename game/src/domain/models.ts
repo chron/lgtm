@@ -1,5 +1,9 @@
 export type DeveloperId = "paul" | "odin" | "irene" | "madi";
 
+export type CharacterMood = "idle" | "thinking" | "success";
+
+type CharacterArtwork = Readonly<Record<CharacterMood, string>>;
+
 export type Discipline = "frontend" | "backend" | "infra";
 export type WorkKind = "verified" | "unverified";
 type CardKind = "work" | "review" | "status";
@@ -20,6 +24,7 @@ export interface Developer {
   passiveRules: string;
   startingCardId: string;
   accent: string;
+  art: CharacterArtwork;
 }
 
 export interface CardDefinition {
@@ -135,4 +140,5 @@ export interface MapNode {
   kind: MapNodeKind;
   title: string;
   cycleId?: string;
+  predecessorNodeIds: readonly string[];
 }

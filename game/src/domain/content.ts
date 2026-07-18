@@ -6,6 +6,18 @@ import type {
   IntentDefinition,
   MapNode,
 } from "./models";
+import ireneFixed from "../assets/characters/irene-fixed-v1.webp";
+import ireneMaster from "../assets/characters/irene-master-v1.webp";
+import ireneThinking from "../assets/characters/irene-thinking-v1.webp";
+import madiDelighted from "../assets/characters/madi-delighted-v1.webp";
+import madiMaster from "../assets/characters/madi-master-v1.webp";
+import madiProcessing from "../assets/characters/madi-processing-v1.webp";
+import odinMaster from "../assets/characters/odin-master-v1.webp";
+import odinSatisfied from "../assets/characters/odin-satisfied-v1.webp";
+import odinThinking from "../assets/characters/odin-thinking-v1.webp";
+import paulMaster from "../assets/characters/paul-master-v1.webp";
+import paulShipped from "../assets/characters/paul-shipped-v1.webp";
+import paulThinking from "../assets/characters/paul-thinking-v1.webp";
 
 export const developers: readonly Developer[] = [
   {
@@ -16,6 +28,11 @@ export const developers: readonly Developer[] = [
     passiveRules: "The first card each Day costs 1 less.",
     startingCardId: "vibe-code",
     accent: "oklch(0.68 0.19 31)",
+    art: {
+      idle: paulMaster,
+      thinking: paulThinking,
+      success: paulShipped,
+    },
   },
   {
     id: "odin",
@@ -25,6 +42,11 @@ export const developers: readonly Developer[] = [
     passiveRules: "The first Review each Day verifies 1 extra Work.",
     startingCardId: "design-review",
     accent: "oklch(0.55 0.19 292)",
+    art: {
+      idle: odinMaster,
+      thinking: odinThinking,
+      success: odinSatisfied,
+    },
   },
   {
     id: "irene",
@@ -34,6 +56,11 @@ export const developers: readonly Developer[] = [
     passiveRules: "The first Verified Work card each Day adds 1 extra Work.",
     startingCardId: "already-fixed",
     accent: "oklch(0.61 0.14 167)",
+    art: {
+      idle: ireneMaster,
+      thinking: ireneThinking,
+      success: ireneFixed,
+    },
   },
   {
     id: "madi",
@@ -43,6 +70,11 @@ export const developers: readonly Developer[] = [
     passiveRules: "The first AI-assisted Work card each Day adds 1 extra Work.",
     startingCardId: "agent-swarm",
     accent: "oklch(0.64 0.2 343)",
+    art: {
+      idle: madiMaster,
+      thinking: madiProcessing,
+      success: madiDelighted,
+    },
   },
 ] as const;
 
@@ -220,11 +252,34 @@ export const mapNodes: readonly MapNode[] = [
     kind: "cycle",
     title: "Presence Upgrade",
     cycleId: "presence-upgrade",
+    predecessorNodeIds: [],
   },
-  { id: "event-1", kind: "event", title: "Scope Creep" },
-  { id: "shop-1", kind: "shop", title: "Tool Budget" },
-  { id: "retro-1", kind: "retro", title: "Release" },
+  {
+    id: "event-1",
+    kind: "event",
+    title: "Scope Creep",
+    predecessorNodeIds: ["cycle-1"],
+  },
+  {
+    id: "shop-1",
+    kind: "shop",
+    title: "Tool Budget",
+    predecessorNodeIds: ["event-1"],
+  },
+  {
+    id: "retro-1",
+    kind: "retro",
+    title: "Release",
+    predecessorNodeIds: ["shop-1"],
+  },
 ] as const;
+
+export function isMapNodeAvailable(node: MapNode, completedNodeIds: readonly string[]): boolean {
+  return (
+    node.predecessorNodeIds.length === 0 ||
+    node.predecessorNodeIds.some((nodeId) => completedNodeIds.includes(nodeId))
+  );
+}
 
 export function getDeveloper(id: Developer["id"]): Developer {
   const developer = developers.find((candidate) => candidate.id === id);

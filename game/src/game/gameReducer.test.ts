@@ -29,6 +29,15 @@ function playCard(
   });
 }
 
+function startMap(completedNodeIds: readonly string[] = []): GameState {
+  const state = gameReducer(initialGameState, { type: "START_RUN" });
+  if (!state.run) throw new Error("Expected a run");
+  return {
+    screen: { name: "map" },
+    run: { ...state.run, completedNodeIds: [...completedNodeIds] },
+  };
+}
+
 describe("gameReducer", () => {
   it("builds a 12-card deck from three character cards and nine Basics", () => {
     const state = startCycle();
@@ -143,14 +152,46 @@ describe("gameReducer", () => {
     expect(state.run?.squad).toEqual(["paul", "odin", "irene"]);
   });
 
+  it("keeps locked map nodes unavailable", () => {
+    const state = gameReducer(startMap(), { type: "VISIT_NODE", nodeId: "event-1" });
+    expect(state.screen.name).toBe("map");
+    expect(state.run?.completedNodeIds).toEqual([]);
+  });
+
   it.each([
-    ["event-1", "event"],
-    ["shop-1", "shop"],
-    ["retro-1", "retro"],
-  ] as const)("routes %s to the %s placeholder", (nodeId, screenName) => {
-    let state = gameReducer(initialGameState, { type: "START_RUN" });
-    state = { ...state, screen: { name: "map" } };
+    ["event-1", "event", ["cycle-1"]],
+    ["shop-1", "shop", ["event-1"]],
+    ["retro-1", "retro", ["shop-1"]],
+  ] as const)("routes %s to the %s placeholder", (nodeId, screenName, predecessors) => {
+    let state = startMap(predecessors);
     state = gameReducer(state, { type: "VISIT_NODE", nodeId });
     expect(state.screen.name).toBe(screenName);
+  });
+
+  it("makes the Scope Creep event choices mechanically distinct", () => {
+    let pushBack = startMap(["cycle-1"]);
+    if (!pushBack.run) throw new Error("Expected a run");
+    pushBack = { ...pushBack, run: { ...pushBack.run, morale: 7 } };
+    pushBack = gameReducer(pushBack, { type: "VISIT_NODE", nodeId: "event-1" });
+    pushBack = gameReducer(pushBack, { type: "CHOOSE_EVENT", choice: "push-back" });
+    expect(pushBack.run).toMatchObject({ morale: 9, credits: 40 });
+    expect(pushBack.run?.completedNodeIds).toContain("event-1");
+
+    let cappedMorale = startMap(["cycle-1"]);
+    if (!cappedMorale.run) throw new Error("Expected a run");
+    cappedMorale = { ...cappedMorale, run: { ...cappedMorale.run, morale: 9 } };
+    cappedMorale = gameReducer(cappedMorale, { type: "VISIT_NODE", nodeId: "event-1" });
+    cappedMorale = gameReducer(cappedMorale, {
+      type: "CHOOSE_EVENT",
+      choice: "push-back",
+    });
+    expect(cappedMorale.run?.morale).toBe(10);
+
+    let sureEasy = startMap(["cycle-1"]);
+    sureEasy = gameReducer(sureEasy, { type: "VISIT_NODE", nodeId: "event-1" });
+    sureEasy = gameReducer(sureEasy, { type: "CHOOSE_EVENT", choice: "sure-easy" });
+    expect(sureEasy.run).toMatchObject({ morale: 10, credits: 75 });
+    expect(sureEasy.run?.deck.at(-1)?.cardId).toBe("tech-debt");
+    expect(sureEasy.run?.completedNodeIds).toContain("event-1");
   });
 });

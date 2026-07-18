@@ -2,6 +2,7 @@ import {
   formatIntent,
   getCycle,
   getDeveloper,
+  isMapNodeAvailable,
   mapNodes,
   starterBasicCardIds,
 } from "../domain/content";
@@ -58,6 +59,7 @@ export type GameAction =
   | { type: "END_DAY" }
   | { type: "SHIP_CYCLE" }
   | { type: "CONTINUE_REPORT" }
+  | { type: "CHOOSE_EVENT"; choice: "push-back" | "sure-easy" }
   | { type: "LEAVE_NODE" }
   | { type: "RETURN_TITLE" };
 
@@ -368,7 +370,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case "VISIT_NODE": {
       if (state.screen.name !== "map" || !state.run) return state;
       const node = mapNodes.find((candidate) => candidate.id === action.nodeId);
-      if (!node || state.run.completedNodeIds.includes(node.id)) return state;
+      if (
+        !node ||
+        state.run.completedNodeIds.includes(node.id) ||
+        !isMapNodeAvailable(node, state.run.completedNodeIds)
+      ) {
+        return state;
+      }
 
       if (node.kind === "cycle" && node.cycleId) {
         const cycle = createCycleState(state.run, node.id, node.cycleId);
@@ -448,8 +456,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case "CONTINUE_REPORT":
       return state.screen.name === "report" ? { ...state, screen: { name: "map" } } : state;
 
+    case "CHOOSE_EVENT": {
+      if (state.screen.name !== "event" || !state.run) return state;
+      const completedRun = completeNode(state.run, state.screen.nodeId);
+      const run =
+        action.choice === "push-back"
+          ? { ...completedRun, morale: Math.min(10, completedRun.morale + 2) }
+          : addTechDebt({ ...completedRun, credits: completedRun.credits + 35 });
+      return { screen: { name: "map" }, run };
+    }
+
     case "LEAVE_NODE": {
-      if ((state.screen.name !== "event" && state.screen.name !== "shop") || !state.run) {
+      if (state.screen.name !== "shop" || !state.run) {
         return state;
       }
       return {
