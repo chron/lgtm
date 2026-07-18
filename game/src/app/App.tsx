@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import {
   haveSameAchievements,
   loadAchievements,
@@ -22,6 +22,8 @@ import { TitleScreen } from "../screens/TitleScreen";
 import { ToolRewardScreen } from "../screens/ToolRewardScreen";
 import { developers } from "../domain/content";
 import type { CardInstance } from "../domain/models";
+import { logGameAction } from "../game/actionLog";
+import type { GameAction } from "../game/gameReducer";
 
 interface OpenCardCollection {
   cards: readonly CardInstance[];
@@ -30,7 +32,16 @@ interface OpenCardCollection {
 }
 
 export function App() {
-  const [state, dispatch] = useReducer(gameReducer, initialGameState);
+  const [state, reducerDispatch] = useReducer(gameReducer, initialGameState);
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const dispatch = useCallback((action: GameAction) => {
+    const stateBefore = stateRef.current;
+    const stateAfter = gameReducer(stateBefore, action);
+    stateRef.current = stateAfter;
+    reducerDispatch(action);
+    logGameAction(action, stateBefore, stateAfter);
+  }, []);
   const [cardCollection, setCardCollection] = useState<OpenCardCollection>();
   const [achievementsOpen, setAchievementsOpen] = useState(false);
   const [unlockedAchievements, setUnlockedAchievements] = useState<readonly AchievementId[]>(() =>

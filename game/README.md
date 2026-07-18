@@ -20,6 +20,18 @@ bun run build
 
 `check` runs TypeScript, Oxlint, Oxfmt, Knip, and the Vitest suite.
 
+## Local run logs
+
+While the Vite dev server is running, every reducer action is written to an
+append-only JSONL file in `telemetry/run-<run-id>.jsonl`. A fresh file is
+created for every `START_RUN`; entries include the action, sequence number,
+screen transition, whether the action changed state, and the complete resulting
+game state. The `telemetry/` directory is local-only and ignored by Git.
+
+The client batches writes briefly and flushes when the tab is hidden or closed.
+The logger is best-effort and development-only, so a missing sink never affects
+gameplay or production builds.
+
 ## Current flow
 
 `Title → Squad → Map → Cycle → Report → Map`
