@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { RunVitals } from "../components/RunVitals";
+import { getCycle, getMapNodeCycleId, mapNodes } from "../domain/content";
 import { gameReducer, initialGameState } from "../game/gameReducer";
 import { EventScreen } from "./EventScreen";
 import { MapScreen } from "./MapScreen";
@@ -55,6 +56,10 @@ describe("EventScreen", () => {
     expect(markup).not.toContain("One Tiny Thing");
     expect(markup).not.toContain("Ship It Friday");
     expect(markup).toContain("Event, Locked");
+    expect(markup).toContain("Tool + Card");
+    expect(markup).toContain("Card");
+    expect(markup).not.toContain("Production Incident");
+    expect(markup).not.toContain("Upgrade Every Dependency");
   });
 
   it("renders a secondary selection without leaving the Event", () => {
@@ -97,8 +102,12 @@ describe("EventScreen", () => {
     const markup = renderToStaticMarkup(
       <MapScreen dispatch={() => undefined} run={run} onInspectDeck={() => undefined} />,
     );
+    const node = mapNodes.find((candidate) => candidate.id === "cycle-2");
+    if (!node) throw new Error("Expected cycle-2");
+    const cycleId = getMapNodeCycleId(node, run.seed);
+    if (!cycleId) throw new Error("Expected a seeded Cycle");
 
-    expect(markup).toContain("Release Candidate");
+    expect(markup).toContain(getCycle(cycleId).name);
     expect(markup).not.toContain("One Tiny Thing");
   });
 

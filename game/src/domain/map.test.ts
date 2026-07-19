@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isMapNodeAvailable, mapEdges, mapNodes } from "./content";
+import { getCycle, getMapNodeCycleId, isMapNodeAvailable, mapEdges, mapNodes } from "./content";
 
 describe("authored act map", () => {
   it("has valid forward edges and explicit node coordinates", () => {
@@ -30,10 +30,13 @@ describe("authored act map", () => {
     expect(availableFrom(null, [])).toEqual(["cycle-1"]);
     expect(availableFrom("cycle-1", ["cycle-1"])).toEqual(["event-1", "cycle-optional-1"]);
     expect(availableFrom("event-1", ["cycle-1", "event-1"])).toEqual(["cycle-2"]);
-    expect(availableFrom("cycle-2", ["cycle-1", "event-1", "cycle-2"])).toEqual(["incident-1"]);
+    expect(availableFrom("cycle-2", ["cycle-1", "event-1", "cycle-2"])).toEqual([
+      "incident-1",
+      "cycle-safe-1",
+    ]);
   });
 
-  it("builds every route from seven mandatory fights plus up to two optional fights", () => {
+  it("builds every route from seven fights plus up to two optional fights", () => {
     const nodesById = new Map(mapNodes.map((node) => [node.id, node]));
     const outgoing = new Map<string, string[]>();
     for (const edge of mapEdges) {
@@ -51,7 +54,7 @@ describe("authored act map", () => {
     };
     visit("cycle-1", []);
 
-    expect(routes).toHaveLength(16);
+    expect(routes).toHaveLength(64);
     const fightCounts = routes.map(
       (route) =>
         route.filter((nodeId) => {
@@ -64,10 +67,35 @@ describe("authored act map", () => {
     expect(new Set(fightCounts)).toEqual(new Set([7, 8, 9]));
 
     for (const route of routes) {
-      expect(route.filter((nodeId) => nodesById.get(nodeId)?.kind === "incident")).toHaveLength(2);
+      const incidentCount = route.filter(
+        (nodeId) => nodesById.get(nodeId)?.kind === "incident",
+      ).length;
+      expect(incidentCount).toBeGreaterThanOrEqual(0);
+      expect(incidentCount).toBeLessThanOrEqual(2);
+      expect(
+        route.filter((nodeId) => ["incident-1", "cycle-safe-1"].includes(nodeId)),
+      ).toHaveLength(1);
+      expect(
+        route.filter((nodeId) => ["incident-2", "cycle-safe-2"].includes(nodeId)),
+      ).toHaveLength(1);
       expect(route.filter((nodeId) => nodesById.get(nodeId)?.kind === "boss")).toEqual([
         "final-release",
       ]);
+    }
+  });
+
+  it("resolves seeded encounter slots without exposing duplicate Cycles", () => {
+    for (const seed of [1, 42, 0x5eed1234]) {
+      const cycleIds = mapNodes
+        .filter((node) => node.kind === "cycle")
+        .map((node) => getMapNodeCycleId(node, seed));
+      const repeated = mapNodes
+        .filter((node) => node.kind === "cycle")
+        .map((node) => getMapNodeCycleId(node, seed));
+
+      expect(cycleIds.every((cycleId) => cycleId && getCycle(cycleId))).toBe(true);
+      expect([...new Set(cycleIds)]).toHaveLength(cycleIds.length);
+      expect(repeated).toEqual(cycleIds);
     }
   });
 });

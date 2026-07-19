@@ -3,6 +3,7 @@ import type { DeveloperId } from "../domain/models";
 import { gameReducer, initialGameState } from "./gameReducer";
 import type { GameState } from "./gameReducer";
 import { getCardPresentation } from "./presentation";
+import { useTestCycle } from "./testSupport";
 
 function startCycle(squad: readonly DeveloperId[]): GameState {
   let state = gameReducer(initialGameState, { type: "START_RUN" });
@@ -10,7 +11,7 @@ function startCycle(squad: readonly DeveloperId[]): GameState {
     state = gameReducer(state, { type: "TOGGLE_DEVELOPER", developerId });
   }
   state = gameReducer(state, { type: "CONFIRM_SQUAD" });
-  return gameReducer(state, { type: "VISIT_NODE", nodeId: "cycle-1" });
+  return useTestCycle(gameReducer(state, { type: "VISIT_NODE", nodeId: "cycle-1" }), "quick-win");
 }
 
 describe("getCardPresentation", () => {

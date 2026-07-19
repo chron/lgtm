@@ -393,6 +393,16 @@ export interface CycleReport {
 
 export type MapNodeKind = "cycle" | "incident" | "boss" | "event" | "shop" | "retro";
 
+type EncounterLineupSlot =
+  | "opener"
+  | "early"
+  | "tall"
+  | "wide"
+  | "mid"
+  | "late"
+  | "safe-incident-1"
+  | "safe-incident-2";
+
 interface MapPosition {
   x: number;
   y: number;
@@ -403,6 +413,7 @@ export interface MapNode {
   kind: MapNodeKind;
   title: string;
   cycleId?: string;
+  encounterSlot?: EncounterLineupSlot;
   position: MapPosition;
 }
 

@@ -5,6 +5,7 @@ import {
   getCardForInstance,
   getCycle,
   getDeveloper,
+  getMapNodeCycleId,
   isMapNodeAvailable,
   mapNodes,
   squadRewardCardIds,
@@ -956,18 +957,16 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
 
       const runAtNode = { ...state.run, currentNodeId: node.id };
+      const cycleId = getMapNodeCycleId(node, runAtNode.seed);
 
-      if (
-        (node.kind === "cycle" || node.kind === "incident" || node.kind === "boss") &&
-        node.cycleId
-      ) {
+      if ((node.kind === "cycle" || node.kind === "incident" || node.kind === "boss") && cycleId) {
         if (node.kind === "boss") {
           const boss = getBossDefinition(runAtNode.selectedBossId);
-          const baseCycle = createCycleState(runAtNode, node.id, node.cycleId, boss.project);
+          const baseCycle = createCycleState(runAtNode, node.id, cycleId, boss.project);
           const bossCycle: CycleState = { ...baseCycle, boss: createBossEncounter(boss) };
           const opened = resolveOpeningBossEffects({ ...runAtNode, cycle: bossCycle }, bossCycle);
           return {
-            screen: { name: "cycle", nodeId: node.id, cycleId: node.cycleId },
+            screen: { name: "cycle", nodeId: node.id, cycleId },
             run: {
               ...opened.run,
               cycle: opened.cycle,
@@ -976,9 +975,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             },
           };
         }
-        const cycle = createCycleState(runAtNode, node.id, node.cycleId);
+        const cycle = createCycleState(runAtNode, node.id, cycleId);
         return {
-          screen: { name: "cycle", nodeId: node.id, cycleId: node.cycleId },
+          screen: { name: "cycle", nodeId: node.id, cycleId },
           run: { ...runAtNode, cycle, nextCycleModifiers: [], pendingBounties: [] },
         };
       }

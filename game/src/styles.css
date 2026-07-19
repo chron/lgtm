@@ -745,6 +745,12 @@ main:focus {
   background: var(--panel);
 }
 
+.map-node > small em {
+  font-family: var(--display);
+  font-style: normal;
+  font-weight: 900;
+}
+
 .map-node--event .map-node__glyph {
   background: var(--pink);
 }

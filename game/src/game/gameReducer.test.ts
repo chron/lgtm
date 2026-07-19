@@ -8,6 +8,7 @@ import {
   tools,
 } from "../domain/content";
 import { getEvent } from "../domain/events";
+import { selectEncounterLineup } from "../domain/encounters";
 import type { DeveloperId, Discipline, ToolId } from "../domain/models";
 import { gameReducer, initialGameState } from "./gameReducer";
 import type { GameState } from "./gameReducer";
@@ -64,7 +65,16 @@ function startCycle(
       completedNodeIds: [...path.completedNodeIds],
     },
   };
-  return gameReducer(state, { type: "VISIT_NODE", nodeId });
+  const entered = gameReducer(state, { type: "VISIT_NODE", nodeId });
+  const legacyCycleId =
+    nodeId === "cycle-1"
+      ? "quick-win"
+      : nodeId === "cycle-2"
+        ? "presence-upgrade"
+        : nodeId === "cycle-3"
+          ? "growth-spurt"
+          : undefined;
+  return legacyCycleId ? useAuthoredCycle(entered, legacyCycleId) : entered;
 }
 
 function shipReadyCycle(seed = 0x5eed1234): GameState {
@@ -1279,6 +1289,37 @@ describe("gameReducer", () => {
     const state = gameReducer(startMap(), { type: "VISIT_NODE", nodeId: "event-1" });
     expect(state.screen.name).toBe("map");
     expect(state.run?.completedNodeIds).toEqual([]);
+  });
+
+  it("opens the seeded encounter assigned to each map slot", () => {
+    const seed = 4242;
+    const lineup = selectEncounterLineup(seed);
+    const opener = gameReducer(startMap([], seed), { type: "VISIT_NODE", nodeId: "cycle-1" });
+    const safeElite = gameReducer(startMap(["cycle-1", "event-1", "cycle-2"], seed), {
+      type: "VISIT_NODE",
+      nodeId: "cycle-safe-1",
+    });
+
+    expect(opener.run?.cycle?.cycleId).toBe(lineup.opener);
+    expect(safeElite.run?.cycle?.cycleId).toBe(lineup.safeIncidents[0]);
+  });
+
+  it("locks the unchosen Incident after taking its safer Cycle", () => {
+    const safeElite = gameReducer(startMap(["cycle-1", "event-1", "cycle-2"]), {
+      type: "VISIT_NODE",
+      nodeId: "cycle-safe-1",
+    });
+    if (!safeElite.run) throw new Error("Expected a run");
+    const returned = {
+      screen: { name: "map" as const },
+      run: {
+        ...safeElite.run,
+        cycle: null,
+        completedNodeIds: [...safeElite.run.completedNodeIds, "cycle-safe-1"],
+      },
+    };
+
+    expect(gameReducer(returned, { type: "VISIT_NODE", nodeId: "incident-1" })).toBe(returned);
   });
 
   it.each([

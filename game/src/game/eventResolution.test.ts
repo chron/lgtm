@@ -223,7 +223,7 @@ describe("Event outcome engine", () => {
       },
       {
         kind: "next-cycle-modifier",
-        modifier: { kind: "intent-protection", intentKind: "crunch", count: 1 },
+        modifier: { kind: "intent-protection", intentKind: "scope", count: 1 },
       },
       {
         kind: "bounty-task",
@@ -243,7 +243,7 @@ describe("Event outcome engine", () => {
     expect(state.run?.cycle?.focus).toBe(5);
     expect(state.run?.cycle?.hand).toHaveLength(7);
     expect(state.run?.cycle?.hand.some((card) => card.cardId === "distraction")).toBe(true);
-    expect(state.run?.cycle?.intentProtections.crunch).toBe(1);
+    expect(state.run?.cycle?.intentProtections.scope).toBe(1);
     expect(state.run?.cycle?.tasks).toContainEqual(
       expect.objectContaining({ taskId: "customer-pain", role: "bounty" }),
     );
@@ -288,8 +288,8 @@ describe("Event outcome engine", () => {
 
     const protectedDay = gameReducer(state, { type: "END_DAY" });
     expect(protectedDay.run?.morale).toBe(10);
-    expect(protectedDay.run?.cycle?.intentProtections.crunch).toBe(0);
-    expect(protectedDay.run?.cycle?.resolvedIntents).toContain("Protected · Crunch · −2 Morale");
+    expect(protectedDay.run?.cycle?.intentProtections.scope).toBe(0);
+    expect(protectedDay.run?.cycle?.resolvedIntents).toContain("Protected · Scope · Frontend +2");
   });
 
   it("queues visible reward and map modifiers, then consumes reward modifiers once", () => {

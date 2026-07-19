@@ -9,7 +9,7 @@ import type {
   MapNode,
   ToolDefinition,
 } from "./models";
-import { authoredCycleCatalogue } from "./encounters";
+import { authoredCycleCatalogue, selectEncounterLineup } from "./encounters";
 import {
   characterGeneratedCards,
   characterRewardCards,
@@ -630,8 +630,8 @@ export const mapNodes: readonly MapNode[] = [
   {
     id: "cycle-1",
     kind: "cycle",
-    title: "Status Refresh",
-    cycleId: "quick-win",
+    title: "Cycle",
+    encounterSlot: "opener",
     position: { x: 50, y: 4 },
   },
   {
@@ -643,15 +643,15 @@ export const mapNodes: readonly MapNode[] = [
   {
     id: "cycle-optional-1",
     kind: "cycle",
-    title: "Quick Detour",
-    cycleId: "quick-win",
+    title: "Cycle",
+    encounterSlot: "early",
     position: { x: 74, y: 12 },
   },
   {
     id: "cycle-2",
     kind: "cycle",
-    title: "Release Candidate",
-    cycleId: "presence-upgrade",
+    title: "Cycle",
+    encounterSlot: "tall",
     position: { x: 50, y: 20 },
   },
   {
@@ -659,7 +659,14 @@ export const mapNodes: readonly MapNode[] = [
     kind: "incident",
     title: "Production Incident",
     cycleId: "production-incident",
-    position: { x: 50, y: 28 },
+    position: { x: 26, y: 28 },
+  },
+  {
+    id: "cycle-safe-1",
+    kind: "cycle",
+    title: "Cycle",
+    encounterSlot: "safe-incident-1",
+    position: { x: 74, y: 28 },
   },
   {
     id: "shop-1",
@@ -676,8 +683,8 @@ export const mapNodes: readonly MapNode[] = [
   {
     id: "cycle-3",
     kind: "cycle",
-    title: "Growth Spurt",
-    cycleId: "growth-spurt",
+    title: "Cycle",
+    encounterSlot: "wide",
     position: { x: 50, y: 45 },
   },
   {
@@ -689,15 +696,15 @@ export const mapNodes: readonly MapNode[] = [
   {
     id: "cycle-optional-2",
     kind: "cycle",
-    title: "Stretch Goal",
-    cycleId: "growth-spurt",
+    title: "Cycle",
+    encounterSlot: "mid",
     position: { x: 74, y: 54 },
   },
   {
     id: "cycle-4",
     kind: "cycle",
-    title: "Hardening Pass",
-    cycleId: "growth-spurt",
+    title: "Cycle",
+    encounterSlot: "late",
     position: { x: 50, y: 63 },
   },
   {
@@ -705,7 +712,14 @@ export const mapNodes: readonly MapNode[] = [
     kind: "incident",
     title: "Everything Is Fine",
     cycleId: "cascade-incident",
-    position: { x: 50, y: 72 },
+    position: { x: 26, y: 72 },
+  },
+  {
+    id: "cycle-safe-2",
+    kind: "cycle",
+    title: "Cycle",
+    encounterSlot: "safe-incident-2",
+    position: { x: 74, y: 72 },
   },
   {
     id: "shop-2",
@@ -740,8 +754,11 @@ export const mapEdges: readonly MapEdge[] = [
   { fromNodeId: "event-1", toNodeId: "cycle-2" },
   { fromNodeId: "cycle-optional-1", toNodeId: "cycle-2" },
   { fromNodeId: "cycle-2", toNodeId: "incident-1" },
+  { fromNodeId: "cycle-2", toNodeId: "cycle-safe-1" },
   { fromNodeId: "incident-1", toNodeId: "shop-1" },
   { fromNodeId: "incident-1", toNodeId: "event-2" },
+  { fromNodeId: "cycle-safe-1", toNodeId: "shop-1" },
+  { fromNodeId: "cycle-safe-1", toNodeId: "event-2" },
   { fromNodeId: "shop-1", toNodeId: "cycle-3" },
   { fromNodeId: "event-2", toNodeId: "cycle-3" },
   { fromNodeId: "cycle-3", toNodeId: "event-3" },
@@ -749,12 +766,24 @@ export const mapEdges: readonly MapEdge[] = [
   { fromNodeId: "event-3", toNodeId: "cycle-4" },
   { fromNodeId: "cycle-optional-2", toNodeId: "cycle-4" },
   { fromNodeId: "cycle-4", toNodeId: "incident-2" },
+  { fromNodeId: "cycle-4", toNodeId: "cycle-safe-2" },
   { fromNodeId: "incident-2", toNodeId: "shop-2" },
   { fromNodeId: "incident-2", toNodeId: "event-4" },
+  { fromNodeId: "cycle-safe-2", toNodeId: "shop-2" },
+  { fromNodeId: "cycle-safe-2", toNodeId: "event-4" },
   { fromNodeId: "shop-2", toNodeId: "final-release" },
   { fromNodeId: "event-4", toNodeId: "final-release" },
   { fromNodeId: "final-release", toNodeId: "retro-1" },
 ] as const;
+
+export function getMapNodeCycleId(node: MapNode, seed: number): string | undefined {
+  if (!node.encounterSlot) return node.cycleId;
+
+  const lineup = selectEncounterLineup(seed);
+  if (node.encounterSlot === "safe-incident-1") return lineup.safeIncidents[0];
+  if (node.encounterSlot === "safe-incident-2") return lineup.safeIncidents[1];
+  return lineup[node.encounterSlot];
+}
 
 export function isMapNodeAvailable(
   node: MapNode,

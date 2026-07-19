@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { CardInstance, DeveloperId, ToolId } from "../domain/models";
 import { gameReducer, initialGameState, type GameState } from "./gameReducer";
+import { useTestCycle } from "./testSupport";
 
 function startCycle(
   nodeId: "cycle-1" | "cycle-2" = "cycle-1",
@@ -22,7 +23,8 @@ function startCycle(
       },
     };
   }
-  return gameReducer(state, { type: "VISIT_NODE", nodeId });
+  const entered = gameReducer(state, { type: "VISIT_NODE", nodeId });
+  return useTestCycle(entered, nodeId === "cycle-1" ? "quick-win" : "presence-upgrade");
 }
 
 function withTools(state: GameState, ...toolIds: ToolId[]): GameState {

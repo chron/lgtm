@@ -3,6 +3,7 @@ import { eligibleRewardCardIds, getCard, getCardForInstance } from "../domain/co
 import type { DeveloperId, Discipline, ToolId } from "../domain/models";
 import { gameReducer, initialGameState, type GameState } from "./gameReducer";
 import { resolveCardTarget } from "./rules";
+import { useTestCycle } from "./testSupport";
 
 function startCycle(
   nodeId: "cycle-1" | "cycle-2" | "final-release" = "cycle-1",
@@ -39,7 +40,12 @@ function startCycle(
     screen: { name: "map" },
     run: { ...state.run, ...path },
   };
-  return gameReducer(state, { type: "VISIT_NODE", nodeId });
+  const entered = gameReducer(state, { type: "VISIT_NODE", nodeId });
+  return nodeId === "cycle-1"
+    ? useTestCycle(entered, "quick-win")
+    : nodeId === "cycle-2"
+      ? useTestCycle(entered, "presence-upgrade")
+      : entered;
 }
 
 function addCardsToHand(state: GameState, ...cardIds: string[]): GameState {

@@ -3,7 +3,7 @@ import type { DispatchProps, RunProps } from "../app/types";
 import { CardCollectionEntry } from "../components/CardCollectionBrowser";
 import { CharacterToken } from "../components/CharacterToken";
 import { getBossDefinition } from "../domain/bosses";
-import { isMapNodeAvailable, mapNodes } from "../domain/content";
+import { getCycle, getMapNodeCycleId, isMapNodeAvailable, mapNodes } from "../domain/content";
 import type { MapNode, RunState } from "../domain/models";
 import { effectiveMapEdges, revealedMapNodeIds } from "../game/eventResolution";
 
@@ -51,6 +51,7 @@ function visibleNodeLabel(
   node: MapNode,
   state: MapNodeState,
   revealed: ReadonlySet<string>,
+  encounterTitle: string,
 ): string {
   if (
     node.kind === "event" ||
@@ -58,7 +59,12 @@ function visibleNodeLabel(
   ) {
     return nodeTypeLabel(node);
   }
-  return node.title;
+  return encounterTitle;
+}
+
+function nodeRewardLabel(node: MapNode): string | undefined {
+  if (node.kind === "incident") return "Tool + Card";
+  if (node.kind === "cycle") return "Card";
 }
 
 export function MapScreen({ dispatch, run, onInspectDeck }: MapScreenProps) {
@@ -150,8 +156,11 @@ export function MapScreen({ dispatch, run, onInspectDeck }: MapScreenProps) {
           {mapNodes.map((node) => {
             const state = run ? getNodeState(node, run) : "locked";
             const typeLabel = nodeTypeLabel(node);
-            const visibleLabel = visibleNodeLabel(node, state, revealed);
+            const cycleId = run ? getMapNodeCycleId(node, run.seed) : node.cycleId;
+            const encounterTitle = cycleId ? getCycle(cycleId).name : node.title;
+            const visibleLabel = visibleNodeLabel(node, state, revealed, encounterTitle);
             const showsEncounterTitle = visibleLabel !== typeLabel;
+            const rewardLabel = nodeRewardLabel(node);
             const stateLabel =
               state === "current"
                 ? "Here"
@@ -169,15 +178,16 @@ export function MapScreen({ dispatch, run, onInspectDeck }: MapScreenProps) {
                 disabled={state !== "available"}
                 onClick={() => dispatch({ type: "VISIT_NODE", nodeId: node.id })}
                 aria-current={state === "current" ? "step" : undefined}
-                aria-label={`${visibleLabel}, ${stateLabel}`}
+                aria-label={`${visibleLabel}${rewardLabel ? `, ${rewardLabel} reward` : ""}, ${stateLabel}`}
                 data-map-node={node.id}
               >
                 <span className="map-node__glyph" aria-hidden="true">
                   {nodeGlyph(node)}
                 </span>
                 <strong>{visibleLabel}</strong>
-                <small className={showsEncounterTitle ? undefined : "is-state-only"}>
+                <small className={showsEncounterTitle || rewardLabel ? undefined : "is-state-only"}>
                   {showsEncounterTitle && <span>{typeLabel}</span>}
+                  {!showsEncounterTitle && rewardLabel && <em>{rewardLabel}</em>}
                   <b>{stateLabel}</b>
                 </small>
               </button>
