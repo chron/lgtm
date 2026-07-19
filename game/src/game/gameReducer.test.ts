@@ -3,6 +3,7 @@ import { eligibleRewardCardIds, formatIntent, getCard, getCycle, tools } from ".
 import type { DeveloperId, Discipline, ToolId } from "../domain/models";
 import { gameReducer, initialGameState } from "./gameReducer";
 import type { GameState } from "./gameReducer";
+import { taskShippingPreview } from "./rules";
 
 function startCycle(
   squad: readonly [DeveloperId, DeveloperId, DeveloperId] = ["paul", "irene", "madi"],
@@ -170,6 +171,16 @@ describe("gameReducer", () => {
       "review-3",
     ]);
     expect(state.run?.cycle?.hand).toHaveLength(5);
+    expect(
+      ["frontend-3", "backend-3", "infra-3"].map((cardId) => getCard(cardId).workKind),
+    ).toEqual(["unverified", "unverified", "unverified"]);
+    expect(getCard("flexible-2")).toMatchObject({ workKind: "verified", amount: 2 });
+    expect(getCard("review-3")).toMatchObject({ kind: "review", amount: 3 });
+    expect(getCard("standup-cover")).toMatchObject({ kind: "tactic", block: 4 });
+  });
+
+  it("renames the shared reward to UI Polish without changing its stable id", () => {
+    expect(getCard("pixel-perfect")).toMatchObject({ id: "pixel-perfect", name: "UI Polish" });
   });
 
   it("uses Pitch In for one Unverified Work on a mismatched requirement", () => {
@@ -503,19 +514,35 @@ describe("gameReducer", () => {
     if (state.screen.name !== "report") throw new Error("Expected report");
     expect(state.screen.report).toMatchObject({
       outcome: "shipped",
-      defects: 1,
-      moraleDelta: -1,
+      defects: 3,
+      moraleDelta: -3,
       creditsGained: 40,
-      techDebtAdded: 2,
+      techDebtAdded: 4,
     });
-    expect(state.run?.morale).toBe(9);
-    expect(state.run?.techDebt).toBe(2);
+    expect(state.run?.morale).toBe(7);
+    expect(state.run?.techDebt).toBe(4);
     expect(state.run?.credits).toBe(80);
     expect(state.run?.completedNodeIds).toContain("cycle-1");
     expect(state.run?.history.at(-1)).toMatchObject({
       kind: "cycle-finished",
       nodeId: "cycle-1",
       outcome: "shipped",
+    });
+  });
+
+  it("previews the opening discipline Basics as three Defects and four Tech Debt", () => {
+    let state = startCycle();
+    state = playCard(state, "frontend-3", "status-composer", "frontend");
+    state = playCard(state, "frontend-3", "status-composer", "frontend");
+    state = playCard(state, "backend-3", "status-composer", "backend");
+    const task = state.run?.cycle?.tasks[0];
+    if (!task) throw new Error("Expected Status Composer");
+
+    expect(taskShippingPreview(task)).toEqual({
+      unverified: 8,
+      defects: 3,
+      moraleLoss: 3,
+      techDebt: 4,
     });
   });
 
@@ -529,19 +556,19 @@ describe("gameReducer", () => {
     state = gameReducer(state, { type: "SHIP_TASK", taskId: "status-composer" });
 
     expect(state.screen.name).toBe("cycle");
-    expect(state.run?.morale).toBe(9);
-    expect(state.run?.cycle?.defects).toBe(1);
+    expect(state.run?.morale).toBe(7);
+    expect(state.run?.cycle?.defects).toBe(3);
     expect(state.run?.cycle?.tasks.map((task) => task.status)).toEqual(["shipped", "open"]);
     expect(state.run?.history.at(-1)).toEqual({
       kind: "task-shipped",
       nodeId: "cycle-2",
       taskId: "status-composer",
-      defects: 1,
-      moraleLoss: 1,
-      techDebtAdded: 2,
+      defects: 3,
+      moraleLoss: 3,
+      techDebtAdded: 4,
       focusGained: 1,
     });
-    expect(state.run?.techDebt).toBe(2);
+    expect(state.run?.techDebt).toBe(4);
     expect(state.run?.cycle?.focus).toBe(1);
 
     const beforeIllegalPlay = state;
@@ -549,7 +576,7 @@ describe("gameReducer", () => {
     expect(state).toBe(beforeIllegalPlay);
   });
 
-  it("keeps a Ready Task reviewable before it ships", () => {
+  it("lets Review clean opening Unverified Work while a Ready Task waits to ship", () => {
     let state = startCycleAt("cycle-2");
     state = playCard(state, "frontend-3", "status-composer", "frontend");
     state = playCard(state, "frontend-3", "status-composer", "frontend");
@@ -569,8 +596,8 @@ describe("gameReducer", () => {
     const task = state.run?.cycle?.tasks[0];
     expect(task?.status).toBe("ready");
     expect(
-      task?.requirements.find((requirement) => requirement.discipline === "backend"),
-    ).toMatchObject({ verified: 3, unverified: 0 });
+      task?.requirements.find((requirement) => requirement.discipline === "frontend"),
+    ).toMatchObject({ verified: 3, unverified: 2 });
   });
 
   it("adds Tech Debt when one Task ships with two or more Defects", () => {
@@ -739,7 +766,7 @@ describe("gameReducer", () => {
               verified:
                 (task.taskId === "status-composer" && requirement.discipline === "frontend") ||
                 (task.taskId === "reconnect-logic" && requirement.discipline === "infra")
-                  ? requirement.target - 3
+                  ? requirement.target - 2
                   : 0,
             })),
           })),
@@ -749,8 +776,8 @@ describe("gameReducer", () => {
     if (!state.run?.cycle) throw new Error("Expected an active Cycle");
     const startingDrawPile = state.run.cycle.drawPile.length;
 
-    state = playCard(state, "frontend-3", "status-composer", "frontend");
-    state = playCard(state, "infra-3", "reconnect-logic", "infra");
+    state = playCard(state, "flexible-2", "status-composer", "frontend");
+    state = playCard(state, "flexible-2", "reconnect-logic", "infra");
 
     expect(state.run?.cycle?.drawPile).toHaveLength(startingDrawPile - 2);
     expect(state.run?.cycle?.triggeredPassiveIds).toContain("irene");
@@ -841,7 +868,7 @@ describe("gameReducer", () => {
       lastWorkDiscipline: "backend",
       cardsPlayedThisDay: 3,
     });
-    expect(state.run?.cycle?.tasks[1]?.requirements[0]).toMatchObject({ verified: 4 });
+    expect(state.run?.cycle?.tasks[1]?.requirements[0]).toMatchObject({ unverified: 4 });
   });
 
   it("generates risky Quick Fixes and Exhausts them after play", () => {
@@ -984,7 +1011,7 @@ describe("gameReducer", () => {
       outcome: "defeat",
       cause: "technically-shipped",
     });
-    expect(state.run?.morale).toBe(0);
+    expect(state.run?.morale).toBe(-2);
     expect(state.run?.cycle).toBeNull();
     expect(state.run?.history.at(-1)).toMatchObject({
       kind: "task-shipped",

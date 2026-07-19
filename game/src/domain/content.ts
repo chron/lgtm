@@ -85,8 +85,8 @@ const sharedStarterCards: readonly CardDefinition[] = [
     kind: "work",
     discipline: "frontend",
     amount: 3,
-    workKind: "verified",
-    rules: "Frontend 3",
+    workKind: "unverified",
+    rules: "Frontend 3. Unverified.",
     tags: ["basic"],
   },
   {
@@ -96,8 +96,8 @@ const sharedStarterCards: readonly CardDefinition[] = [
     kind: "work",
     discipline: "backend",
     amount: 3,
-    workKind: "verified",
-    rules: "Backend 3",
+    workKind: "unverified",
+    rules: "Backend 3. Unverified.",
     tags: ["basic"],
   },
   {
@@ -107,8 +107,8 @@ const sharedStarterCards: readonly CardDefinition[] = [
     kind: "work",
     discipline: "infra",
     amount: 3,
-    workKind: "verified",
-    rules: "Infra 3",
+    workKind: "unverified",
+    rules: "Infra 3. Unverified.",
     tags: ["basic"],
   },
   {
@@ -169,7 +169,7 @@ const sharedCards: readonly CardDefinition[] = [
   },
   {
     id: "pixel-perfect",
-    name: "Pixel Perfect",
+    name: "UI Polish",
     cost: 1,
     kind: "work",
     discipline: "frontend",

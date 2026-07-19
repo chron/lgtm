@@ -270,8 +270,8 @@ describe("Odin's Review control engine", () => {
     state = playOnRequirement(state, "frontend-3", "status-composer", "frontend");
 
     expect(state.run?.cycle?.dayWorkBonuses).toHaveLength(2);
-    expect(state.run?.cycle?.tasks[0]?.requirements[0]).toMatchObject({ verified: 5 });
-    expect(state.run?.history.at(-1)).toMatchObject({ label: "Frontend +5 verified" });
+    expect(state.run?.cycle?.tasks[0]?.requirements[0]).toMatchObject({ unverified: 5 });
+    expect(state.run?.history.at(-1)).toMatchObject({ label: "Frontend +5 unverified" });
   });
 
   it("Retains One More Diagram while Day-only statuses reset", () => {

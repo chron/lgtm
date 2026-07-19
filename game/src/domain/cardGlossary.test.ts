@@ -14,6 +14,8 @@ describe("card glossary", () => {
   });
 
   it("explains shared work, review, defense, and automation vocabulary", () => {
+    expect(termsFor("frontend-3")).toEqual(["Unverified"]);
+    expect(termsFor("flexible-2")).toEqual(["Any"]);
     expect(termsFor("quick-fix")).toEqual([
       "AI Assisted",
       "Unverified",

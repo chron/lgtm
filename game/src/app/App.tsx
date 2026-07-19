@@ -34,7 +34,7 @@ interface OpenCardCollection {
 
 function createAppInitialState(base: GameState): GameState {
   const qa = new URLSearchParams(window.location.search).get("qa");
-  if (!import.meta.env.DEV || !["paul", "madi", "odin", "irene"].includes(qa ?? "")) {
+  if (!import.meta.env.DEV || !["paul", "madi", "odin", "irene", "basics"].includes(qa ?? "")) {
     return base;
   }
 
@@ -44,9 +44,11 @@ function createAppInitialState(base: GameState): GameState {
       ? (["madi", "irene", "odin"] as const)
       : qa === "irene"
         ? (["irene", "madi", "odin"] as const)
-        : qa === "odin"
-          ? (["odin", "madi", "irene"] as const)
-          : (["paul", "odin", "madi"] as const);
+        : qa === "basics"
+          ? (["odin", "irene", "paul"] as const)
+          : qa === "odin"
+            ? (["odin", "madi", "irene"] as const)
+            : (["paul", "odin", "madi"] as const);
   for (const developerId of squad) {
     state = gameReducer(state, { type: "TOGGLE_DEVELOPER", developerId });
   }
@@ -88,32 +90,34 @@ function createAppInitialState(base: GameState): GameState {
             "all-sorted",
             "already-fixed",
           ]
-        : qa === "odin"
-          ? [
-              "one-more-diagram",
-              "strong-opinions-loosely-held",
-              "approved-with-comments",
-              "boring-technology",
-              "manual-mode",
-              "architecture-review",
-              "design-review",
-            ]
-          : [
-              "side-quest",
-              "full-stack",
-              "new-model-dropped",
-              "post-through-it",
-              "spike-it",
-              "ebb-and-flow",
-              "vibe-code",
-            ];
+        : qa === "basics"
+          ? ["frontend-3", "frontend-3", "backend-3", "review-3", "flexible-2", "standup-cover"]
+          : qa === "odin"
+            ? [
+                "one-more-diagram",
+                "strong-opinions-loosely-held",
+                "approved-with-comments",
+                "boring-technology",
+                "manual-mode",
+                "architecture-review",
+                "design-review",
+              ]
+            : [
+                "side-quest",
+                "full-stack",
+                "new-model-dropped",
+                "post-through-it",
+                "spike-it",
+                "ebb-and-flow",
+                "vibe-code",
+              ];
   return {
     ...state,
     run: {
       ...state.run,
       cycle: {
         ...state.run.cycle,
-        focus: qa === "madi" || qa === "odin" || qa === "irene" ? 12 : 10,
+        focus: qa === "madi" || qa === "odin" || qa === "irene" || qa === "basics" ? 12 : 10,
         tasks:
           qa === "madi" || qa === "odin" || qa === "irene"
             ? state.run.cycle.tasks.map((task) => ({

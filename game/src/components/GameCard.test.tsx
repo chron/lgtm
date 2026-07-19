@@ -27,7 +27,7 @@ describe("GameCard", () => {
   it("omits glossary markup when a card has no specialist vocabulary", () => {
     const markup = renderToStaticMarkup(
       <GameCard
-        instance={{ cardId: "frontend-3", instanceId: "test-frontend" }}
+        instance={{ cardId: "pixel-perfect", instanceId: "test-ui-polish" }}
         effectiveCost={1}
         selected={false}
       />,
@@ -35,5 +35,6 @@ describe("GameCard", () => {
 
     expect(markup).not.toContain("game-card__glossary");
     expect(markup).not.toContain("aria-describedby");
+    expect(markup).toContain("UI Polish");
   });
 });

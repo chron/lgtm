@@ -585,8 +585,11 @@ export function resolveCardTarget(
 
   const pitchedIn = card.discipline !== "flexible" && card.discipline !== target.discipline;
   const pairedPitchIn = pitchedIn && run.tools.includes("pairing-session");
-  const workKind: WorkKind =
-    pitchedIn && !pairedPitchIn ? "unverified" : (card.workKind ?? "verified");
+  const workKind: WorkKind = pairedPitchIn
+    ? "verified"
+    : pitchedIn
+      ? "unverified"
+      : (card.workKind ?? "verified");
   const scriptMultiplier = run.tools.includes("cron-upgrade") ? 2 : 1;
   const countsAsWorkPlay = card.amount > 0 && card.automation?.kind !== "trigger";
   let amount =

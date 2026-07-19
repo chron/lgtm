@@ -47,14 +47,14 @@ describe("getCardPresentation", () => {
           ...task,
           requirements: task.requirements.map((requirement) => ({
             ...requirement,
-            verified: requirement.discipline === "frontend" ? requirement.target - 3 : 0,
+            verified: requirement.discipline === "frontend" ? requirement.target - 2 : 0,
           })),
         })),
-        hand: [...baseRun.cycle.hand, { cardId: "frontend-3", instanceId: "test-frontend-3" }],
+        hand: [...baseRun.cycle.hand, { cardId: "flexible-2", instanceId: "test-flexible-2" }],
       },
     };
-    const instance = run?.cycle?.hand.find((card) => card.cardId === "frontend-3");
-    if (!run || !instance) throw new Error("Expected Frontend in hand");
+    const instance = run?.cycle?.hand.find((card) => card.cardId === "flexible-2");
+    if (!run || !instance) throw new Error("Expected Flexible in hand");
 
     const presentation = getCardPresentation(run, instance, {
       taskId: "status-composer",
@@ -66,6 +66,34 @@ describe("getCardPresentation", () => {
       level: "micro",
       title: "Quietly Done",
     });
+  });
+
+  it("does not present risky discipline Basics as Irene completions", () => {
+    const state = startCycle(["paul", "odin", "irene"]);
+    const baseRun = state.run;
+    if (!baseRun?.cycle) throw new Error("Expected an active Cycle");
+    const instance = { cardId: "frontend-3", instanceId: "test-risky-frontend" };
+    const run = {
+      ...baseRun,
+      cycle: {
+        ...baseRun.cycle,
+        tasks: baseRun.cycle.tasks.map((task) => ({
+          ...task,
+          requirements: task.requirements.map((requirement) => ({
+            ...requirement,
+            unverified: requirement.discipline === "frontend" ? requirement.target - 3 : 0,
+          })),
+        })),
+        hand: [...baseRun.cycle.hand, instance],
+      },
+    };
+
+    expect(
+      getCardPresentation(run, instance, {
+        taskId: "status-composer",
+        discipline: "frontend",
+      }),
+    ).toEqual({ triggeredPassiveIds: [] });
   });
 
   it("gives Paul's squad tactics compact reactions and his rare a hero moment", () => {
