@@ -219,9 +219,11 @@ describe("Irene's completion engine", () => {
       { discipline: "infra", verified: 8 },
     ]);
     expect(state.run?.cycle?.hand).toHaveLength(handBefore + 2);
-    expect(state.run?.history.findLast((event) => event.kind === "card-played")).toMatchObject({
-      label: "Frontend +2 verified · Backend spill +2 · Draw 2",
-    });
+    expect(state.run?.history.filter((event) => event.kind === "card-played").at(-1)).toMatchObject(
+      {
+        label: "Frontend +2 verified · Backend spill +2 · Draw 2",
+      },
+    );
   });
 
   it("copies only the last Work card's printed payload into an Exhausting zero-cost card", () => {
