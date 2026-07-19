@@ -241,11 +241,27 @@ Custom Setup installs its Script before **Agentic Loop** or **Sub-Agent** trigge
 ### Kirsten — generated-card learner
 
 - **Fantasy:** try the thing, learn from the last play, and turn lots of small contributions into a surprisingly huge Day.
-- **Passive direction:** Generated cards gain +1 to their printed Work, Review, or Block.
-- **Starter direction:** **Give It a Go** — generate a small choice or pair of temporary tokens.
+- **Passive:** **Learning by Doing** — Generated cards gain +1 to each printed Work, Review, or Block amount.
 - **Core space:** Generated cards, copying, exact completion, cards-played payoffs.
 - **Bridges:** Levi converts volume into Chain; Irene converts precision into draw; Nick converts Exhaust into Focus.
-- **Rare direction:** **Fast Learner** — replay or copy the last non-generated card as a temporary zero-cost card.
+
+Kirsten's catalogue is **LOCKED** for its first playable pass. Values may still move during playtesting.
+
+| Slot | Card | Cost | Effect |
+| --- | --- | ---: | --- |
+| Starter | **Give It a Go** | 1 | Generate a Snippet and a Checklist. |
+| Normal | **Ask a Good Question** | 1 | Generate 2 Comments. |
+| Normal | **Try a Different Way** | 1 | Generate a Quick Fix and a Snippet. |
+| Normal | **Second Attempt** | 0 | Return a Generated card from Exhaust to your hand. Exhaust. |
+| Normal | **It All Adds Up** | 1 | Flexible 1 Verified for every Generated card played before this card today. |
+| Normal | **On a Roll** | 0 | Gain 1 Focus for every 2 Generated cards played before this card today. Exhaust. |
+| Rare | **Fast Learner** | 1 | Generate a zero-cost copy of the last non-Generated card played this Day. Exhaust. |
+
+Learning by Doing turns the initial token set into Snippet 2 Verified Work, Quick Fix 3 Unverified Work, Comment 2 Review, and Checklist 2 Block. When a Generated card has more than one printed output, each eligible amount receives the bonus.
+
+**Second Attempt** can retrieve any Generated card in the current Cycle's Exhaust pile; the recovered card still Exhausts when played again. **It All Adds Up** is unplayable before a Generated card has been played and counts only earlier plays. **On a Roll** uses complete pairs, is unplayable before two Generated plays, and may gain more than 1 Focus.
+
+**Fast Learner** copies the complete card definition, including special effects and downsides, then overrides the copy to cost 0, marks it Generated, and makes it Exhaust when played. It cannot copy a Generated card and is unplayable until a non-Generated card has been played that Day. Because the copy is Generated, Learning by Doing also improves its printed Work, Review, and Block.
 
 ### Matt — polish and overflow
 
