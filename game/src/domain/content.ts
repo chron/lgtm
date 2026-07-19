@@ -8,77 +8,9 @@ import type {
   MapNode,
   ToolDefinition,
 } from "./models";
-import ireneFixed from "../assets/characters/irene-fixed-v1.webp";
-import ireneMaster from "../assets/characters/irene-master-v1.webp";
-import ireneThinking from "../assets/characters/irene-thinking-v1.webp";
-import madiDelighted from "../assets/characters/madi-delighted-v1.webp";
-import madiMaster from "../assets/characters/madi-master-v1.webp";
-import madiProcessing from "../assets/characters/madi-processing-v1.webp";
-import odinMaster from "../assets/characters/odin-master-v1.webp";
-import odinSatisfied from "../assets/characters/odin-satisfied-v1.webp";
-import odinThinking from "../assets/characters/odin-thinking-v1.webp";
-import paulMaster from "../assets/characters/paul-master-v1.webp";
-import paulShipped from "../assets/characters/paul-shipped-v1.webp";
-import paulThinking from "../assets/characters/paul-thinking-v1.webp";
+import { characterRewardCards, characterStartingCards, developers } from "./characters";
 
-export const developers: readonly Developer[] = [
-  {
-    id: "paul",
-    name: "Paul",
-    role: "Prototyper",
-    passiveName: "Move Fast",
-    passiveRules: "Whenever a non-final Task ships, gain 1 Focus.",
-    startingCardId: "vibe-code",
-    accent: "oklch(0.68 0.19 31)",
-    art: {
-      idle: paulMaster,
-      thinking: paulThinking,
-      success: paulShipped,
-    },
-  },
-  {
-    id: "odin",
-    name: "Odin",
-    role: "Architect",
-    passiveName: "I Have Concerns",
-    passiveRules: "Every Review also Stuns that Task's intent.",
-    startingCardId: "design-review",
-    accent: "oklch(0.55 0.19 292)",
-    art: {
-      idle: odinMaster,
-      thinking: odinThinking,
-      success: odinSatisfied,
-    },
-  },
-  {
-    id: "irene",
-    name: "Irene",
-    role: "Quiet Assassin",
-    passiveName: "Quietly Done",
-    passiveRules: "Whenever Verified Work completes a requirement, draw 1 card.",
-    startingCardId: "already-fixed",
-    accent: "oklch(0.61 0.14 167)",
-    art: {
-      idle: ireneMaster,
-      thinking: ireneThinking,
-      success: ireneFixed,
-    },
-  },
-  {
-    id: "madi",
-    name: "Madi",
-    role: "Tinkerer",
-    passiveName: "Custom Setup",
-    passiveRules: "Every AI Assisted card installs Script 1 on its target.",
-    startingCardId: "agent-swarm",
-    accent: "oklch(0.64 0.2 343)",
-    art: {
-      idle: madiMaster,
-      thinking: madiProcessing,
-      success: madiDelighted,
-    },
-  },
-] as const;
+export { developers } from "./characters";
 
 export const tools: readonly ToolDefinition[] = [
   {
@@ -139,7 +71,7 @@ export function getTool(id: ToolDefinition["id"]): ToolDefinition {
   return tool;
 }
 
-const cards: readonly CardDefinition[] = [
+const sharedStarterCards: readonly CardDefinition[] = [
   {
     id: "frontend-3",
     name: "Frontend",
@@ -203,175 +135,9 @@ const cards: readonly CardDefinition[] = [
     rules: "Gain 4 Block.",
     tags: ["basic", "defense"],
   },
-  {
-    id: "vibe-code",
-    ownerId: "paul",
-    name: "Vibe Code",
-    cost: 1,
-    kind: "work",
-    discipline: "flexible",
-    amount: 4,
-    workKind: "unverified",
-    rules: "Any 4. Unverified.",
-    tags: ["character", "ai-assisted", "flexible"],
-  },
-  {
-    id: "design-review",
-    ownerId: "odin",
-    name: "Design Review",
-    cost: 1,
-    kind: "review",
-    amount: 5,
-    rules: "Verify 5 on one Task.",
-    tags: ["character", "review"],
-  },
-  {
-    id: "already-fixed",
-    ownerId: "irene",
-    name: "Already Fixed",
-    cost: 1,
-    kind: "work",
-    discipline: "flexible",
-    amount: 3,
-    workKind: "verified",
-    rules: "Any 3. Verified.",
-    tags: ["character", "flexible"],
-  },
-  {
-    id: "agent-swarm",
-    ownerId: "madi",
-    name: "Agent Swarm",
-    cost: 1,
-    kind: "work",
-    discipline: "backend",
-    amount: 5,
-    workKind: "unverified",
-    rules: "Backend 5. Unverified.",
-    tags: ["character", "ai-assisted"],
-  },
-  {
-    id: "spike-it",
-    ownerId: "paul",
-    name: "Spike It",
-    cost: 0,
-    kind: "work",
-    discipline: "flexible",
-    amount: 3,
-    workKind: "unverified",
-    exhaust: true,
-    rarity: "normal",
-    rules: "Any 3. Unverified. Exhaust.",
-    tags: ["character", "ai-assisted", "exhaust", "flexible", "reward"],
-  },
-  {
-    id: "side-quest",
-    ownerId: "paul",
-    name: "Side Quest",
-    cost: 1,
-    kind: "tactic",
-    amount: 0,
-    spawnSideQuest: true,
-    exhaust: true,
-    display: {
-      value: "+1",
-      label: "Prototype",
-      rules: "Add 3-Work Task. Ship: Prototype +1.",
-    },
-    rarity: "normal",
-    rules: "Add a 3-Work Task. Ship it: Prototype +1. Exhaust.",
-    tags: ["character", "exhaust", "reward"],
-  },
-  {
-    id: "full-stack",
-    ownerId: "paul",
-    name: "Full Stack",
-    cost: 1,
-    kind: "tactic",
-    amount: 0,
-    fullStackAdded: 1,
-    display: { value: "+1", label: "Work", rules: "When target discipline changes this Cycle." },
-    rarity: "normal",
-    rules: "This Cycle, switching target discipline gives Work +1.",
-    tags: ["character", "reward"],
-  },
-  {
-    id: "new-model-dropped",
-    ownerId: "paul",
-    name: "New Model Dropped",
-    cost: 1,
-    kind: "tactic",
-    amount: 0,
-    generatedCards: { cardId: "quick-fix", count: 2 },
-    techDebtAdded: 1,
-    display: { value: "2", label: "Quick Fixes", rules: "+1 Tech Debt." },
-    rarity: "normal",
-    rules: "Generate 2 Quick Fixes. Gain 1 Tech Debt.",
-    tags: ["character", "reward"],
-  },
-  {
-    id: "post-through-it",
-    ownerId: "paul",
-    name: "Post Through It",
-    cost: 1,
-    kind: "tactic",
-    amount: 0,
-    blockPerCardPlayed: 2,
-    display: { value: "×2", label: "Block", rules: "Per prior card today." },
-    rarity: "normal",
-    rules: "Gain 2 Block per card played before this today.",
-    tags: ["character", "defense", "reward"],
-  },
-  {
-    id: "ebb-and-flow",
-    ownerId: "paul",
-    name: "Ebb & Flow",
-    cost: 0,
-    kind: "tactic",
-    amount: 0,
-    focusGained: 3,
-    cardsDrawn: 3,
-    queuedDistractions: 3,
-    exhaust: true,
-    display: { value: "+3", label: "Focus", rules: "Draw 3. Next Day: 3 Distractions." },
-    rarity: "rare",
-    rules: "Gain 3 Focus. Draw 3. Next Day: 3 Distractions. Exhaust.",
-    tags: ["character", "exhaust", "rare", "reward"],
-  },
-  {
-    id: "one-more-diagram",
-    ownerId: "odin",
-    name: "One More Diagram",
-    cost: 1,
-    kind: "review",
-    amount: 6,
-    rules: "Verify 6 on one Task.",
-    tags: ["character", "review", "reward"],
-  },
-  {
-    id: "quietly-automated",
-    ownerId: "irene",
-    name: "Quietly Automated",
-    cost: 1,
-    kind: "work",
-    discipline: "flexible",
-    amount: 1,
-    workKind: "verified",
-    automation: { kind: "install", power: 1 },
-    rules: "Any 1. Install Script 1.",
-    tags: ["character", "automation", "flexible", "reward"],
-  },
-  {
-    id: "parallel-agents",
-    ownerId: "madi",
-    name: "Parallel Agents",
-    cost: 1,
-    kind: "work",
-    discipline: "backend",
-    amount: 6,
-    workKind: "unverified",
-    rules: "Backend 6. Unverified.",
-    tags: ["character", "ai-assisted", "reward"],
-  },
+];
+
+const sharedCards: readonly CardDefinition[] = [
   {
     id: "quick-fix",
     name: "Quick Fix",
@@ -547,6 +313,13 @@ const cards: readonly CardDefinition[] = [
     tags: ["status"],
   },
 ] as const;
+
+export const cards: readonly CardDefinition[] = [
+  ...sharedStarterCards,
+  ...characterStartingCards,
+  ...characterRewardCards,
+  ...sharedCards,
+];
 
 export const squadRewardCardIds = cards
   .filter((card) => card.tags.includes("reward") && card.ownerId)
