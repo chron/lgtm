@@ -2,7 +2,7 @@
 # requires-python = ">=3.11"
 # dependencies = ["pillow>=11.0.0"]
 # ///
-"""Reproducible export and QA pipeline for Backlog character artwork."""
+"""Reproducible export and QA pipeline for LGTM character artwork."""
 
 from __future__ import annotations
 

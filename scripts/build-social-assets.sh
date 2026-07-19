@@ -3,11 +3,11 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-social_tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/backlog-social.XXXXXX")"
+social_tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/lgtm-social.XXXXXX")"
 trap 'rm -rf "$social_tmp_dir"' EXIT
 
 sips -s format png \
-  "$repo_root/assets/social/og-backlog.svg" \
+  "$repo_root/assets/social/og-lgtm.svg" \
   --out "$social_tmp_dir/background.png" >/dev/null
 
 magick "$social_tmp_dir/background.png" \
@@ -18,6 +18,6 @@ magick "$social_tmp_dir/background.png" \
   \( "$repo_root/game/src/assets/characters/madi-delighted-v1.webp" -resize 365x649 \) \
   -geometry +826+50 -composite \
   -depth 8 \
-  "$repo_root/game/public/og-backlog.png"
+  "$repo_root/game/public/og-lgtm.png"
 
-sips -g pixelWidth -g pixelHeight "$repo_root/game/public/og-backlog.png"
+sips -g pixelWidth -g pixelHeight "$repo_root/game/public/og-lgtm.png"

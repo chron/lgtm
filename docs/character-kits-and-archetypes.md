@@ -1,6 +1,6 @@
 # Character Kits and Deck Archetypes
 
-This document is the design contract for Backlog's developer roster and deck-building engines. It defines what each character contributes, how squads combine into builds, and which shared mechanics must exist before the full card catalogue is authored.
+This document is the design contract for LGTM's developer roster and deck-building engines. It defines what each character contributes, how squads combine into builds, and which shared mechanics must exist before the full card catalogue is authored.
 
 It is deliberately not a balance sheet. Names and numbers marked **PROVISIONAL** should move freely during playtesting without weakening the mechanical identity underneath them.
 

@@ -50,6 +50,17 @@ describe("combat tutorial", () => {
     expect(shouldShowCombatTutorial(storage)).toBe(true);
   });
 
+  it("carries tutorial completion across from the placeholder brand", () => {
+    const storage = memoryStorage();
+    storage.setItem("backlog-combat-tutorial-v1", "complete");
+
+    expect(shouldShowCombatTutorial(storage)).toBe(false);
+    expect(storage.getItem(COMBAT_TUTORIAL_STORAGE_KEY)).toBe("complete");
+
+    restartCombatTutorial(storage);
+    expect(shouldShowCombatTutorial(storage)).toBe(true);
+  });
+
   it("maps keyboard shortcuts without stealing ordinary keys", () => {
     expect(tutorialKeyboardAction("ArrowRight")).toBe("next");
     expect(tutorialKeyboardAction("ArrowLeft")).toBe("previous");

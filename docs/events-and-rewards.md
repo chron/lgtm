@@ -1,6 +1,6 @@
 # Events and Rewards
 
-This document is the first-pass design contract for Backlog's mystery Event nodes. Events should be quick, explicit, mechanically meaningful breaks between Cycles—not miniature dialogue trees or flavour text wearing a button costume.
+This document is the first-pass design contract for LGTM's mystery Event nodes. Events should be quick, explicit, mechanically meaningful breaks between Cycles—not miniature dialogue trees or flavour text wearing a button costume.
 
 ## Scope
 

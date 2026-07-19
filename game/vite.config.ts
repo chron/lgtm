@@ -9,7 +9,7 @@ const maxRequestBytes = 5 * 1024 * 1024;
 function gameActionLogSink(): Plugin {
   const directory = join(import.meta.dirname, "telemetry");
   return {
-    name: "backlog-game-action-log-sink",
+    name: "lgtm-game-action-log-sink",
     configureServer(server) {
       server.middlewares.use("/__game-actions", (request, response) => {
         if (request.method !== "POST") {

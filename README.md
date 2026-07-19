@@ -1,4 +1,4 @@
-# Backlog
+# LGTM!
 
 A bright, chunky roguelike deckbuilder about shipping software without shipping your sanity.
 
@@ -14,7 +14,7 @@ bun install
 bun run dev
 ```
 
-The Portless development URL is `https://backlog.localhost/`. To run plain Vite instead, use `bun run dev:plain`.
+The Portless development URL is `https://lgtm.localhost/`. To run plain Vite instead, use `bun run dev:plain`.
 
 ## Design contracts
 
@@ -33,11 +33,11 @@ bun run build
 
 ## Deployment
 
-Production is hosted on [Cloudflare Pages](https://backlog-edr.pages.dev/) and deployed from `main` by [GitHub Actions](.github/workflows/deploy.yml).
+Production is hosted on [Cloudflare Pages](https://lgtm.prestidge.dev/) and deployed from `main` by [GitHub Actions](.github/workflows/deploy.yml). The workflow creates the `lgtm` Pages project if necessary, deploys the build, and associates the custom domain.
 
 The workflow requires two GitHub Actions repository secrets:
 
-- `CLOUDFLARE_ACCOUNT_ID` — the Cloudflare account containing the `backlog` Pages project.
+- `CLOUDFLARE_ACCOUNT_ID` — the Cloudflare account containing the `lgtm` Pages project and `prestidge.dev` zone.
 - `CLOUDFLARE_API_TOKEN` — a token restricted to that account with only **Cloudflare Pages: Edit** permission.
 
 The token must never be committed. Create it in Cloudflare under **Account API tokens**, then add both values under **GitHub repository settings → Secrets and variables → Actions**.

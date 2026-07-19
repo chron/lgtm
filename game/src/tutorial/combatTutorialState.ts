@@ -1,5 +1,6 @@
 /** Versioned so future tutorial rewrites can be shown once without nagging returning players. */
-export const COMBAT_TUTORIAL_STORAGE_KEY = "backlog-combat-tutorial-v1";
+export const COMBAT_TUTORIAL_STORAGE_KEY = "lgtm-combat-tutorial-v1";
+const LEGACY_COMBAT_TUTORIAL_STORAGE_KEY = "backlog-combat-tutorial-v1";
 
 type CombatTutorialAnchor = "tasks" | "focus" | "hand" | "end-day";
 
@@ -61,7 +62,10 @@ function browserStorage(): TutorialStorage | undefined {
 export function shouldShowCombatTutorial(storage = browserStorage()): boolean {
   if (!storage) return false;
   try {
-    return storage.getItem(COMBAT_TUTORIAL_STORAGE_KEY) !== "complete";
+    if (storage.getItem(COMBAT_TUTORIAL_STORAGE_KEY) === "complete") return false;
+    if (storage.getItem(LEGACY_COMBAT_TUTORIAL_STORAGE_KEY) !== "complete") return true;
+    storage.setItem(COMBAT_TUTORIAL_STORAGE_KEY, "complete");
+    return false;
   } catch {
     return false;
   }
@@ -78,6 +82,7 @@ export function completeCombatTutorial(storage = browserStorage()): void {
 export function restartCombatTutorial(storage = browserStorage()): void {
   try {
     storage?.removeItem(COMBAT_TUTORIAL_STORAGE_KEY);
+    storage?.removeItem(LEGACY_COMBAT_TUTORIAL_STORAGE_KEY);
   } catch {
     // The tutorial still remains manually dismissible when storage is unavailable.
   }

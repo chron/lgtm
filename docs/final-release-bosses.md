@@ -1,6 +1,6 @@
 # Final Release Bosses
 
-This document is the design contract for Backlog's Final Release encounters. A boss is a lovingly antagonistic executive stakeholder and a distinct strategic test—not a normal Cycle with larger requirement numbers.
+This document is the design contract for LGTM's Final Release encounters. A boss is a lovingly antagonistic executive stakeholder and a distinct strategic test—not a normal Cycle with larger requirement numbers.
 
 ## Catalogue architecture
 

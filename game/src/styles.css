@@ -150,7 +150,8 @@ main:focus {
 
 .mega-title {
   color: var(--yellow);
-  font-size: clamp(6rem, 20vw, 14rem);
+  font-size: clamp(5.5rem, 13vw, 11rem);
+  white-space: nowrap;
   text-shadow: 10px 10px 0 var(--ink);
   -webkit-text-stroke: 3px var(--ink);
 }
@@ -211,10 +212,53 @@ main:focus {
   gap: clamp(2rem, 7vw, 7rem);
 }
 
-.title-screen__copy p {
-  margin: 2rem 0;
-  font-size: clamp(1.1rem, 2vw, 1.5rem);
-  font-weight: 800;
+.title-expansion {
+  display: flex;
+  min-height: 3.4rem;
+  margin: 2.1rem 0 2.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.7rem;
+  animation: title-expansion-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.title-expansion__word {
+  font-size: clamp(0.95rem, 1.7vw, 1.25rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.title-expansion__word strong {
+  display: inline-grid;
+  width: 1.65em;
+  height: 1.65em;
+  margin-right: 0.12em;
+  border: 3px solid var(--ink);
+  background: var(--pink);
+  box-shadow: 2px 2px 0 var(--ink);
+  place-items: center;
+  font-family: var(--display);
+  font-size: 0.95em;
+  line-height: 1;
+  transform: rotate(-2deg);
+}
+
+.title-expansion__word:nth-child(even) strong {
+  background: var(--mint);
+  transform: rotate(2deg);
+}
+
+@keyframes title-expansion-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) rotate(-0.5deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+  }
 }
 
 .title-screen__canvas {
@@ -4626,6 +4670,10 @@ main:focus {
 
   .title-screen__canvas {
     min-height: 280px;
+  }
+
+  .mega-title {
+    font-size: clamp(5rem, 24vw, 9rem);
   }
 
   .report-grid,

@@ -39,7 +39,7 @@ describe("scripted playtest harness", () => {
     const output = formatPlaytestReport(report);
 
     expect(report.runs).toEqual(runs);
-    expect(output).toContain("BACKLOG // SCRIPTED PLAYTESTS");
+    expect(output).toContain("LGTM! // SCRIPTED PLAYTESTS");
     expect(output).toContain("Card Storm");
     expect(output).toContain("FINAL RELEASE BOSSES");
     expect(output).toContain("SMOKE SIGNALS");

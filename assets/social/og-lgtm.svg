@@ -21,14 +21,12 @@
     <rect x="70" y="60" width="454" height="52" rx="4" fill="#f39acb" stroke="#282640" stroke-width="5" />
     <text x="91" y="94" fill="#282640" font-family="Avenir Next, Avenir, sans-serif" font-size="19" font-weight="800" letter-spacing="1.7">SOFTWARE ENGINEERING DECKBUILDER</text>
 
-    <text x="82" y="299" fill="#282640" stroke="#282640" stroke-width="13" font-family="Avenir Next Condensed, Avenir Next, sans-serif" font-size="205" font-weight="900" letter-spacing="-10">BACK</text>
-    <text x="70" y="287" fill="#ffd23f" stroke="#282640" stroke-width="5" font-family="Avenir Next Condensed, Avenir Next, sans-serif" font-size="205" font-weight="900" letter-spacing="-10">BACK</text>
-    <text x="82" y="476" fill="#282640" stroke="#282640" stroke-width="13" font-family="Avenir Next Condensed, Avenir Next, sans-serif" font-size="205" font-weight="900" letter-spacing="-10">LOG!</text>
-    <text x="70" y="464" fill="#ffd23f" stroke="#282640" stroke-width="5" font-family="Avenir Next Condensed, Avenir Next, sans-serif" font-size="205" font-weight="900" letter-spacing="-10">LOG!</text>
+    <text x="82" y="414" fill="#282640" stroke="#282640" stroke-width="13" font-family="Avenir Next Condensed, Avenir Next, sans-serif" font-size="194" font-weight="900" letter-spacing="-10">LGTM!</text>
+    <text x="70" y="402" fill="#ffd23f" stroke="#282640" stroke-width="5" font-family="Avenir Next Condensed, Avenir Next, sans-serif" font-size="194" font-weight="900" letter-spacing="-10">LGTM!</text>
 
-    <rect x="79" y="529" width="430" height="65" rx="5" fill="#282640" />
-    <rect x="70" y="520" width="430" height="65" rx="5" fill="#98ddb9" stroke="#282640" stroke-width="5" />
-    <text x="96" y="563" fill="#282640" font-family="Avenir Next, Avenir, sans-serif" font-size="30" font-weight="900">SHIP FAST. FIX IT LIVE.</text>
+    <rect x="79" y="529" width="510" height="65" rx="5" fill="#282640" />
+    <rect x="70" y="520" width="510" height="65" rx="5" fill="#98ddb9" stroke="#282640" stroke-width="5" />
+    <text x="91" y="561" fill="#282640" font-family="Avenir Next, Avenir, sans-serif" font-size="24" font-weight="900">LOOKS GOOD, TECHNICALLY MAYBE.</text>
 
     <circle cx="815" cy="377" r="200" fill="#92cce0" stroke="#282640" stroke-width="7" />
     <circle cx="1010" cy="395" r="224" fill="#ffd23f" stroke="#282640" stroke-width="7" />

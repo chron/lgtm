@@ -107,7 +107,8 @@ export interface AchievementStorage {
   setItem(key: string, value: string): void;
 }
 
-export const achievementStorageKey = "backlog.achievements.v1";
+export const achievementStorageKey = "lgtm.achievements.v1";
+const legacyAchievementStorageKey = "backlog.achievements.v1";
 
 const achievementIds = new Set<AchievementId>(
   achievementDefinitions.map((achievement) => achievement.id),
@@ -128,14 +129,18 @@ export function loadAchievements(
   if (!storage) return [];
 
   try {
-    const stored = JSON.parse(storage.getItem(achievementStorageKey) ?? "[]") as unknown;
+    const currentValue = storage.getItem(achievementStorageKey);
+    const legacyValue = currentValue === null ? storage.getItem(legacyAchievementStorageKey) : null;
+    const stored = JSON.parse(currentValue ?? legacyValue ?? "[]") as unknown;
     if (!Array.isArray(stored)) return [];
-    return stored.filter(
+    const achievements = stored.filter(
       (id, index): id is AchievementId =>
         typeof id === "string" &&
         achievementIds.has(id as AchievementId) &&
         stored.indexOf(id) === index,
     );
+    if (legacyValue !== null) storage.setItem(achievementStorageKey, JSON.stringify(achievements));
+    return achievements;
   } catch {
     return [];
   }

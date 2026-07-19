@@ -1,4 +1,4 @@
-# Backlog game
+# LGTM! game
 
 A contained React + TypeScript vertical slice for the software-engineering deckbuilder. The first authored Cycle is playable end to end; the surrounding run screens remain a lightweight scaffold.
 
@@ -9,7 +9,7 @@ bun install
 bun run dev
 ```
 
-Portless serves the game at [https://backlog.localhost](https://backlog.localhost). Use `bun run dev:plain` when a direct Vite port is more useful.
+Portless serves the game at [https://lgtm.localhost](https://lgtm.localhost). Use `bun run dev:plain` when a direct Vite port is more useful.
 
 Useful checks:
 
@@ -55,7 +55,7 @@ analysis or future charts.
 
 Play normally in the development build; each run is already recorded under
 `telemetry/`. To replay a specific generated act, add a seed to the ordinary game
-URL, for example `https://backlog.localhost/?seed=4200`. Every New Run started
+URL, for example `https://lgtm.localhost/?seed=4200`. Every New Run started
 while that parameter remains uses the same act.
 
 After completing a few runs, render them through the same dashboard:

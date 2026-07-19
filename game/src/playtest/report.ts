@@ -203,7 +203,7 @@ export function formatPlaytestReport(report: PlaytestBatchReport): string {
   const deckLabel = `${deckModes.join(" + ")} deck${deckModes.length === 1 ? "s" : " modes"}`;
 
   return [
-    human ? "BACKLOG // HUMAN PLAYTESTS" : "BACKLOG // SCRIPTED PLAYTESTS",
+    human ? "LGTM! // HUMAN PLAYTESTS" : "LGTM! // SCRIPTED PLAYTESTS",
     `${report.totalRuns} ${human ? "recorded" : "seeded"} runs · ${deckLabel} · actual reducer · ${report.generatedAt}`,
     "",
     header.join("  "),

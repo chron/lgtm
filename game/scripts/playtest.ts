@@ -25,7 +25,7 @@ const parsed = parseArgs({
 });
 
 if (parsed.values.help) {
-  console.log(`BACKLOG scripted playtests
+  console.log(`LGTM! scripted playtests
 
 Usage: bun run playtest [options]
 

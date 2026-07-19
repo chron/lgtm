@@ -1,10 +1,10 @@
 {
-  "name": "backlog-game",
+  "name": "lgtm-game",
   "version": "0.0.1",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "portless run --name backlog vite",
+    "dev": "portless run --name lgtm vite",
     "dev:plain": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --pretty false",

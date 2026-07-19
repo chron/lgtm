@@ -20,7 +20,7 @@ const parsed = parseArgs({
 });
 
 if (parsed.values.help) {
-  console.log(`BACKLOG human playtest report
+  console.log(`LGTM! human playtest report
 
 Usage: bun run playtest:human [options]
 

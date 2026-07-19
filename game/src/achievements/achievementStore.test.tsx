@@ -42,6 +42,19 @@ describe("achievement progress", () => {
     expect(loadAchievements(storage)).toEqual([]);
   });
 
+  it("carries achievements across from the placeholder brand", () => {
+    const values = new Map<string, string>([
+      ["backlog.achievements.v1", JSON.stringify(["game-won", "win-irene"])],
+    ]);
+    const storage: AchievementStorage = {
+      getItem: (key) => values.get(key) ?? null,
+      setItem: (key, value) => values.set(key, value),
+    };
+
+    expect(loadAchievements(storage)).toEqual(["game-won", "win-irene"]);
+    expect(values.get(achievementStorageKey)).toBe(JSON.stringify(["game-won", "win-irene"]));
+  });
+
   it("renders unlocked and locked achievements with explicit states", () => {
     const markup = renderToStaticMarkup(
       <AchievementsScreen unlocked={["game-won", "win-paul"]} onBack={() => undefined} />,
