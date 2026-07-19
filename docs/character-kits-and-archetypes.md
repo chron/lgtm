@@ -158,10 +158,26 @@ Odin's cards do not independently duplicate his passive's Stun. They create Revi
 
 - **Fantasy:** quietly finish exactly what needs finishing, often before anyone realises it was blocked.
 - **Passive:** **Quietly Done** — whenever Verified Work completes a requirement, draw 1 card.
-- **Starter:** **Already Fixed** — Flexible 3, Verified.
 - **Core space:** precise Flexible Work, requirement completion, quiet automation, draw chains.
 - **Bridges:** Generated tokens provide exact finishing points; Seb spreads completion opportunities; Scripts soften bars for later cascades.
-- **Rare direction:** a multi-completion turn or a payoff that repeats precise Work across nearly complete requirements.
+
+Irene's catalogue is **LOCKED** for its first playable pass. Values may still move during playtesting.
+
+| Slot | Card | Cost | Effect |
+| --- | --- | ---: | --- |
+| Starter | **Already Fixed** | 1 | Flexible 3, Verified. |
+| Normal | **Quietly Automated** | 1 | Flexible 1, Verified. Install Script 1. |
+| Normal | **Last 10%** | 0 | Flexible 2, Verified. Only target a requirement with 2 or less Work remaining. Exhaust. |
+| Normal | **No Fuss** | 1 | Flexible 3, Verified. If it completes the requirement, gain 1 Focus. |
+| Normal | **While I'm Here** | 1 | Flexible 2, Verified. If it completes the requirement, add 2 Verified Work to another incomplete requirement on that Task. |
+| Normal | **Quick Study** | 1 | Generate a zero-cost Verified Work card matching the last Work card's printed discipline and Work. Exhaust. |
+| Rare | **All Sorted** | 1 | Complete every requirement with 3 or less Work remaining using Verified Work. Exhaust. |
+
+**Quick Study** copies only printed discipline and Work amount, not tags, quality, owner, bonuses, automation, or other effects. Its copy is Generated and Exhausts when played. Quick Study is unplayable until a Work card has been played that Day.
+
+**While I'm Here** resolves its targeted Work first. On completion, its second hit goes to the incomplete requirement on the same Task with the least Work remaining, using board order as the tie-breaker. **All Sorted** snapshots every open requirement with 1–3 Work remaining, then fills each with exactly enough Verified Work to complete it. It is unplayable when no requirement qualifies.
+
+Quietly Done triggers separately whenever any source of Verified Work completes a requirement, including printed Work, While I'm Here's second hit, CI Runner, explicit Script triggers, and start-of-Day Scripts. Multiple simultaneous completions draw multiple cards. Card-specific Focus refunds and passive draws may overfill their ordinary counters and hand size; the engine is allowed to pop off.
 
 ### Madi — AI automation engine
 
