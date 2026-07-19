@@ -185,6 +185,57 @@ export interface CycleState {
   intentProtections: Partial<Record<IntentDefinition["kind"], number>>;
   defects: number;
   techDebtAdded: number;
+  boss?: BossEncounterState;
+}
+
+export type BossPhase = "build" | "stakeholder-review" | "launch-window";
+
+export type BossEffectTarget =
+  | { kind: "task"; taskId: string; discipline?: Discipline }
+  | {
+      kind: "open-requirement";
+      order: "most-remaining" | "least-remaining" | "most-progress";
+      discipline?: Discipline;
+    }
+  | { kind: "all-open-tasks"; discipline?: Discipline };
+
+export type BossEffect =
+  | {
+      kind: "spawn-task";
+      task: TaskDefinition;
+      requiredForLaunch: boolean;
+    }
+  | { kind: "scope"; target: BossEffectTarget; amount: number }
+  | {
+      kind: "work";
+      target: BossEffectTarget;
+      amount: number;
+      workKind: WorkKind;
+    }
+  | { kind: "regression"; target: BossEffectTarget; amount: number }
+  | { kind: "crunch"; moraleLoss: number };
+
+interface QueuedBossEffect {
+  id: string;
+  phase: BossPhase;
+  effect: BossEffect;
+}
+
+interface BossTransitionNotice {
+  from: BossPhase;
+  to: BossPhase;
+  title: string;
+  summary: string;
+  resolvedEffects: readonly string[];
+}
+
+export interface BossEncounterState {
+  bossId: string;
+  phase: BossPhase;
+  effectQueue: QueuedBossEffect[];
+  requiredSpawnedTaskIds: string[];
+  nextEffectId: number;
+  transitionNotice?: BossTransitionNotice;
 }
 
 interface CardRewardState {
@@ -261,6 +312,22 @@ type RunHistoryEvent =
       eventId: string;
       choiceId: string;
       outcome: readonly string[];
+    }
+  | { kind: "boss-selected"; bossId: string }
+  | {
+      kind: "boss-phase-changed";
+      bossId: string;
+      from: BossPhase;
+      to: BossPhase;
+      day: number;
+    }
+  | {
+      kind: "boss-effect-resolved";
+      bossId: string;
+      phase: BossPhase;
+      effectId: string;
+      day: number;
+      label: string;
     };
 
 export interface RunState {
@@ -285,6 +352,7 @@ export interface RunState {
   mapModifiers: EventMapModifier[];
   queuedBountyToolOffers: number;
   history: RunHistoryEvent[];
+  selectedBossId: string;
 }
 
 interface TaskReport {

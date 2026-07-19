@@ -219,7 +219,7 @@ describe("Irene's completion engine", () => {
       { discipline: "infra", verified: 8 },
     ]);
     expect(state.run?.cycle?.hand).toHaveLength(handBefore + 2);
-    expect(state.run?.history.at(-1)).toMatchObject({
+    expect(state.run?.history.findLast((event) => event.kind === "card-played")).toMatchObject({
       label: "Frontend +2 verified · Backend spill +2 · Draw 2",
     });
   });

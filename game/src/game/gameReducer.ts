@@ -13,10 +13,16 @@ import {
   toolIds,
 } from "../domain/content";
 import { getEvent } from "../domain/events";
+import {
+  getBossDefinition,
+  getEncounterCycleDefinition,
+  selectBossDefinition,
+} from "../domain/bosses";
 import type {
   CardInstance,
   CycleReport,
   CycleState,
+  CycleDefinition,
   DeveloperId,
   Discipline,
   MapNodeKind,
@@ -25,6 +31,12 @@ import type {
   TaskState,
   ToolId,
 } from "../domain/models";
+import {
+  acknowledgeBossTransition,
+  createBossEncounter,
+  reconcileBossEncounter,
+  resolveOpeningBossEffects,
+} from "./bossEngine";
 import {
   applyCardResolutionToTask,
   absorbMoraleDamage,
@@ -92,6 +104,7 @@ export type GameAction =
       target: CardTarget;
     }
   | { type: "END_DAY" }
+  | { type: "ACKNOWLEDGE_BOSS_TRANSITION" }
   | { type: "SHIP_TASK"; taskId: string }
   | { type: "CONTINUE_REPORT" }
   | { type: "CHOOSE_CARD_REWARD"; cardId: string }
@@ -110,6 +123,7 @@ export const initialGameState: GameState = {
 
 function createRun(seed = 0x5eed1234): RunState {
   const normalizedSeed = normalizeSeed(seed);
+  const boss = selectBossDefinition(normalizedSeed);
   return {
     seed: normalizedSeed,
     rngState: normalizedSeed,
@@ -131,7 +145,8 @@ function createRun(seed = 0x5eed1234): RunState {
     nextRewardModifiers: [],
     mapModifiers: [],
     queuedBountyToolOffers: 0,
-    history: [],
+    history: [{ kind: "boss-selected", bossId: boss.id }],
+    selectedBossId: boss.id,
   };
 }
 
@@ -350,8 +365,12 @@ function createSideQuestState(cycle: CycleState, discipline: Discipline): TaskSt
   };
 }
 
-function createCycleState(run: RunState, nodeId: string, cycleId: string): CycleState {
-  const definition = getCycle(cycleId);
+function createCycleState(
+  run: RunState,
+  nodeId: string,
+  cycleId: string,
+  definition: CycleDefinition = getCycle(cycleId),
+): CycleState {
   const openingFocus = run.nextCycleModifiers
     .filter((modifier) => modifier.kind === "opening-focus")
     .reduce((total, modifier) => total + modifier.amount, 0);
@@ -404,7 +423,7 @@ function createCycleState(run: RunState, nodeId: string, cycleId: string): Cycle
         : protections,
     {},
   );
-  return {
+  const cycle: CycleState = {
     nodeId,
     cycleId,
     startingMorale: run.morale,
@@ -438,6 +457,7 @@ function createCycleState(run: RunState, nodeId: string, cycleId: string): Cycle
     defects: 0,
     techDebtAdded: 0,
   };
+  return cycle;
 }
 
 function addTechDebt(run: RunState, amount: number): RunState {
@@ -491,7 +511,7 @@ function finishCycle(
 }
 
 function completeShippedCycle(run: RunState, cycle: CycleState): GameState {
-  const definition = getCycle(cycle.cycleId);
+  const definition = getEncounterCycleDefinition(cycle);
   const creditsGained = 20 + (definition.maxDays - cycle.day) * 5;
   const moraleDelta = run.morale - cycle.startingMorale;
   const report = createCycleReport(
@@ -507,7 +527,7 @@ function completeShippedCycle(run: RunState, cycle: CycleState): GameState {
 }
 
 function missCycle(run: RunState, cycle: CycleState): GameState {
-  const incident = getCycle(cycle.cycleId).kind === "incident";
+  const incident = getEncounterCycleDefinition(cycle).kind === "incident";
   const finalMorale = run.morale - (incident ? 5 : 3);
   const missedDebt = incident ? 4 : 3;
   const missedCycle = { ...cycle, techDebtAdded: cycle.techDebtAdded + missedDebt };
@@ -646,7 +666,7 @@ function removeRegressionWork(task: TaskState, discipline: Discipline, amount: n
 }
 
 function endDay(run: RunState, cycle: CycleState): GameState {
-  const definition = getCycle(cycle.cycleId);
+  const definition = getEncounterCycleDefinition(cycle);
   const retainedHand = cycle.hand.filter(
     (card) => !card.temporary && getCardForInstance(card).retain,
   );
@@ -760,6 +780,24 @@ function endDay(run: RunState, cycle: CycleState): GameState {
   }
 
   if (cycle.day >= definition.maxDays) {
+    if (cycle.boss) {
+      return {
+        screen: { name: "retro", outcome: "defeat", cause: "final-release" },
+        run: {
+          ...nextRun,
+          cycle: null,
+          history: [
+            ...nextRun.history,
+            {
+              kind: "cycle-finished",
+              nodeId: cycle.nodeId,
+              outcome: "missed",
+              day: cycle.day,
+            },
+          ],
+        },
+      };
+    }
     let deadlineRun: RunState = nextRun;
     let deadlineCycle = resolvedCycle;
     for (const task of resolvedCycle.tasks) {
@@ -880,6 +918,21 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         (node.kind === "cycle" || node.kind === "incident" || node.kind === "boss") &&
         node.cycleId
       ) {
+        if (node.kind === "boss") {
+          const boss = getBossDefinition(runAtNode.selectedBossId);
+          const baseCycle = createCycleState(runAtNode, node.id, node.cycleId, boss.project);
+          const bossCycle: CycleState = { ...baseCycle, boss: createBossEncounter(boss) };
+          const opened = resolveOpeningBossEffects({ ...runAtNode, cycle: bossCycle }, bossCycle);
+          return {
+            screen: { name: "cycle", nodeId: node.id, cycleId: node.cycleId },
+            run: {
+              ...opened.run,
+              cycle: opened.cycle,
+              nextCycleModifiers: [],
+              pendingBounties: [],
+            },
+          };
+        }
         const cycle = createCycleState(runAtNode, node.id, node.cycleId);
         return {
           screen: { name: "cycle", nodeId: node.id, cycleId: node.cycleId },
@@ -1026,18 +1079,37 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ],
       };
       nextRun = addTechDebt(nextRun, resolution.techDebtAdded);
+      if (nextRun.cycle?.boss) {
+        const reconciled = reconcileBossEncounter(nextRun, nextRun.cycle);
+        nextRun = reconciled.run;
+      }
       return { ...state, run: nextRun };
     }
 
     case "END_DAY":
       if (state.screen.name !== "cycle" || !state.run?.cycle) return state;
-      return endDay(state.run, state.run.cycle);
+      {
+        const ended = endDay(state.run, state.run.cycle);
+        if (ended.screen.name !== "cycle" || !ended.run?.cycle?.boss) return ended;
+        const reconciled = reconcileBossEncounter(ended.run, ended.run.cycle);
+        return { ...ended, run: reconciled.run };
+      }
+
+    case "ACKNOWLEDGE_BOSS_TRANSITION": {
+      if (state.screen.name !== "cycle" || !state.run?.cycle?.boss) return state;
+      const acknowledged = acknowledgeBossTransition(state.run, state.run.cycle);
+      return { ...state, run: acknowledged.run };
+    }
 
     case "SHIP_TASK": {
       if (state.screen.name !== "cycle" || !state.run?.cycle) return state;
       const shipped = applyTaskShipping(state.run, state.run.cycle, action.taskId);
       if (!shipped) return state;
       if (shipped.run.morale <= 0) return taskShippingDefeat(shipped.run);
+      if (shipped.cycle.boss) {
+        const reconciled = reconcileBossEncounter(shipped.run, shipped.cycle);
+        return { ...state, run: reconciled.run };
+      }
       return isCycleShipped(shipped.cycle)
         ? completeShippedCycle(shipped.run, shipped.cycle)
         : { ...state, run: shipped.run };

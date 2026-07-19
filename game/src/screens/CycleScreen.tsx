@@ -6,13 +6,8 @@ import { PassiveChip } from "../components/PassiveChip";
 import { RunVitals } from "../components/RunVitals";
 import { TaskPanel } from "../components/TaskPanel";
 import { TargetingArrow } from "../components/TargetingArrow";
-import {
-  disciplineLabel,
-  formatIntent,
-  getCardForInstance,
-  getCycle,
-  getDeveloper,
-} from "../domain/content";
+import { disciplineLabel, formatIntent, getCardForInstance, getDeveloper } from "../domain/content";
+import { getBossDefinition, getBossPhase, getEncounterCycleDefinition } from "../domain/bosses";
 import type {
   CardInstance,
   CardTag,
@@ -21,6 +16,7 @@ import type {
   DeveloperId,
 } from "../domain/models";
 import { getCardPresentation } from "../game/presentation";
+import { bossPhaseLabel } from "../game/bossEngine";
 import type { CharacterCue } from "../game/presentation";
 import {
   absorbMoraleDamage,
@@ -82,11 +78,12 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
   const [reaction, setReaction] = useState<ReactionState>();
   const [reactingPassiveIds, setReactingPassiveIds] = useState<DeveloperId[]>([]);
   const cycle = run?.cycle;
-  const maxDays = cycle ? getCycle(cycle.cycleId).maxDays : 0;
+  const maxDays = cycle ? getEncounterCycleDefinition(cycle).maxDays : 0;
   const activeInstanceId = aim?.instanceId;
   const selectedCard = cycle?.hand.find((instance) => instance.instanceId === activeInstanceId);
   const selectedOwnerId = selectedCard ? getCardForInstance(selectedCard).ownerId : undefined;
   const resolvingCard = reaction?.level === "hero";
+  const resolvingBoss = Boolean(cycle?.boss?.transitionNotice);
 
   useEffect(() => {
     if (aim && !cycle?.hand.some((instance) => instance.instanceId === aim.instanceId)) {
@@ -169,7 +166,8 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
   }, [dayBanner]);
 
   if (!run || !cycle) return null;
-  const definition = getCycle(cycle.cycleId);
+  const definition = getEncounterCycleDefinition(cycle);
+  const boss = cycle.boss ? getBossDefinition(cycle.boss.bossId) : undefined;
   const scriptMultiplier = run.tools.includes("cron-upgrade") ? 2 : 1;
   const moraleIncoming = incomingMorale(cycle);
   const incomingDamage = absorbMoraleDamage(cycle.block, moraleIncoming);
@@ -211,7 +209,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
   }
 
   function beginAim(instanceId: string, event: React.PointerEvent<HTMLButtonElement>) {
-    if (event.button !== 0 || resolvingDay || resolvingCard) return;
+    if (event.button !== 0 || resolvingDay || resolvingCard || resolvingBoss) return;
     const instance = cycle?.hand.find((candidate) => candidate.instanceId === instanceId);
     if (!instance || getCardForInstance(instance).kind === "status") return;
     const rect = event.currentTarget.getBoundingClientRect();
@@ -417,6 +415,11 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
             aria-label={squadTargetable ? squadResolution.label : "Squad status"}
           >
             {definition.kind === "incident" && <span className="status-incident">Incident</span>}
+            {cycle.boss && (
+              <span className="status-boss-phase">
+                Final Release · {bossPhaseLabel(cycle.boss.phase)}
+              </span>
+            )}
             {cycle.block > 0 && <span className="status-buff">Block {cycle.block}</span>}
             {cycle.prototypePower > 0 && (
               <button
@@ -576,7 +579,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
               selectedCard={selectedCard}
               hoveredTargetKey={aim?.hoveredTargetKey}
               resolving={ceremonyItem?.taskId === task.taskId}
-              shippingDisabled={resolvingDay || resolvingCard}
+              shippingDisabled={resolvingDay || resolvingCard || resolvingBoss}
               onTarget={() => undefined}
               onShip={shipTask}
             />
@@ -610,7 +613,9 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
                 instance={instance}
                 effectiveCost={cost}
                 selected={activeInstanceId === instance.instanceId}
-                disabled={unplayable || resolvingDay || resolvingCard || cost > cycle.focus}
+                disabled={
+                  unplayable || resolvingDay || resolvingCard || resolvingBoss || cost > cycle.focus
+                }
                 onPointerDown={
                   unplayable ? undefined : (event) => beginAim(instance.instanceId, event)
                 }
@@ -632,7 +637,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
               className="button button--secondary cycle-action"
               type="button"
               data-tutorial-anchor="end-day"
-              disabled={resolvingDay || resolvingCard}
+              disabled={resolvingDay || resolvingCard || resolvingBoss}
               onClick={startEndDay}
             >
               <strong>End Day</strong>
@@ -679,6 +684,32 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
         <output className="day-banner" aria-live="polite">
           {dayBanner}
         </output>
+      )}
+
+      {cycle.boss?.transitionNotice && boss && (
+        <dialog className="boss-transition" open aria-labelledby="boss-phase-title">
+          <div className="boss-transition__slash" aria-hidden="true" />
+          <img src={getBossPhase(boss, cycle.boss.phase).reactionArt} alt="" />
+          <div className="boss-transition__copy">
+            <span>Final Release · Phase Change</span>
+            <h2 id="boss-phase-title">{cycle.boss.transitionNotice.title}</h2>
+            <p>{cycle.boss.transitionNotice.summary}</p>
+            {cycle.boss.transitionNotice.resolvedEffects.length > 0 && (
+              <ul>
+                {cycle.boss.transitionNotice.resolvedEffects.map((effect) => (
+                  <li key={effect}>{effect}</li>
+                ))}
+              </ul>
+            )}
+            <button
+              className="button button--primary"
+              type="button"
+              onClick={() => dispatch({ type: "ACKNOWLEDGE_BOSS_TRANSITION" })}
+            >
+              Back to Work
+            </button>
+          </div>
+        </dialog>
       )}
 
       {reaction && <CharacterReaction key={reaction.id} cue={reaction} />}

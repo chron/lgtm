@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type { DispatchProps, RunProps } from "../app/types";
 import { CardCollectionEntry } from "../components/CardCollectionBrowser";
 import { CharacterToken } from "../components/CharacterToken";
+import { getBossDefinition } from "../domain/bosses";
 import { isMapNodeAvailable, mapNodes } from "../domain/content";
 import type { MapNode, RunState } from "../domain/models";
 import { effectiveMapEdges, revealedMapNodeIds } from "../game/eventResolution";
@@ -64,6 +65,7 @@ export function MapScreen({ dispatch, run, onInspectDeck }: MapScreenProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const edges = run ? effectiveMapEdges(run) : [];
   const revealed = run ? revealedMapNodeIds(run) : new Set<string>();
+  const boss = run ? getBossDefinition(run.selectedBossId) : undefined;
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -95,6 +97,22 @@ export function MapScreen({ dispatch, run, onInspectDeck }: MapScreenProps) {
           <CardCollectionEntry count={run?.deck.length ?? 0} onOpen={onInspectDeck} />
         </div>
       </div>
+
+      {boss && (
+        <aside className="boss-preview" aria-label={`Final Review: ${boss.stakeholder}`}>
+          <div className="boss-preview__portrait">
+            <img src={boss.portrait} alt="" />
+            <span>Final Review</span>
+          </div>
+          <div className="boss-preview__copy">
+            <small>Stakeholder</small>
+            <strong>{boss.stakeholder}</strong>
+            <b>{boss.projectTitle}</b>
+            <p>{boss.warning}</p>
+          </div>
+          <span className="boss-preview__stamp">Revealed</span>
+        </aside>
+      )}
 
       <div className="map-viewport" ref={viewportRef} aria-label="Run map">
         <div className="map-canvas">

@@ -21,6 +21,7 @@ import { SquadScreen } from "../screens/SquadScreen";
 import { TitleScreen } from "../screens/TitleScreen";
 import { ToolRewardScreen } from "../screens/ToolRewardScreen";
 import { developers } from "../domain/content";
+import { eventDefinitions } from "../domain/events";
 import type { CardInstance } from "../domain/models";
 import { logGameAction } from "../game/actionLog";
 import type { GameAction } from "../game/gameReducer";
@@ -37,7 +38,7 @@ function createAppInitialState(base: GameState): GameState {
   const qa = searchParams.get("qa");
   if (
     !import.meta.env.DEV ||
-    !["paul", "madi", "odin", "irene", "basics", "event"].includes(qa ?? "")
+    !["paul", "madi", "odin", "irene", "basics", "event", "boss"].includes(qa ?? "")
   ) {
     return base;
   }
@@ -46,7 +47,11 @@ function createAppInitialState(base: GameState): GameState {
   let state = gameReducer(base, {
     type: "START_RUN",
     seed:
-      qa === "event" ? (Number.isFinite(eventSeed) && eventSeed > 0 ? eventSeed : 7) : 0x0facade,
+      qa === "event" || qa === "boss"
+        ? Number.isFinite(eventSeed) && eventSeed > 0
+          ? eventSeed
+          : 7
+        : 0x0facade,
   });
   const squad =
     qa === "madi"
@@ -62,15 +67,61 @@ function createAppInitialState(base: GameState): GameState {
     state = gameReducer(state, { type: "TOGGLE_DEVELOPER", developerId });
   }
   state = gameReducer(state, { type: "CONFIRM_SQUAD" });
-  if (qa === "event" && state.run) {
-    state = {
+  if (qa === "boss" && state.run) {
+    const bossMap: GameState = {
       screen: { name: "map" },
+      run: {
+        ...state.run,
+        currentNodeId: "event-4",
+        completedNodeIds: [
+          "cycle-1",
+          "event-1",
+          "cycle-2",
+          "incident-1",
+          "event-2",
+          "cycle-3",
+          "event-3",
+          "cycle-4",
+          "incident-2",
+          "event-4",
+        ],
+      },
+    };
+    if (searchParams.get("phase") !== "review") return bossMap;
+    const bossCycle = gameReducer(bossMap, { type: "VISIT_NODE", nodeId: "final-release" });
+    if (!bossCycle.run?.cycle) return bossCycle;
+    return {
+      ...bossCycle,
+      run: {
+        ...bossCycle.run,
+        cycle: {
+          ...bossCycle.run.cycle,
+          focus: 10,
+          tasks: bossCycle.run.cycle.tasks.map((task) => ({
+            ...task,
+            requirements: task.requirements.map((requirement) => ({
+              ...requirement,
+              verified: Math.min(4, requirement.target),
+            })),
+          })),
+        },
+      },
+    };
+  }
+  if (qa === "event" && state.run) {
+    const requestedEventId = searchParams.get("event");
+    state = {
+      screen:
+        requestedEventId && eventDefinitions.some((event) => event.id === requestedEventId)
+          ? { name: "event", nodeId: "event-1", eventId: requestedEventId }
+          : { name: "map" },
       run: {
         ...state.run,
         currentNodeId: "cycle-1",
         completedNodeIds: ["cycle-1"],
       },
     };
+    if (state.screen.name === "event") return state;
     return gameReducer(state, { type: "VISIT_NODE", nodeId: "event-1" });
   }
   if ((qa === "odin" || qa === "irene") && state.run) {

@@ -1,4 +1,5 @@
-import { disciplineLabel, getCardForInstance, getCycle } from "../domain/content";
+import { getEncounterCycleDefinition } from "../domain/bosses";
+import { disciplineLabel, getCardForInstance } from "../domain/content";
 import type {
   CardDefinition,
   CardInstance,
@@ -117,7 +118,7 @@ export function isTaskReady(task: TaskState): boolean {
 }
 
 export function isCycleShipped(cycle: CycleState): boolean {
-  const primaryTaskId = getCycle(cycle.cycleId).primaryTaskId;
+  const primaryTaskId = getEncounterCycleDefinition(cycle).primaryTaskId;
   if (primaryTaskId) {
     const primaryShipped = cycle.tasks.some(
       (task) => task.taskId === primaryTaskId && task.status === "shipped",
@@ -160,7 +161,7 @@ function totalWork(cycle: CycleState): number {
 
 export function getScheduledIntent(cycle: CycleState, task: TaskState) {
   if (task.status === "shipped") return undefined;
-  const definition = getCycle(cycle.cycleId).tasks.find(
+  const definition = getEncounterCycleDefinition(cycle).tasks.find(
     (candidate) => candidate.id === task.taskId,
   );
   return definition?.intents[cycle.day - task.spawnedDay];
@@ -864,7 +865,7 @@ export function createCycleReport(
   techDebtAdded: number,
   toolReward = false,
 ): CycleReport {
-  const definition = getCycle(cycle.cycleId);
+  const definition = getEncounterCycleDefinition(cycle);
   return {
     nodeId: cycle.nodeId,
     cycleName: definition.name,

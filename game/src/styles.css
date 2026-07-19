@@ -491,7 +491,7 @@ main:focus {
   min-height: 620px;
   padding-top: clamp(1.25rem, 3vh, 2.5rem);
   padding-bottom: clamp(1rem, 2vh, 1.75rem);
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   overflow: hidden;
 }
 
@@ -504,6 +504,116 @@ main:focus {
 
 .map-screen .display-title {
   font-size: clamp(3.7rem, 9vw, 7rem);
+}
+
+.boss-preview {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  min-height: 114px;
+  margin: 0 8px 1rem 0;
+  border: var(--line);
+  border-radius: 0.4rem 1rem 0.55rem 0.8rem;
+  background: var(--yellow);
+  box-shadow: 6px 6px 0 var(--ink);
+  grid-template-columns: 126px minmax(0, 1fr) auto;
+  overflow: hidden;
+  transform: rotate(-0.25deg);
+}
+
+.boss-preview__portrait {
+  position: relative;
+  min-height: 108px;
+  border-right: var(--line);
+  background: var(--pink);
+  overflow: hidden;
+}
+
+.boss-preview__portrait img {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  width: 94px;
+  max-width: none;
+  filter: drop-shadow(3px 3px 0 var(--ink));
+  transform: translateX(-50%);
+}
+
+.boss-preview__portrait span {
+  position: absolute;
+  right: -1px;
+  bottom: 0;
+  left: -1px;
+  padding: 0.28rem 0.4rem;
+  border-top: 2px solid var(--ink);
+  background: var(--ink);
+  color: var(--panel);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.boss-preview__copy {
+  display: grid;
+  padding: 0.75rem 1rem;
+  grid-template-columns: auto 1fr;
+  align-content: center;
+  align-items: baseline;
+  gap: 0.05rem 0.5rem;
+}
+
+.boss-preview__copy small,
+.boss-preview__copy strong,
+.boss-preview__copy b {
+  text-transform: uppercase;
+}
+
+.boss-preview__copy small {
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.boss-preview__copy strong {
+  font-family: var(--display);
+  font-size: 1.55rem;
+  line-height: 0.9;
+}
+
+.boss-preview__copy b,
+.boss-preview__copy p {
+  grid-column: 1 / -1;
+}
+
+.boss-preview__copy b {
+  margin-top: 0.3rem;
+  font-family: var(--display);
+  font-size: clamp(1.15rem, 3vw, 1.8rem);
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.boss-preview__copy p {
+  margin: 0.24rem 0 0;
+  font-size: 0.73rem;
+  font-weight: 800;
+}
+
+.boss-preview__stamp {
+  align-self: center;
+  margin-right: 1.2rem;
+  padding: 0.32rem 0.48rem;
+  border: 3px solid var(--coral);
+  color: var(--coral);
+  font-family: var(--display);
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(5deg);
 }
 
 .map-viewport {
@@ -2322,6 +2432,123 @@ main:focus {
   transform: translate(-50%, -50%) rotate(-1deg);
 }
 
+.status-boss-phase {
+  padding: 0.28rem 0.48rem;
+  border: 2px solid var(--ink);
+  background: var(--coral);
+  color: var(--panel);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.boss-transition {
+  position: fixed;
+  z-index: var(--z-reaction);
+  display: grid;
+  inset: 0;
+  width: auto;
+  max-width: none;
+  height: auto;
+  max-height: none;
+  padding: clamp(1rem, 4vw, 4rem);
+  border: 0;
+  margin: 0;
+  background: color-mix(in oklch, var(--ink) 78%, transparent);
+  grid-template-columns: minmax(220px, 0.82fr) minmax(300px, 1.18fr);
+  align-items: center;
+  overflow: hidden;
+  animation: boss-phase-enter 520ms var(--ease-out-expo) both;
+}
+
+.boss-transition__slash {
+  position: absolute;
+  inset: 10% -8%;
+  border-top: 6px solid var(--ink);
+  border-bottom: 6px solid var(--ink);
+  background: var(--coral);
+  box-shadow: 0 14px 0 color-mix(in oklch, var(--ink) 42%, transparent);
+  transform: skewY(-5deg);
+}
+
+.boss-transition > img {
+  position: relative;
+  z-index: 1;
+  align-self: end;
+  justify-self: center;
+  width: min(38vw, 470px);
+  max-height: 96vh;
+  object-fit: contain;
+  filter: drop-shadow(10px 10px 0 var(--ink));
+}
+
+.boss-transition__copy {
+  position: relative;
+  z-index: 2;
+  width: min(620px, 100%);
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+  border: 4px solid var(--ink);
+  background: var(--panel);
+  box-shadow: 11px 11px 0 var(--ink);
+  transform: rotate(1deg);
+}
+
+.boss-transition__copy > span {
+  display: inline-block;
+  padding: 0.35rem 0.55rem;
+  background: var(--yellow);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.boss-transition__copy h2 {
+  margin: 0.7rem 0 0.5rem;
+  color: var(--coral);
+  font-family: var(--display);
+  font-size: clamp(3rem, 8vw, 6.8rem);
+  letter-spacing: -0.065em;
+  line-height: 0.78;
+  text-shadow: 4px 4px 0 var(--ink);
+  text-transform: uppercase;
+  -webkit-text-stroke: 2px var(--ink);
+}
+
+.boss-transition__copy p {
+  margin: 1rem 0;
+  font-weight: 800;
+}
+
+.boss-transition__copy ul {
+  display: grid;
+  margin: 0 0 1.2rem;
+  padding: 0;
+  gap: 0.35rem;
+  list-style: none;
+}
+
+.boss-transition__copy li {
+  padding: 0.35rem 0.5rem;
+  border: 2px solid var(--ink);
+  background: var(--pink);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+@keyframes boss-phase-enter {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .character-reaction {
   position: fixed;
   z-index: var(--z-reaction);
@@ -3310,6 +3537,26 @@ main:focus {
     justify-content: flex-start;
   }
 
+  .boss-preview {
+    grid-template-columns: 92px minmax(0, 1fr);
+  }
+
+  .boss-preview__portrait img {
+    width: 78px;
+  }
+
+  .boss-preview__stamp {
+    display: none;
+  }
+
+  .boss-preview__copy {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .boss-preview__copy p {
+    font-size: 0.66rem;
+  }
+
   .map-canvas {
     width: 100%;
     min-height: 1700px;
@@ -3343,6 +3590,19 @@ main:focus {
     height: auto;
     gap: 1rem;
     flex-direction: column;
+  }
+
+  .boss-transition {
+    grid-template-columns: 34% minmax(0, 1fr);
+    padding: 1rem;
+  }
+
+  .boss-transition > img {
+    width: 42vw;
+  }
+
+  .boss-transition__copy h2 {
+    font-size: clamp(2.4rem, 10vw, 4.5rem);
   }
 
   .cycle-hud {
