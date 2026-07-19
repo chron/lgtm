@@ -300,11 +300,27 @@ Well Organised triggers for cards Exhausted by playing them and by effects that 
 ### Levi — Chain payoff
 
 - **Fantasy:** put the headphones on, stay on one problem, and let momentum become a COMBO meter.
-- **Passive direction:** consecutive Work cards on the Chained Task gain output based on Chain.
-- **Starter direction:** **Heads Down** — Work that starts or advances Chain and rewards staying on target.
+- **Passive:** **Momentum** — Work targeting the Chained Task gains Work equal to the current Chain.
 - **Core space:** same-Task sequencing, cheap cards, cards-played payoffs, shipping one Task decisively.
 - **Bridges:** Kirsten supplies many tiny plays; Irene draws through completions; Paul refunds Focus when the focused Task ships.
-- **Rare direction:** **Flow State** — preserve or dramatically amplify Chain for the rest of the Day.
+
+Levi's catalogue is **LOCKED** for its first playable pass. Values may still move during playtesting.
+
+| Slot | Card | Cost | Effect |
+| --- | --- | ---: | --- |
+| Starter | **Heads Down** | 1 | Frontend 3, Verified. Advance Chain one additional time. |
+| Normal | **Tiny Commit** | 0 | Frontend 1, Verified. Exhaust. |
+| Normal | **Keep the Thread** | 1 | Flexible 2, Verified. If it continues an existing Chain, draw 1. |
+| Normal | **Stacked PRs** | 1 | Frontend 2, Verified. Advance Chain two additional times. |
+| Normal | **Do Not Disturb** | 1 | Gain 2 Block for each Chain. Exhaust. |
+| Normal | **Context Loaded** | 1 | Generate one Snippet for every 2 Chain. Exhaust. |
+| Rare | **Flow State** | 1 | Double Chain. It no longer resets when targeting a different Task this Day. Exhaust. |
+
+Chain advances before the Work resolves, and **Momentum** uses the resulting value. The first ordinary targeted play starts Chain at 1; **Heads Down** then advances it once more, so it produces 5 Verified Frontend Work before other bonuses. **Stacked PRs** advances Chain three times in total: once for targeting and twice from its own effect. The Momentum bonus inherits the played card's Work quality.
+
+**Keep the Thread** checks whether its target was already Chained before the play. Squad-targeted cards do not move or break Chain. **Do Not Disturb** and **Context Loaded** require an existing Chain; Context Loaded uses complete pairs. **Flow State** doubles the current Chain and, for the rest of the Day, changing Tasks transfers that value before advancing normally instead of resetting it to 1. Chain still resets at the start of the next Day.
+
+Focused builds need encounters that let this engine breathe. **Convert Marketing Site to Astro** is the first showcase: one enormous Frontend requirement, enough Days to build momentum, and escalating intents that create pressure without routinely spawning extra Tasks.
 
 ## Archetypes and squad pairings
 
@@ -429,8 +445,6 @@ A character becomes playable only when their passive, Starter, five normal cards
 
 ## Open design questions
 
-- Does Levi's passive add the full Chain value, or a smaller stepped bonus? Start generous and tune from playtests.
-- Does Nick's `No Meetings` draw the entire remaining pile, refill to a larger hand, or create temporary copies? The fantasy is locked; the safest legible rule is not.
 - Does Steph need a distinct **Macro** token, or can her kit use Snippets plus immediate Script triggers?
 - Should Tech Debt payoffs inspect all persistent Debt, or only Debt currently visible in hand/draw/discard? Prefer the persistent deck count unless a card explicitly Exhausts a visible copy.
 - How much distributed Work can Seb create before three-Task encounters become automatic? Preserve the cascade, then tune values.
