@@ -36,6 +36,8 @@ function nodeGlyph(node: MapNode): string {
       return "?";
     case "shop":
       return "$";
+    case "weekend":
+      return "☀";
     case "retro":
       return "★";
   }
@@ -65,6 +67,7 @@ function visibleNodeLabel(
 function nodeRewardLabel(node: MapNode): string | undefined {
   if (node.kind === "incident") return "Tool + Card";
   if (node.kind === "cycle") return "Card";
+  if (node.kind === "weekend") return "Recover";
 }
 
 export function MapScreen({ dispatch, run, onInspectDeck }: MapScreenProps) {

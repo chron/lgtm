@@ -67,6 +67,8 @@ describe("authored act map", () => {
     expect(new Set(fightCounts)).toEqual(new Set([7, 8, 9]));
 
     for (const route of routes) {
+      expect(route).toContain("weekend-1");
+      expect(route).toContain("weekend-2");
       const incidentCount = route.filter(
         (nodeId) => nodesById.get(nodeId)?.kind === "incident",
       ).length;

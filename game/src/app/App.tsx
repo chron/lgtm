@@ -20,6 +20,7 @@ import { ShopScreen } from "../screens/ShopScreen";
 import { SquadScreen } from "../screens/SquadScreen";
 import { TitleScreen } from "../screens/TitleScreen";
 import { ToolRewardScreen } from "../screens/ToolRewardScreen";
+import { WeekendScreen } from "../screens/WeekendScreen";
 import { developers, getCycle } from "../domain/content";
 import { eventDefinitions } from "../domain/events";
 import type { CardInstance, TaskState } from "../domain/models";
@@ -50,6 +51,7 @@ function createAppInitialState(base: GameState): GameState {
       "retro",
       "final",
       "shop",
+      "weekend",
     ].includes(qa ?? "")
   ) {
     return base;
@@ -293,6 +295,22 @@ function createAppInitialState(base: GameState): GameState {
     };
     return gameReducer(shopMap, { type: "VISIT_NODE", nodeId: "shop-1" });
   }
+  if (qa === "weekend" && state.run) {
+    const requestedMorale = Number(searchParams.get("morale"));
+    const weekendMap: GameState = {
+      screen: { name: "map" },
+      run: {
+        ...state.run,
+        morale:
+          Number.isFinite(requestedMorale) && requestedMorale >= 0
+            ? Math.min(state.run.maxMorale, requestedMorale)
+            : 6,
+        currentNodeId: "event-2",
+        completedNodeIds: ["cycle-1", "event-1", "cycle-2", "incident-1", "event-2"],
+      },
+    };
+    return gameReducer(weekendMap, { type: "VISIT_NODE", nodeId: "weekend-1" });
+  }
   if ((qa === "odin" || qa === "irene") && state.run) {
     state = {
       ...state,
@@ -502,6 +520,17 @@ export function App() {
             dispatch={dispatch}
             run={state.run}
             inventory={state.screen.inventory}
+            onInspectDeck={() =>
+              state.run && setCardCollection({ title: "Deck", cards: state.run.deck })
+            }
+          />
+        );
+        break;
+      case "weekend":
+        screen = (
+          <WeekendScreen
+            dispatch={dispatch}
+            run={state.run}
             onInspectDeck={() =>
               state.run && setCardCollection({ title: "Deck", cards: state.run.deck })
             }

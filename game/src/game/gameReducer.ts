@@ -24,6 +24,13 @@ import {
   type ShopServiceId,
 } from "../domain/shop";
 import {
+  getWeekendChoiceState,
+  weekendRestAmount,
+  weekendSideGigCredits,
+  weekendSideGigMoraleCost,
+  type WeekendChoiceId,
+} from "../domain/weekend";
+import {
   getBossDefinition,
   getEncounterCycleDefinition,
   selectBossDefinition,
@@ -93,6 +100,7 @@ type Screen =
       };
     }
   | { name: "shop"; nodeId: string; inventory: ShopInventoryState }
+  | { name: "weekend"; nodeId: string }
   | {
       name: "retro";
       outcome: "victory" | "defeat";
@@ -134,6 +142,7 @@ export type GameAction =
       instanceId?: string;
     }
   | { type: "REFRESH_SHOP" }
+  | { type: "CHOOSE_WEEKEND"; choiceId: WeekendChoiceId; instanceId?: string }
   | { type: "LEAVE_NODE" }
   | { type: "RETURN_TITLE" };
 
@@ -1096,6 +1105,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         };
       }
 
+      if (node.kind === "weekend") {
+        return {
+          screen: { name: "weekend", nodeId: node.id },
+          run: runAtNode,
+        };
+      }
+
       return state;
     }
 
@@ -1659,6 +1675,50 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ),
         },
         run: { ...state.run, credits: state.run.credits - price },
+      };
+    }
+
+    case "CHOOSE_WEEKEND": {
+      if (state.screen.name !== "weekend" || !state.run) return state;
+      const choice = getWeekendChoiceState(action.choiceId, state.run);
+      if (choice.disabledReason) return state;
+
+      let run = state.run;
+      if (action.choiceId === "rest") {
+        run = {
+          ...run,
+          morale: Math.min(run.maxMorale, run.morale + weekendRestAmount),
+        };
+      } else if (action.choiceId === "side-gig") {
+        run = {
+          ...run,
+          credits: run.credits + weekendSideGigCredits,
+          morale: run.morale - weekendSideGigMoraleCost,
+        };
+      } else {
+        const instance = run.deck.find((card) => card.instanceId === action.instanceId);
+        if (!instance || !canRefactorCard(run, instance)) return state;
+        run = {
+          ...run,
+          deck: run.deck.filter((card) => card.instanceId !== instance.instanceId),
+        };
+      }
+
+      const completedRun = completeNode(run, state.screen.nodeId);
+      return {
+        screen: { name: "map" },
+        run: {
+          ...completedRun,
+          history: [
+            ...completedRun.history,
+            {
+              kind: "weekend-resolved",
+              nodeId: state.screen.nodeId,
+              choiceId: action.choiceId,
+              outcome: choice.outcomes,
+            },
+          ],
+        },
       };
     }
 

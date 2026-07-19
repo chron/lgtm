@@ -22,18 +22,20 @@ function startCycle(
       : nodeId === "cycle-2"
         ? { currentNodeId: "event-1", completedNodeIds: ["cycle-1", "event-1"] }
         : {
-            currentNodeId: "event-4",
+            currentNodeId: "weekend-2",
             completedNodeIds: [
               "cycle-1",
               "event-1",
               "cycle-2",
               "incident-1",
               "event-2",
+              "weekend-1",
               "cycle-3",
               "event-3",
               "cycle-4",
               "incident-2",
               "event-4",
+              "weekend-2",
             ],
           };
   state = {

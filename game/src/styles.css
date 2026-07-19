@@ -769,6 +769,10 @@ main:focus {
   background: var(--blue);
 }
 
+.map-node--weekend .map-node__glyph {
+  background: var(--mint);
+}
+
 .map-node--retro .map-node__glyph {
   background: var(--yellow);
 }
@@ -4192,6 +4196,266 @@ main:focus {
   padding-block: 0.45rem;
 }
 
+.weekend-screen {
+  display: grid;
+  height: 100dvh;
+  min-height: 680px;
+  padding-top: clamp(0.8rem, 2vh, 1.5rem);
+  padding-bottom: 1rem;
+  grid-template-rows: auto minmax(150px, 0.72fr) minmax(220px, 1fr);
+  gap: 0.8rem;
+  overflow: hidden;
+}
+
+.weekend-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.weekend-heading > div:first-child > span {
+  display: inline-block;
+  padding: 0.18rem 0.48rem;
+  border: 2px solid var(--ink);
+  background: var(--mint);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(-1deg);
+}
+
+.weekend-heading h1 {
+  margin: 0.08rem 0 0;
+  color: var(--yellow);
+  font-family: var(--display);
+  font-size: clamp(3.5rem, 8vw, 6.2rem);
+  letter-spacing: -0.06em;
+  line-height: 0.78;
+  text-shadow: 5px 5px 0 var(--ink);
+  -webkit-text-stroke: 2px var(--ink);
+}
+
+.weekend-heading .collection-entry {
+  margin-top: 3.5rem;
+  background: var(--yellow);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.weekend-calendar {
+  position: relative;
+  display: grid;
+  min-height: 0;
+  border: var(--line);
+  background: var(--blue);
+  box-shadow: 7px 7px 0 var(--ink);
+  grid-template-columns: auto 1fr;
+  grid-template-rows: 1fr auto;
+  align-items: center;
+  overflow: hidden;
+  transform: rotate(-0.35deg);
+}
+
+.weekend-calendar::before {
+  position: absolute;
+  top: -10px;
+  left: 0;
+  width: 100%;
+  height: 18px;
+  content: "";
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 28px,
+    var(--ink) 28px 36px,
+    transparent 36px 58px
+  );
+}
+
+.weekend-calendar > span {
+  align-self: stretch;
+  display: grid;
+  min-width: clamp(105px, 16vw, 185px);
+  border-right: var(--line);
+  background: var(--yellow);
+  font-family: var(--display);
+  font-size: clamp(2.4rem, 6vw, 5.2rem);
+  text-transform: uppercase;
+  place-items: center;
+}
+
+.weekend-calendar > b {
+  align-self: end;
+  margin: 0 0 -0.13em clamp(0.7rem, 3vw, 2rem);
+  font-family: var(--display);
+  font-size: clamp(2.2rem, 5vw, 4.5rem);
+  line-height: 0.8;
+  text-transform: uppercase;
+}
+
+.weekend-calendar > strong {
+  z-index: 1;
+  grid-column: 1 / -1;
+  padding: 0.05em 0.2em 0.02em;
+  color: var(--panel);
+  background: var(--coral);
+  font-family: var(--display);
+  font-size: clamp(2.6rem, 7.5vw, 6.5rem);
+  letter-spacing: -0.045em;
+  line-height: 0.78;
+  text-align: center;
+  text-shadow: 4px 4px 0 var(--ink);
+  text-transform: uppercase;
+  transform: rotate(0.5deg);
+  -webkit-text-stroke: 2px var(--ink);
+}
+
+.weekend-calendar > i {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.8rem;
+  padding: 0.2rem 0.45rem;
+  border: 2px solid var(--ink);
+  background: var(--pink);
+  font-family: var(--display);
+  font-size: 1rem;
+  font-style: normal;
+  text-transform: uppercase;
+  transform: rotate(3deg);
+}
+
+.weekend-choice-grid {
+  display: grid;
+  min-height: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.weekend-choice {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  padding: clamp(0.65rem, 1.5vw, 1rem);
+  border: var(--line);
+  background: var(--panel);
+  box-shadow: 6px 6px 0 var(--ink);
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto 1fr auto;
+  align-items: start;
+  gap: 0.35rem 0.55rem;
+  overflow: hidden;
+  text-align: left;
+  transition:
+    transform 180ms var(--ease-out-quint),
+    box-shadow 180ms var(--ease-out-quint);
+}
+
+.weekend-choice--rest {
+  background: color-mix(in oklch, var(--mint) 62%, var(--panel));
+}
+
+.weekend-choice--refactor {
+  background: color-mix(in oklch, var(--blue) 58%, var(--panel));
+}
+
+.weekend-choice--side-gig {
+  background: color-mix(in oklch, var(--yellow) 67%, var(--panel));
+}
+
+.weekend-choice:not(:disabled):hover,
+.weekend-choice:not(:disabled):focus-visible {
+  z-index: 2;
+  box-shadow: 9px 9px 0 var(--ink);
+  transform: translateY(-6px) rotate(-0.4deg);
+}
+
+.weekend-choice:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.68);
+  opacity: 0.52;
+}
+
+.weekend-choice__number,
+.weekend-choice__icon,
+.weekend-choice__copy,
+.weekend-choice__outcomes {
+  position: relative;
+  z-index: 2;
+}
+
+.weekend-choice__number {
+  padding: 0.16rem 0.3rem;
+  border: 2px solid var(--ink);
+  background: var(--panel);
+  font-family: var(--display);
+  font-size: 0.72rem;
+}
+
+.weekend-choice__icon {
+  width: 22px;
+  height: 22px;
+}
+
+.weekend-choice__copy {
+  grid-column: 1 / -1;
+  max-width: 62%;
+}
+
+.weekend-choice__copy strong,
+.weekend-choice__copy small {
+  display: block;
+}
+
+.weekend-choice__copy strong {
+  font-family: var(--display);
+  font-size: clamp(1.35rem, 2.5vw, 2rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.weekend-choice__copy small {
+  margin-top: 0.35rem;
+  font-size: clamp(0.65rem, 1vw, 0.78rem);
+  font-weight: 800;
+}
+
+.weekend-choice__outcomes {
+  display: flex;
+  grid-column: 1 / -1;
+  align-self: end;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.weekend-choice__outcomes b {
+  padding: 0.22rem 0.4rem;
+  border: 2px solid var(--ink);
+  background: var(--panel);
+  font-size: clamp(0.6rem, 0.85vw, 0.72rem);
+  text-transform: uppercase;
+}
+
+.weekend-choice > img {
+  position: absolute;
+  z-index: 1;
+  right: -7%;
+  bottom: -13%;
+  width: 52%;
+  height: 88%;
+  object-fit: contain;
+  object-position: right bottom;
+  pointer-events: none;
+  user-select: none;
+  transform: rotate(3deg);
+  transition: transform 220ms var(--ease-out-quint);
+}
+
+.weekend-choice:not(:disabled):hover > img,
+.weekend-choice:not(:disabled):focus-visible > img {
+  transform: translateY(-3px) rotate(0deg) scale(1.04);
+}
+
 .retro-screen {
   display: grid;
   height: 100dvh;
@@ -4384,6 +4648,26 @@ main:focus {
   .retro-facilitator-note {
     max-width: 100%;
     margin-top: 1.25rem;
+  }
+
+  .weekend-screen {
+    display: block;
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .weekend-calendar {
+    min-height: 190px;
+    margin-top: 1rem;
+  }
+
+  .weekend-choice-grid {
+    margin-top: 1rem;
+  }
+
+  .weekend-choice {
+    min-height: 250px;
   }
 
   .shop-screen {
@@ -4675,6 +4959,27 @@ main:focus {
 
   .shop-wallet {
     width: 100%;
+  }
+
+  .weekend-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .weekend-heading .collection-entry {
+    margin-top: 0;
+  }
+
+  .weekend-calendar {
+    min-height: 165px;
+  }
+
+  .weekend-choice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .weekend-choice {
+    min-height: 220px;
   }
 
   .shop-vendor {

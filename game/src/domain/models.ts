@@ -399,6 +399,12 @@ type RunHistoryEvent =
       choiceId: string;
       outcome: readonly string[];
     }
+  | {
+      kind: "weekend-resolved";
+      nodeId: string;
+      choiceId: "rest" | "refactor" | "side-gig";
+      outcome: readonly string[];
+    }
   | { kind: "boss-selected"; bossId: string }
   | {
       kind: "boss-phase-changed";
@@ -479,7 +485,7 @@ export interface CycleReport {
   peakChain: number;
 }
 
-type MapNodeKind = "cycle" | "incident" | "boss" | "event" | "shop" | "retro";
+type MapNodeKind = "cycle" | "incident" | "boss" | "event" | "shop" | "weekend" | "retro";
 
 type EncounterLineupSlot =
   | "opener"
