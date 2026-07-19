@@ -165,6 +165,11 @@ describe("Madi's automation engine", () => {
       taskId: "status-composer",
       discipline: "frontend",
       label: "Frontend +2 unverified · Script +1 · Trigger +1",
+      generated: false,
+      generatedByCardId: undefined,
+      exhausted: false,
+      cardsPlayedThisDay: 1,
+      chain: { taskId: "status-composer", count: 1 },
     });
   });
 

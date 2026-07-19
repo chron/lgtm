@@ -503,6 +503,18 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
             {cycle.cardsPlayedThisDay > 0 && (
               <span className="status-counter">Plays {cycle.cardsPlayedThisDay}</span>
             )}
+            {cycle.chain.count > 0 && cycle.chain.taskId && (
+              <button
+                className="status-counter status-counter--button"
+                type="button"
+                aria-label={`Chain ${cycle.chain.count} on ${cycle.tasks.find((task) => task.taskId === cycle.chain.taskId)?.name ?? cycle.chain.taskId}. Consecutive targeted cards on this Task increase Chain.`}
+              >
+                Chain ×{cycle.chain.count}
+                <span className="game-tooltip" role="tooltip">
+                  Consecutive targeted cards on the same Task build Chain.
+                </span>
+              </button>
+            )}
             {cycle.lastWorkCard && (
               <button
                 className="status-counter status-counter--button"

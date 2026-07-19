@@ -55,6 +55,11 @@ export function ReportScreen({ dispatch, report }: ReportScreenProps) {
         ))}
       </div>
 
+      <p className="report-combo-summary">
+        {report.cardsPlayed} Plays · {report.generatedCardsPlayed} Generated ·{" "}
+        {report.cardsExhausted} Exhausted · Chain ×{report.peakChain}
+      </p>
+
       <div className="reward-placeholder">
         <strong>
           {shipped ? (report.toolReward ? "Tool and card next" : "Card reward next") : "No reward"}

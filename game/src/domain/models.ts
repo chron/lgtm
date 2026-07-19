@@ -98,6 +98,16 @@ export interface CardInstance {
   dynamicDefinition?: CardDefinition;
   temporary?: boolean;
   generated?: boolean;
+  generatedBy?: {
+    sourceCardId: string;
+    sourceInstanceId: string;
+    day: number;
+  };
+  exhausted?: {
+    day: number;
+    cause: "played" | "effect";
+    sourceCardId?: string;
+  };
 }
 
 export interface ToolDefinition {
@@ -179,6 +189,23 @@ export interface CycleState {
   temporaryCardCounter: number;
   sideQuestCounter: number;
   cardsPlayedThisDay: number;
+  cardsPlayedThisCycle: number;
+  generatedCardsPlayedThisDay: number;
+  generatedCardsPlayedThisCycle: number;
+  cardsExhaustedThisDay: number;
+  cardsExhaustedThisCycle: number;
+  lastPlayedCard?: {
+    cardId: string;
+    instanceId: string;
+    generated: boolean;
+  };
+  lastTargetedTaskId?: string;
+  chain: {
+    taskId?: string;
+    count: number;
+    transfersBetweenTasks: boolean;
+  };
+  peakChain: number;
   prototypePower: number;
   fullStackPower: number;
   cardTagWorkBonuses: Partial<Record<CardTag, number>>;
@@ -314,6 +341,11 @@ type RunHistoryEvent =
       taskId?: string;
       discipline?: Discipline;
       label: string;
+      generated: boolean;
+      generatedByCardId?: string;
+      exhausted: boolean;
+      cardsPlayedThisDay: number;
+      chain?: { taskId: string; count: number };
     }
   | { kind: "card-skipped"; sourceNodeId: string }
   | { kind: "tool-added"; toolId: ToolId; sourceNodeId: string }
@@ -389,6 +421,10 @@ export interface CycleReport {
   techDebtAdded: number;
   toolReward: boolean;
   resolvedIntents: string[];
+  cardsPlayed: number;
+  generatedCardsPlayed: number;
+  cardsExhausted: number;
+  peakChain: number;
 }
 
 export type MapNodeKind = "cycle" | "incident" | "boss" | "event" | "shop" | "retro";

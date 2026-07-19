@@ -100,6 +100,22 @@ export function requirementProgress(requirement: RequirementState): number {
   return requirement.verified + requirement.unverified;
 }
 
+export function isGeneratedCardInstance(instance: CardInstance): boolean {
+  return instance.generated === true || Boolean(instance.generatedBy);
+}
+
+export function advanceChain(cycle: CycleState, taskId: string | undefined): CycleState["chain"] {
+  if (!taskId) return cycle.chain;
+  if (cycle.chain.taskId === taskId) {
+    return { ...cycle.chain, count: cycle.chain.count + 1 };
+  }
+  return {
+    ...cycle.chain,
+    taskId,
+    count: cycle.chain.transfersBetweenTasks ? cycle.chain.count + 1 : 1,
+  };
+}
+
 function remainingWork(requirement: RequirementState): number {
   return Math.max(0, requirement.target - requirementProgress(requirement));
 }
@@ -909,5 +925,9 @@ export function createCycleReport(
     techDebtAdded,
     toolReward,
     resolvedIntents: cycle.resolvedIntents,
+    cardsPlayed: cycle.cardsPlayedThisCycle,
+    generatedCardsPlayed: cycle.generatedCardsPlayedThisCycle,
+    cardsExhausted: cycle.cardsExhaustedThisCycle,
+    peakChain: cycle.peakChain,
   };
 }

@@ -40,11 +40,13 @@ import {
 } from "./bossEngine";
 import {
   applyCardResolutionToTask,
+  advanceChain,
   absorbMoraleDamage,
   createCycleReport,
   getCurrentIntent,
   getScheduledIntent,
   isCycleShipped,
+  isGeneratedCardInstance,
   requirementCompletedByVerifiedWork,
   refreshTaskStatus,
   resolveCardTarget,
@@ -451,6 +453,13 @@ function createCycleState(
     temporaryCardCounter: 0,
     sideQuestCounter: 0,
     cardsPlayedThisDay: 0,
+    cardsPlayedThisCycle: 0,
+    generatedCardsPlayedThisDay: 0,
+    generatedCardsPlayedThisCycle: 0,
+    cardsExhaustedThisDay: 0,
+    cardsExhaustedThisCycle: 0,
+    chain: { count: 0, transfersBetweenTasks: false },
+    peakChain: 0,
     prototypePower: 0,
     fullStackPower: 0,
     cardTagWorkBonuses: {},
@@ -887,6 +896,11 @@ function endDay(run: RunState, cycle: CycleState): GameState {
     triggeredPassiveIds: ireneDraws > 0 ? ["irene"] : [],
     temporaryCardCounter: cycle.temporaryCardCounter + totalDistractions,
     cardsPlayedThisDay: 0,
+    generatedCardsPlayedThisDay: 0,
+    cardsExhaustedThisDay: 0,
+    lastPlayedCard: undefined,
+    lastTargetedTaskId: undefined,
+    chain: { count: 0, transfersBetweenTasks: false },
     lastWorkDiscipline: undefined,
     lastWorkCard: undefined,
     dayWorkBonuses: [],
@@ -1045,8 +1059,19 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         dynamicDefinition: generated.dynamicDefinition,
         instanceId: `generated-${cycle.temporaryCardCounter + index + 1}`,
         generated: true,
+        generatedBy: {
+          sourceCardId: getCardForInstance(instance).id,
+          sourceInstanceId: instance.instanceId,
+          day: cycle.day,
+        },
       }));
       const definition = getCardForInstance(instance);
+      const generatedPlay = isGeneratedCardInstance(instance);
+      const exhausts = definition.exhaust === true;
+      const exhaustedInstance: CardInstance = exhausts
+        ? { ...instance, exhausted: { day: cycle.day, cause: "played" } }
+        : instance;
+      const chain = advanceChain(cycle, resolution.taskId);
       const discardedCards = cycle.hand.filter((candidate) =>
         resolution.discardedCardInstanceIds.includes(candidate.instanceId),
       );
@@ -1072,10 +1097,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ...(cardDraw?.drawn ?? []),
           ...generatedCards,
         ],
-        discardPile: definition.exhaust
+        discardPile: exhausts
           ? [...(cardDraw?.discardPile ?? cycle.discardPile), ...discardedCards]
           : [...(cardDraw?.discardPile ?? cycle.discardPile), ...discardedCards, instance],
-        exhaustPile: definition.exhaust ? [...cycle.exhaustPile, instance] : cycle.exhaustPile,
+        exhaustPile: exhausts ? [...cycle.exhaustPile, exhaustedInstance] : cycle.exhaustPile,
         triggeredPassiveIds,
         temporaryCardCounter: cycle.temporaryCardCounter + generatedCards.length,
         sideQuestCounter:
@@ -1083,6 +1108,20 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             ? cycle.sideQuestCounter + 1
             : cycle.sideQuestCounter,
         cardsPlayedThisDay: cycle.cardsPlayedThisDay + 1,
+        cardsPlayedThisCycle: cycle.cardsPlayedThisCycle + 1,
+        generatedCardsPlayedThisDay: cycle.generatedCardsPlayedThisDay + (generatedPlay ? 1 : 0),
+        generatedCardsPlayedThisCycle:
+          cycle.generatedCardsPlayedThisCycle + (generatedPlay ? 1 : 0),
+        cardsExhaustedThisDay: cycle.cardsExhaustedThisDay + (exhausts ? 1 : 0),
+        cardsExhaustedThisCycle: cycle.cardsExhaustedThisCycle + (exhausts ? 1 : 0),
+        lastPlayedCard: {
+          cardId: definition.id,
+          instanceId: instance.instanceId,
+          generated: generatedPlay,
+        },
+        lastTargetedTaskId: resolution.taskId ?? cycle.lastTargetedTaskId,
+        chain,
+        peakChain: Math.max(cycle.peakChain, chain.count),
         prototypePower: cycle.prototypePower,
         fullStackPower: cycle.fullStackPower + resolution.fullStackAdded,
         cardTagWorkBonuses,
@@ -1118,6 +1157,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             taskId: resolution.taskId,
             discipline: resolution.kind === "work" ? resolution.discipline : undefined,
             label: resolution.label,
+            generated: generatedPlay,
+            generatedByCardId: instance.generatedBy?.sourceCardId,
+            exhausted: exhausts,
+            cardsPlayedThisDay: cycle.cardsPlayedThisDay + 1,
+            chain: resolution.taskId
+              ? { taskId: resolution.taskId, count: chain.count }
+              : undefined,
           },
         ],
       };

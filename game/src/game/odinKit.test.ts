@@ -348,6 +348,11 @@ describe("Odin's Review control engine", () => {
       taskId: undefined,
       discipline: undefined,
       label: "Verify 5 · 2 Tasks · Stun 2 · Focus +2 · Draw 2",
+      generated: false,
+      generatedByCardId: undefined,
+      exhausted: true,
+      cardsPlayedThisDay: 1,
+      chain: undefined,
     });
   });
 
