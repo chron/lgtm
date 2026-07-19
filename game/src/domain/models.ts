@@ -63,7 +63,7 @@ export interface CardDefinition {
   queuedDistractions?: number;
   fullStackAdded?: number;
   spawnSideQuest?: boolean;
-  display?: { value: string; label: string };
+  display?: { value: string; label: string; rules?: string };
   rarity?: "normal" | "rare";
   rules: string;
   tags: readonly CardTag[];

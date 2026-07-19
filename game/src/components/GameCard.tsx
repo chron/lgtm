@@ -63,10 +63,11 @@ export function GameCard({
     card.kind === "work" && card.discipline && card.discipline !== "flexible"
       ? disciplineLabel(card.discipline)
       : undefined;
+  const longTitle = card.name.length >= 15;
 
   return (
     <button
-      className={`game-card game-card--${card.kind}${owner ? " has-owner" : ""}${selected ? " is-selected" : ""}`}
+      className={`game-card game-card--${card.kind}${owner ? " has-owner" : ""}${longTitle ? " game-card--long-title" : ""}${selected ? " is-selected" : ""}`}
       style={{ "--card-accent": cardAccent } as React.CSSProperties}
       type="button"
       disabled={disabled || unplayable}
@@ -95,7 +96,7 @@ export function GameCard({
               ? "Basic"
               : "Team")}
       </span>
-      <strong>{card.name}</strong>
+      <strong className="game-card__title">{card.name}</strong>
       <span className="game-card__output" aria-hidden="true">
         <b>
           {card.display?.value ??
@@ -112,7 +113,7 @@ export function GameCard({
         <small>{outputLabel}</small>
       </span>
       {(card.kind === "status" || card.display) && (
-        <span className="game-card__rules">{card.rules}</span>
+        <span className="game-card__rules">{card.display?.rules ?? card.rules}</span>
       )}
       {(disciplineTag || card.workKind || familyTags.length > 0) && (
         <span className="game-card__tags">
