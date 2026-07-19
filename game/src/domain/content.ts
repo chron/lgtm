@@ -506,6 +506,55 @@ const cycles: readonly CycleDefinition[] = [
     ],
   },
   {
+    id: "ai-results-analysis",
+    name: "AI Results Analysis",
+    maxDays: 5,
+    tasks: [
+      {
+        id: "theme-clustering",
+        name: "Theme Clustering",
+        requirements: [{ discipline: "backend", target: 8 }],
+        intents: [
+          { kind: "ai-assist", discipline: "backend", amount: 3 },
+          { kind: "crunch", moraleLoss: 2 },
+          { kind: "scope", discipline: "backend", amount: 4 },
+          { kind: "regression", discipline: "backend", amount: 3 },
+          { kind: "crunch", moraleLoss: 4 },
+        ],
+      },
+      {
+        id: "insight-summaries",
+        name: "Insight Summaries",
+        requirements: [
+          { discipline: "frontend", target: 6 },
+          { discipline: "backend", target: 4 },
+        ],
+        intents: [
+          { kind: "interruption" },
+          { kind: "ai-assist", discipline: "frontend", amount: 3 },
+          { kind: "crunch", moraleLoss: 3 },
+          { kind: "scope", discipline: "backend", amount: 4 },
+          { kind: "crunch", moraleLoss: 4 },
+        ],
+      },
+      {
+        id: "evidence-links",
+        name: "Evidence Links",
+        requirements: [
+          { discipline: "frontend", target: 4 },
+          { discipline: "infra", target: 3 },
+        ],
+        intents: [
+          { kind: "blocked", discipline: "infra" },
+          { kind: "crunch", moraleLoss: 2 },
+          { kind: "ai-assist", discipline: "frontend", amount: 3 },
+          { kind: "regression", discipline: "infra", amount: 3 },
+          { kind: "crunch", moraleLoss: 4 },
+        ],
+      },
+    ],
+  },
+  {
     id: "production-incident",
     name: "Production Incident",
     kind: "incident",
@@ -797,6 +846,8 @@ export function disciplineLabel(discipline: Discipline): string {
 
 export function formatIntent(intent: IntentDefinition): string {
   switch (intent.kind) {
+    case "ai-assist":
+      return `AI Assist · ${disciplineLabel(intent.discipline)} +${intent.amount} Unverified`;
     case "scope":
       return `Scope · ${disciplineLabel(intent.discipline)} +${intent.amount}`;
     case "regression":
@@ -815,6 +866,8 @@ export function formatIntent(intent: IntentDefinition): string {
 export function describeIntent(intent: IntentDefinition): string {
   const consequence = (() => {
     switch (intent.kind) {
+      case "ai-assist":
+        return `Adds ${intent.amount} Unverified ${disciplineLabel(intent.discipline)} Work to this Task.`;
       case "scope":
         return `Adds ${intent.amount} ${disciplineLabel(intent.discipline)} Work to this Task.`;
       case "regression":

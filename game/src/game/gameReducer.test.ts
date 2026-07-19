@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { eligibleRewardCardIds, formatIntent, getCard, getCycle, tools } from "../domain/content";
+import {
+  describeIntent,
+  eligibleRewardCardIds,
+  formatIntent,
+  getCard,
+  getCycle,
+  tools,
+} from "../domain/content";
 import { getEvent } from "../domain/events";
 import type { DeveloperId, Discipline, ToolId } from "../domain/models";
 import { gameReducer, initialGameState } from "./gameReducer";
@@ -74,6 +81,40 @@ function startCycleAt(
   seed = 0x5eed1234,
 ): GameState {
   return startCycle(squad, seed, nodeId);
+}
+
+function useAuthoredCycle(state: GameState, cycleId: string): GameState {
+  if (!state.run?.cycle) throw new Error("Expected an active Cycle");
+  const definition = getCycle(cycleId);
+  return {
+    ...state,
+    screen: { name: "cycle", nodeId: state.run.cycle.nodeId, cycleId },
+    run: {
+      ...state.run,
+      cycle: {
+        ...state.run.cycle,
+        cycleId,
+        day: 1,
+        tasks: definition.tasks
+          .filter((task) => task.role !== "complication")
+          .map((task) => ({
+            taskId: task.id,
+            name: task.name,
+            role: task.role,
+            status: "open" as const,
+            stunned: false,
+            spawnedDay: 1,
+            requirements: task.requirements.map((requirement) => ({
+              ...requirement,
+              verified: 0,
+              unverified: 0,
+              scriptPower: 0,
+              scriptBlock: 0,
+            })),
+          })),
+      },
+    },
+  };
 }
 
 function playCard(
@@ -314,6 +355,94 @@ describe("gameReducer", () => {
     expect(formatIntent({ kind: "spawn", taskId: "pager-storm", taskName: "Pager Storm" })).toBe(
       "Spawn · Pager Storm",
     );
+  });
+
+  it("adds visible Unverified Work from a generic AI Assist intent", () => {
+    let state = useAuthoredCycle(startCycle(), "ai-results-analysis");
+    state = gameReducer(state, { type: "END_DAY" });
+
+    const themeClustering = state.run?.cycle?.tasks.find(
+      (task) => task.taskId === "theme-clustering",
+    );
+    expect(themeClustering?.requirements[0]).toMatchObject({
+      discipline: "backend",
+      verified: 0,
+      unverified: 3,
+    });
+    expect(state.run?.cycle?.resolvedIntents).toContain("AI Assist · Backend +3 Unverified");
+    expect(describeIntent({ kind: "ai-assist", discipline: "backend", amount: 3 })).toBe(
+      "Adds 3 Unverified Backend Work to this Task. Ship this Task or Stun its intent before End Day to stop it.",
+    );
+  });
+
+  it("lets Stun reject AI Assist for the Day", () => {
+    let state = useAuthoredCycle(startCycle(), "ai-results-analysis");
+    state = playCard(state, "not-reproducible", "theme-clustering");
+    state = gameReducer(state, { type: "END_DAY" });
+
+    expect(state.run?.cycle?.tasks[0]?.requirements[0]?.unverified).toBe(0);
+    expect(state.run?.cycle?.resolvedIntents).toContain(
+      "Stunned · AI Assist · Backend +3 Unverified",
+    );
+  });
+
+  it("lets Review clean AI-assisted Work before shipping", () => {
+    let state = useAuthoredCycle(startCycle(), "ai-results-analysis");
+    state = gameReducer(state, { type: "END_DAY" });
+    state = playCard(state, "review-3", "theme-clustering");
+
+    expect(state.run?.cycle?.tasks[0]?.requirements[0]).toMatchObject({
+      verified: 3,
+      unverified: 0,
+    });
+  });
+
+  it("previews and applies the cost of shipping AI-assisted Work dirty", () => {
+    let state = useAuthoredCycle(startCycle(), "ai-results-analysis");
+    state = gameReducer(state, { type: "END_DAY" });
+    if (!state.run?.cycle) throw new Error("Expected an active Cycle");
+    state = {
+      ...state,
+      run: {
+        ...state.run,
+        cycle: {
+          ...state.run.cycle,
+          tasks: state.run.cycle.tasks.map((task) =>
+            task.taskId === "theme-clustering"
+              ? {
+                  ...task,
+                  status: "ready" as const,
+                  requirements: task.requirements.map((requirement) => ({
+                    ...requirement,
+                    verified: requirement.target - requirement.unverified,
+                  })),
+                }
+              : task,
+          ),
+        },
+      },
+    };
+
+    if (!state.run?.cycle) throw new Error("Expected an active Cycle");
+    const task = state.run.cycle.tasks.find((candidate) => candidate.taskId === "theme-clustering");
+    if (!task) throw new Error("Expected Theme Clustering");
+    expect(taskShippingPreview(task)).toEqual({
+      unverified: 3,
+      defects: 1,
+      moraleLoss: 1,
+      techDebt: 2,
+    });
+
+    state = gameReducer(state, { type: "SHIP_TASK", taskId: "theme-clustering" });
+    expect(state.run?.techDebt).toBe(2);
+    expect(state.run?.morale).toBe(9);
+    expect(state.run?.cycle).toMatchObject({ defects: 1, techDebtAdded: 2 });
+    expect(state.run?.history.at(-1)).toMatchObject({
+      kind: "task-shipped",
+      taskId: "theme-clustering",
+      defects: 1,
+      techDebtAdded: 2,
+    });
   });
 
   it("starts an Incident with its primary Task and spawns an age-zero Complication", () => {

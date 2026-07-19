@@ -721,6 +721,26 @@ function endDay(run: RunState, cycle: CycleState): GameState {
 
     resolvedIntents.push(formatIntent(intent));
     switch (intent.kind) {
+      case "ai-assist":
+        tasks = tasks.map((task) =>
+          task.taskId !== currentTask.taskId
+            ? task
+            : {
+                ...task,
+                requirements: task.requirements.map((requirement) => {
+                  if (requirement.discipline !== intent.discipline) return requirement;
+                  const remaining = Math.max(
+                    0,
+                    requirement.target - requirement.verified - requirement.unverified,
+                  );
+                  return {
+                    ...requirement,
+                    unverified: requirement.unverified + Math.min(intent.amount, remaining),
+                  };
+                }),
+              },
+        );
+        break;
       case "scope":
         tasks = tasks.map((task) =>
           task.taskId !== currentTask.taskId

@@ -111,6 +111,7 @@ interface RequirementDefinition {
 }
 
 export type IntentDefinition =
+  | { kind: "ai-assist"; discipline: Discipline; amount: number }
   | { kind: "scope"; discipline: Discipline; amount: number }
   | { kind: "regression"; discipline: Discipline; amount: number }
   | { kind: "blocked"; discipline: Discipline }

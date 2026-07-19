@@ -1112,6 +1112,10 @@ main:focus {
   background: var(--blue);
 }
 
+.intent-badge--ai-assist {
+  background: var(--mint);
+}
+
 .intent-badge--cancelled {
   background: var(--mint);
   box-shadow: none;
