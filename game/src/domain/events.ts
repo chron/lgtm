@@ -20,6 +20,7 @@ export interface EventOutcomeChip {
 }
 
 export interface EventCardFilter {
+  label?: string;
   cardIds?: readonly string[];
   tagsAny?: readonly CardTag[];
   tagsAll?: readonly CardTag[];
@@ -28,6 +29,7 @@ export interface EventCardFilter {
   rarities?: readonly ("normal" | "rare")[];
   owner?: "squad" | "non-squad";
   startersOnly?: boolean;
+  anyOf?: readonly EventCardFilter[];
 }
 
 export type EventDeckSurgeryEffect =
@@ -110,31 +112,128 @@ export interface EventDefinition {
 
 const alwaysEligible = () => true;
 const ordinaryWeight = () => 1;
+const removableCards = [
+  "frontend-3",
+  "backend-3",
+  "infra-3",
+  "flexible-2",
+  "review-3",
+  "standup-cover",
+  "tech-debt",
+] as const;
 
 export const eventDefinitions: readonly EventDefinition[] = [
   {
-    id: "scope-creep",
-    title: "Scope Creep",
-    setup: "It's only one tiny thing. It is not one tiny thing.",
-    artLabel: "+ ONE TINY THING",
-    artTreatment: "scope",
+    id: "quarterly-connect",
+    title: "Quarterly Connect",
+    setup: "The whole team briefly remembers what everyone else actually works on.",
+    artLabel: "YOU'RE ON MUTE",
+    artTreatment: "call-grid",
     eligibility: alwaysEligible,
     weight: ordinaryWeight,
     choices: [
       {
-        id: "push-back",
-        label: "Push Back",
-        tone: "steady",
-        effects: [{ kind: "ledger", resource: "morale", amount: 2 }],
+        id: "demo",
+        label: "Demo",
+        tone: "build",
+        effects: [
+          {
+            kind: "filtered-draft",
+            count: 3,
+            filter: {
+              label: "Squad",
+              owner: "squad",
+              rarities: ["normal"],
+              tagsAny: ["reward"],
+            },
+          },
+        ],
       },
       {
-        id: "sure-easy",
-        label: "Sure, Easy",
+        id: "cross-pollinate",
+        label: "Cross-Pollinate",
+        tone: "build",
+        effects: [{ kind: "temporary-guest-card", count: 3 }],
+      },
+      {
+        id: "retro",
+        label: "Retro",
+        tone: "steady",
+        effects: [
+          { kind: "ledger", resource: "morale", amount: 3 },
+          { kind: "ledger", resource: "tech-debt", amount: -2 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "level-up-day",
+    title: "Level-Up Day",
+    setup: "No roadmap work. Allegedly.",
+    artLabel: "LEARNING MODE",
+    artTreatment: "pull-request",
+    eligibility: alwaysEligible,
+    weight: ordinaryWeight,
+    choices: [
+      {
+        id: "learn",
+        label: "Learn",
+        tone: "build",
+        effects: [
+          {
+            kind: "filtered-draft",
+            count: 3,
+            filter: { label: "Automation", tagsAny: ["automation"], tagsAll: ["reward"] },
+          },
+        ],
+      },
+      {
+        id: "refactor",
+        label: "Refactor",
+        tone: "steady",
+        effects: [
+          { kind: "deck-surgery", operation: "remove", filter: { cardIds: removableCards } },
+        ],
+      },
+      {
+        id: "tinker",
+        label: "Tinker",
         tone: "risk",
         effects: [
-          { kind: "ledger", resource: "credits", amount: 35 },
-          { kind: "ledger", resource: "tech-debt", amount: 3 },
+          { kind: "tool-offer", count: 3 },
+          { kind: "ledger", resource: "tech-debt", amount: 2 },
         ],
+      },
+    ],
+  },
+  {
+    id: "quiet-hours",
+    title: "Quiet Hours",
+    setup: "The NZ morning begins. Australia is still offline. Slack is beautiful.",
+    artLabel: "NO NEW MESSAGES",
+    artTreatment: "call-grid",
+    eligibility: alwaysEligible,
+    weight: ordinaryWeight,
+    choices: [
+      {
+        id: "deep-work",
+        label: "Deep Work",
+        tone: "build",
+        effects: [{ kind: "next-cycle-modifier", modifier: { kind: "opening-focus", amount: 2 } }],
+      },
+      {
+        id: "clean-up",
+        label: "Clean Up",
+        tone: "steady",
+        effects: [
+          { kind: "deck-surgery", operation: "remove", filter: { cardIds: removableCards } },
+        ],
+      },
+      {
+        id: "plan-async",
+        label: "Plan Async",
+        tone: "build",
+        effects: [{ kind: "next-cycle-modifier", modifier: { kind: "opening-draw", amount: 2 } }],
       },
     ],
   },
@@ -182,9 +281,44 @@ export const eventDefinitions: readonly EventDefinition[] = [
     ],
   },
   {
+    id: "coffee-summit",
+    title: "Coffee Summit",
+    setup: "NZ and Melbourne agree to settle this properly. They do not agree on proper.",
+    artLabel: "FINAL FINAL CUP",
+    artTreatment: "scope",
+    eligibility: alwaysEligible,
+    weight: ordinaryWeight,
+    choices: [
+      {
+        id: "nz-cup",
+        label: "NZ Cup",
+        tone: "build",
+        effects: [{ kind: "next-cycle-modifier", modifier: { kind: "opening-focus", amount: 2 } }],
+      },
+      {
+        id: "melbourne-flat-white",
+        label: "Melbourne Flat White",
+        tone: "build",
+        effects: [{ kind: "next-cycle-modifier", modifier: { kind: "opening-draw", amount: 2 } }],
+      },
+      {
+        id: "order-for-everyone",
+        label: "Order for Everyone",
+        tone: "risk",
+        requirements: [{ kind: "credits-at-least", amount: 10, reason: "Need 10 Credits" }],
+        effects: [
+          { kind: "ledger", resource: "credits", amount: -10 },
+          { kind: "ledger", resource: "morale", amount: 3 },
+          { kind: "next-cycle-modifier", modifier: { kind: "opening-focus", amount: 1 } },
+          { kind: "next-cycle-modifier", modifier: { kind: "opening-draw", amount: 1 } },
+        ],
+      },
+    ],
+  },
+  {
     id: "cat-tax",
     title: "Cat Tax",
-    setup: "A cat has entered the call and immediately improved it.",
+    setup: "Bread, Toast, Mila, or Angus has entered the call and immediately improved it.",
     artLabel: "CAT HAS JOINED",
     artTreatment: "call-grid",
     eligibility: alwaysEligible,
@@ -210,7 +344,193 @@ export const eventDefinitions: readonly EventDefinition[] = [
         requirements: [{ kind: "credits-at-least", amount: 15, reason: "Need 15 Credits" }],
         effects: [
           { kind: "ledger", resource: "credits", amount: -15 },
-          { kind: "tool-offer", count: 1, toolIds: [] },
+          { kind: "tool-offer", count: 1, toolIds: ["cat-tax"] },
+        ],
+      },
+    ],
+  },
+  {
+    id: "mascot-council",
+    title: "Mascot Council",
+    setup: "The Reef Shark, Platypus, and Pangolin convene. Governance has happened.",
+    artLabel: "MASCOTS ASSEMBLE",
+    artTreatment: "call-grid",
+    eligibility: alwaysEligible,
+    weight: ordinaryWeight,
+    choices: [
+      {
+        id: "choose-a-mascot",
+        label: "Choose a Mascot",
+        tone: "build",
+        effects: [
+          {
+            kind: "tool-offer",
+            count: 3,
+            toolIds: ["reef-shark", "platypus", "pangolin"],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "founder-hackathon",
+    title: "Founder Hackathon",
+    setup: "Nick has a board, Tristan a spreadsheet, and Mateja half a new product.",
+    artLabel: "SHIP BY LUNCH",
+    artTreatment: "pull-request",
+    eligibility: alwaysEligible,
+    weight: ordinaryWeight,
+    choices: [
+      {
+        id: "let-mateja-cook",
+        label: "Let Mateja Cook",
+        tone: "risk",
+        effects: [
+          {
+            kind: "filtered-draft",
+            count: 3,
+            filter: {
+              label: "Rare AI Assisted",
+              tagsAll: ["ai-assisted"],
+              rarities: ["rare"],
+            },
+          },
+          { kind: "ledger", resource: "tech-debt", amount: 3 },
+        ],
+      },
+      {
+        id: "ask-tristan-for-numbers",
+        label: "Ask Tristan for Numbers",
+        tone: "build",
+        effects: [
+          {
+            kind: "filtered-draft",
+            count: 3,
+            filter: {
+              label: "Backend / Review",
+              tagsAny: ["reward"],
+              anyOf: [{ disciplines: ["backend"] }, { tagsAny: ["review"] }],
+            },
+          },
+        ],
+      },
+      {
+        id: "nick-makes-a-board",
+        label: "Nick Makes a Board",
+        tone: "steady",
+        effects: [
+          { kind: "map-modifier", modifier: { kind: "reveal-upcoming", count: 3 } },
+          { kind: "reward-modifier", modifier: { choiceCount: 4 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: "customer-feedback-flood",
+    title: "Customer Feedback Flood",
+    setup: "Several thoughtful customers have written several actionable paragraphs.",
+    artLabel: "37 NEW REPLIES",
+    artTreatment: "scope",
+    eligibility: alwaysEligible,
+    weight: ordinaryWeight,
+    choices: [
+      {
+        id: "synthesize",
+        label: "Synthesize",
+        tone: "build",
+        effects: [
+          {
+            kind: "filtered-draft",
+            count: 3,
+            filter: {
+              label: "Flexible / Review",
+              anyOf: [{ disciplines: ["flexible"] }, { tagsAny: ["review"] }],
+            },
+          },
+        ],
+      },
+      {
+        id: "fix-the-top-pain",
+        label: "Fix the Top Pain",
+        tone: "risk",
+        effects: [
+          {
+            kind: "bounty-task",
+            bounty: {
+              id: "customer-top-pain",
+              name: "Fix the Top Pain",
+              requirements: [
+                { discipline: "frontend", target: 3 },
+                { discipline: "backend", target: 2 },
+              ],
+              reward: { kind: "tool-offer" },
+            },
+          },
+        ],
+      },
+      {
+        id: "share-the-praise",
+        label: "Share the Praise",
+        tone: "steady",
+        effects: [
+          { kind: "ledger", resource: "morale", amount: 3 },
+          { kind: "reward-modifier", modifier: { choiceCount: 4 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: "enterprise-request",
+    title: "Enterprise Request",
+    setup: "It is genuinely important. It is also needed rather soon.",
+    artLabel: "QUICK QUESTION",
+    artTreatment: "scope",
+    eligibility: alwaysEligible,
+    weight: ordinaryWeight,
+    choices: [
+      {
+        id: "commit",
+        label: "Commit",
+        tone: "risk",
+        effects: [
+          {
+            kind: "bounty-task",
+            bounty: {
+              id: "enterprise-commitment",
+              name: "Enterprise Commitment",
+              requirements: [
+                { discipline: "frontend", target: 6 },
+                { discipline: "backend", target: 8 },
+                { discipline: "infra", target: 5 },
+              ],
+              reward: { kind: "credits-and-rare-card-offer", amount: 30 },
+            },
+          },
+        ],
+      },
+      {
+        id: "negotiate",
+        label: "Negotiate",
+        tone: "steady",
+        effects: [
+          { kind: "ledger", resource: "credits", amount: 15 },
+          {
+            kind: "next-cycle-modifier",
+            modifier: { kind: "intent-protection", intentKind: "scope", count: 1 },
+          },
+        ],
+      },
+      {
+        id: "prototype",
+        label: "Prototype",
+        tone: "risk",
+        effects: [
+          {
+            kind: "filtered-draft",
+            count: 3,
+            filter: { label: "AI Assisted", tagsAll: ["ai-assisted"] },
+          },
+          { kind: "ledger", resource: "tech-debt", amount: 3 },
         ],
       },
     ],
@@ -254,6 +574,41 @@ export const eventDefinitions: readonly EventDefinition[] = [
           { kind: "ledger", resource: "credits", amount: 20 },
           { kind: "ledger", resource: "tech-debt", amount: 2 },
         ],
+      },
+    ],
+  },
+  {
+    id: "daylight-saving-incident",
+    title: "Daylight Saving Incident",
+    setup: "The calendar says nine. Queensland says absolutely not.",
+    artLabel: "WHAT TIME IS IT",
+    artTreatment: "call-grid",
+    eligibility: alwaysEligible,
+    weight: ordinaryWeight,
+    choices: [
+      {
+        id: "go-async",
+        label: "Go Async",
+        tone: "build",
+        effects: [{ kind: "next-cycle-modifier", modifier: { kind: "opening-draw", amount: 2 } }],
+      },
+      {
+        id: "move-standup",
+        label: "Move Standup",
+        tone: "steady",
+        effects: [
+          { kind: "ledger", resource: "morale", amount: 3 },
+          {
+            kind: "next-cycle-modifier",
+            modifier: { kind: "intent-protection", intentKind: "interruption", count: 1 },
+          },
+        ],
+      },
+      {
+        id: "automate-calendar",
+        label: "Automate Calendar",
+        tone: "build",
+        effects: [{ kind: "tool-offer", count: 1, toolIds: ["timezone-wrangler"] }],
       },
     ],
   },

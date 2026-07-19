@@ -115,7 +115,7 @@ export const madiContent = {
       display: { value: "3", label: "Sub-Agents", rules: "+1 Tech Debt. Exhaust." },
       rarity: "rare",
       rules: "Generate 3 Sub-Agents. Gain 1 Tech Debt. Exhaust.",
-      tags: ["character", "exhaust", "rare", "reward"],
+      tags: ["character", "ai-assisted", "exhaust", "rare", "reward"],
     },
   ],
   generatedCards: [

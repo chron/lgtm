@@ -8,9 +8,9 @@ import {
   isMapNodeAvailable,
   mapNodes,
   squadRewardCardIds,
+  standardToolIds,
   starterBasicCardIds,
   teamRewardCardIds,
-  toolIds,
 } from "../domain/content";
 import { getEvent } from "../domain/events";
 import {
@@ -228,7 +228,7 @@ function createCardReward(run: RunState, sourceNodeId: string): RunState {
 }
 
 function createToolReward(run: RunState, sourceNodeId: string): RunState {
-  const remaining = toolIds.filter((toolId) => !run.tools.includes(toolId));
+  const remaining = standardToolIds.filter((toolId) => !run.tools.includes(toolId));
   if (remaining.length === 0) return run;
 
   let rngState = run.rngState;
@@ -291,6 +291,7 @@ function drawCards(
   originalDiscardPile: readonly CardInstance[],
   count: number,
   replaceDistractions = false,
+  statusDrawsExtra = false,
 ): {
   drawPile: CardInstance[];
   discardPile: CardInstance[];
@@ -299,8 +300,9 @@ function drawCards(
   let drawPile = [...originalDrawPile];
   let discardPile = [...originalDiscardPile];
   const drawn: CardInstance[] = [];
+  let targetCount = count;
 
-  while (drawn.length < count) {
+  while (drawn.length < targetCount) {
     if (drawPile.length === 0) {
       if (discardPile.length === 0) break;
       drawPile = [...discardPile];
@@ -311,6 +313,7 @@ function drawCards(
     if (!next) continue;
     if (replaceDistractions && next.cardId === "distraction") continue;
     drawn.push(next);
+    if (statusDrawsExtra && getCardForInstance(next).kind === "status") targetCount += 1;
   }
 
   return { drawPile, discardPile, drawn };
@@ -396,6 +399,7 @@ function createCycleState(
     [],
     5 + openingDraw,
     run.tools.includes("noise-cancelling-headphones"),
+    run.tools.includes("cat-tax"),
   );
   const bountyTasks: TaskState[] = run.pendingBounties.map((bounty) => ({
     taskId: bounty.id,
@@ -558,6 +562,7 @@ function applyTaskShipping(
     cycle.discardPile,
     rewards.cardsDrawn,
     run.tools.includes("noise-cancelling-headphones"),
+    run.tools.includes("cat-tax"),
   );
   const damage = absorbMoraleDamage(cycle.block, preview.moraleLoss);
   const nextCycle: CycleState = {
@@ -605,6 +610,12 @@ function applyTaskShipping(
       ...nextRun,
       nextRewardModifiers: [...nextRun.nextRewardModifiers, { guaranteedRarity: "rare" }],
     };
+  } else if (task.bountyReward?.kind === "credits-and-rare-card-offer") {
+    nextRun = {
+      ...nextRun,
+      credits: nextRun.credits + task.bountyReward.amount,
+      nextRewardModifiers: [...nextRun.nextRewardModifiers, { guaranteedRarity: "rare" }],
+    };
   }
   return { run: nextRun, cycle: nextCycle };
 }
@@ -612,13 +623,17 @@ function applyTaskShipping(
 function runScripts(
   tasks: readonly TaskState[],
   multiplier: number,
+  triggerBonus: number,
 ): { tasks: TaskState[]; block: number; verifiedCompletions: number } {
   let block = 0;
   let verifiedCompletions = 0;
   const nextTasks = tasks.map((task) => {
     if (task.status === "shipped") return task;
     block += task.requirements.reduce(
-      (sum, requirement) => sum + requirement.scriptBlock * multiplier,
+      (sum, requirement) =>
+        sum +
+        requirement.scriptBlock * multiplier +
+        (requirement.scriptBlock > 0 ? triggerBonus : 0),
       0,
     );
     return refreshTaskStatus({
@@ -628,7 +643,10 @@ function runScripts(
           0,
           requirement.target - requirement.verified - requirement.unverified,
         );
-        const verifiedAdded = Math.min(requirement.scriptPower * multiplier, remaining);
+        const verifiedAdded = Math.min(
+          requirement.scriptPower * multiplier + (requirement.scriptPower > 0 ? triggerBonus : 0),
+          remaining,
+        );
         if (requirementCompletedByVerifiedWork(requirement, verifiedAdded)) {
           verifiedCompletions += 1;
         }
@@ -822,18 +840,23 @@ function endDay(run: RunState, cycle: CycleState): GameState {
     temporary: true,
   }));
   const scriptMultiplier = run.tools.includes("cron-upgrade") ? 2 : 1;
-  const scripts = runScripts(resolvedCycle.tasks, scriptMultiplier);
+  const scripts = runScripts(
+    resolvedCycle.tasks,
+    scriptMultiplier,
+    run.tools.includes("platypus") ? 1 : 0,
+  );
   const ireneDraws = run.squad.includes("irene") ? scripts.verifiedCompletions : 0;
   const nextDraw = drawCards(
     [...distractions, ...resolvedCycle.drawPile],
     resolvedCycle.discardPile,
     5 + cycle.queuedCardsDrawn + ireneDraws,
     run.tools.includes("noise-cancelling-headphones"),
+    run.tools.includes("cat-tax"),
   );
   const nextCycle: CycleState = {
     ...resolvedCycle,
     day: cycle.day + 1,
-    focus: 3,
+    focus: 3 + (run.tools.includes("timezone-wrangler") ? cycle.focus : 0),
     block: scripts.block + (run.tools.includes("error-budget") ? resolvedCycle.block : 0),
     tasks: scripts.tasks.map((task) => ({ ...task, stunned: false })),
     drawPile: nextDraw.drawPile,
@@ -995,6 +1018,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
               cycle.discardPile,
               resolution.cardsDrawn,
               state.run.tools.includes("noise-cancelling-headphones"),
+              state.run.tools.includes("cat-tax"),
             )
           : undefined;
       const generatedCards: CardInstance[] = resolution.generatedCards.map((generated, index) => ({

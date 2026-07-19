@@ -1204,48 +1204,30 @@ describe("gameReducer", () => {
     expect(state.run?.currentNodeId).toBe("cycle-2");
   });
 
-  it("makes the Scope Creep event choices mechanically distinct", () => {
-    let pushBack = startMap(["cycle-1"]);
-    if (!pushBack.run) throw new Error("Expected a run");
-    pushBack = {
-      screen: { name: "event", nodeId: "event-1", eventId: "scope-creep" },
-      run: { ...pushBack.run, morale: 7, currentNodeId: "event-1" },
+  it("resolves a composed Quarterly Connect choice and records exact outcomes", () => {
+    let retro = startMap(["cycle-1"]);
+    if (!retro.run) throw new Error("Expected a run");
+    retro = {
+      screen: { name: "event", nodeId: "event-1", eventId: "quarterly-connect" },
+      run: {
+        ...retro.run,
+        morale: 7,
+        techDebt: 3,
+        deck: [...retro.run.deck, { cardId: "tech-debt", instanceId: "test-debt" }],
+        currentNodeId: "event-1",
+      },
     };
-    pushBack = gameReducer(pushBack, { type: "CHOOSE_EVENT", choiceId: "push-back" });
-    expect(pushBack.run).toMatchObject({ morale: 9, credits: 40 });
-    expect(pushBack.run?.completedNodeIds).toContain("event-1");
-    expect(pushBack.run?.history.at(-1)).toEqual({
+    retro = gameReducer(retro, { type: "CHOOSE_EVENT", choiceId: "retro" });
+    expect(retro.run).toMatchObject({ morale: 10, credits: 40, techDebt: 1 });
+    expect(retro.run?.deck.some((card) => card.cardId === "tech-debt")).toBe(false);
+    expect(retro.run?.completedNodeIds).toContain("event-1");
+    expect(retro.run?.history.at(-1)).toEqual({
       kind: "event-resolved",
       nodeId: "event-1",
-      eventId: "scope-creep",
-      choiceId: "push-back",
-      outcome: ["+2 Morale"],
+      eventId: "quarterly-connect",
+      choiceId: "retro",
+      outcome: ["+3 Morale", "−2 Tech Debt"],
     });
-
-    let cappedMorale = startMap(["cycle-1"]);
-    if (!cappedMorale.run) throw new Error("Expected a run");
-    cappedMorale = {
-      screen: { name: "event", nodeId: "event-1", eventId: "scope-creep" },
-      run: { ...cappedMorale.run, morale: 9, currentNodeId: "event-1" },
-    };
-    cappedMorale = gameReducer(cappedMorale, { type: "CHOOSE_EVENT", choiceId: "push-back" });
-    expect(cappedMorale.run?.morale).toBe(10);
-
-    let sureEasy = startMap(["cycle-1"]);
-    if (!sureEasy.run) throw new Error("Expected a run");
-    sureEasy = {
-      screen: { name: "event", nodeId: "event-1", eventId: "scope-creep" },
-      run: { ...sureEasy.run, currentNodeId: "event-1" },
-    };
-    sureEasy = gameReducer(sureEasy, { type: "CHOOSE_EVENT", choiceId: "sure-easy" });
-    expect(sureEasy.run).toMatchObject({ morale: 10, credits: 75 });
-    expect(sureEasy.run?.techDebt).toBe(3);
-    expect(sureEasy.run?.deck.at(-1)?.cardId).toBe("tech-debt");
-    expect(sureEasy.run?.completedNodeIds).toContain("event-1");
-
-    sureEasy = gameReducer(sureEasy, { type: "VISIT_NODE", nodeId: "cycle-2" });
-    expect(sureEasy.run?.techDebt).toBe(3);
-    expect(sureEasy.run?.deck.at(-1)?.cardId).toBe("tech-debt");
   });
 
   it("selects four seeded Events deterministically without repeats", () => {
@@ -1278,6 +1260,11 @@ describe("gameReducer", () => {
         )?.id;
         if (!choiceId) throw new Error("Expected an enabled Event choice");
         state = gameReducer(state, { type: "CHOOSE_EVENT", choiceId });
+        while (state.screen.name === "event" && state.screen.resolution) {
+          const option = state.screen.resolution.pending.options[0];
+          if (!option) throw new Error("Expected an Event option");
+          state = gameReducer(state, { type: "CHOOSE_EVENT_OPTION", optionId: option.id });
+        }
       }
       return { eventIds, history: state.run?.history };
     };
@@ -1289,8 +1276,8 @@ describe("gameReducer", () => {
     expect(first.history?.filter((entry) => entry.kind === "event-resolved")).toHaveLength(4);
   });
 
-  it("authors eight unrestricted build-shaping Tools", () => {
-    expect(tools).toHaveLength(8);
+  it("authors unrestricted build-shaping and event-exclusive Tools", () => {
+    expect(tools).toHaveLength(13);
     expect(tools.map((tool) => tool.id)).toEqual([
       "pairing-session",
       "ci-runner",
@@ -1300,6 +1287,11 @@ describe("gameReducer", () => {
       "noise-cancelling-headphones",
       "enterprise-ai-licence",
       "cron-upgrade",
+      "cat-tax",
+      "reef-shark",
+      "platypus",
+      "pangolin",
+      "timezone-wrangler",
     ]);
     expect(tools.every((tool) => !tool.rules.includes("first"))).toBe(true);
   });
@@ -1315,6 +1307,15 @@ describe("gameReducer", () => {
     expect(offered).toHaveLength(3);
     expect(new Set(offered).size).toBe(3);
     expect(offered).not.toContain("pairing-session");
+    expect(offered).not.toEqual(
+      expect.arrayContaining([
+        "cat-tax",
+        "reef-shark",
+        "platypus",
+        "pangolin",
+        "timezone-wrangler",
+      ]),
+    );
 
     const chosen = offered?.[0];
     if (!chosen) throw new Error("Expected a Tool reward");

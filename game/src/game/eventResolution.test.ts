@@ -368,6 +368,8 @@ describe("Event outcome engine", () => {
 
     const mascot = getEvent("cat-tax").choices.find((choice) => choice.id === "make-them-mascot");
     if (!mascot) throw new Error("Expected mascot choice");
-    expect(resolveEventChoice(mascot, empty).disabledReason).toBe("No Tools available");
+    expect(resolveEventChoice(mascot, { ...empty, tools: ["cat-tax"] }).disabledReason).toBe(
+      "No Tools available",
+    );
   });
 });

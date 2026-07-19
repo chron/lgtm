@@ -1,11 +1,11 @@
 import {
   cards,
   developers,
+  standardToolIds,
   getCard,
   getCardForInstance,
   getTool,
   mapEdges,
-  toolIds,
 } from "../domain/content";
 import {
   resolveEventRequirement,
@@ -64,6 +64,9 @@ function cardRarity(card: CardDefinition): "normal" | "rare" {
 }
 
 function matchesCardFilter(card: CardDefinition, run: RunState, filter: EventCardFilter): boolean {
+  if (filter.anyOf && !filter.anyOf.some((candidate) => matchesCardFilter(card, run, candidate))) {
+    return false;
+  }
   if (filter.cardIds && !filter.cardIds.includes(card.id)) return false;
   if (filter.tagsAny && !filter.tagsAny.some((tag) => card.tags.includes(tag))) return false;
   if (filter.tagsAll && !filter.tagsAll.every((tag) => card.tags.includes(tag))) return false;
@@ -100,7 +103,7 @@ function eligibleDraftCards(run: RunState, filter: EventCardFilter): CardDefinit
 }
 
 function eligibleTools(run: RunState, effect: Extract<EventEffect, { kind: "tool-offer" }>) {
-  const pool = effect.toolIds ?? toolIds;
+  const pool = effect.toolIds ?? standardToolIds;
   return pool.filter((toolId) => !run.tools.includes(toolId));
 }
 
@@ -188,9 +191,22 @@ function previewEffect(effect: EventEffect, run: RunState): readonly EventOutcom
         },
       ];
     case "filtered-draft":
-      return [{ text: `Choose 1 of ${effect.count} cards`, tone: "good" }];
-    case "tool-offer":
-      return [{ text: `Choose 1 of ${effect.count} Tools`, tone: "good" }];
+      return [
+        {
+          text: `${effect.filter.label ?? "Card"} card choice · ${effect.count}`,
+          tone: "good",
+        },
+      ];
+    case "tool-offer": {
+      const explicitTool =
+        effect.count === 1 && effect.toolIds?.length === 1 ? getTool(effect.toolIds[0]) : undefined;
+      return [
+        {
+          text: explicitTool ? `Gain ${explicitTool.name}` : `Tool choice · ${effect.count}`,
+          tone: "good",
+        },
+      ];
+    }
     case "next-cycle-modifier": {
       const modifier = effect.modifier;
       const text =
@@ -201,14 +217,29 @@ function previewEffect(effect: EventEffect, run: RunState): readonly EventOutcom
             : modifier.kind === "queued-status"
               ? `+${modifier.count} ${getCard(modifier.cardId).name} next Cycle`
               : modifier.kind === "intent-protection"
-                ? `Ignore ${modifier.count} ${modifier.intentKind} Intent`
+                ? modifier.intentKind === "interruption"
+                  ? `Ignore ${modifier.count} Distraction`
+                  : `Stun next ${modifier.intentKind} Intent`
                 : `Borrow ${getCard(modifier.cardId).name}`;
       return [{ text, tone: modifier.kind === "queued-status" ? "risk" : "good" }];
     }
     case "temporary-guest-card":
       return [{ text: "Borrow 1 Starter next Cycle", tone: "good" }];
-    case "bounty-task":
-      return [{ text: `Bounty: ${effect.bounty.name}`, tone: "good" }];
+    case "bounty-task": {
+      const reward = effect.bounty.reward;
+      const rewardText =
+        reward.kind === "credits"
+          ? `${reward.amount} Credits`
+          : reward.kind === "tool-offer"
+            ? "Tool choice"
+            : reward.kind === "rare-card-offer"
+              ? "Rare card choice"
+              : `${reward.amount} Credits + Rare card choice`;
+      return [
+        { text: `Bounty: ${effect.bounty.name}`, tone: "risk" },
+        { text: `Ships for ${rewardText}`, tone: "good" },
+      ];
+    }
     case "reward-modifier":
       return [
         {

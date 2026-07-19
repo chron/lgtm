@@ -220,12 +220,24 @@ export function taskShippingRewards(
     ),
   };
   const paulTriggers = run.squad.includes("paul") && !isCycleShipped(cycleAfterShip);
+  const nonFinalTask = !isCycleShipped(cycleAfterShip);
   const mergeQueue = run.tools.includes("merge-queue");
   return {
-    cardsDrawn: mergeQueue ? 2 : 0,
+    cardsDrawn: (mergeQueue ? 2 : 0) + (nonFinalTask && run.tools.includes("reef-shark") ? 1 : 0),
     focusGained: (paulTriggers ? 1 : 0) + (mergeQueue ? 1 : 0),
     paulTriggers,
   };
+}
+
+function triggeredAutomationAmount(run: RunState, power: number): number {
+  if (power <= 0) return 0;
+  return (
+    power * (run.tools.includes("cron-upgrade") ? 2 : 1) + (run.tools.includes("platypus") ? 1 : 0)
+  );
+}
+
+function cardBlockWithTools(run: RunState, block: number): number {
+  return block > 0 && run.tools.includes("pangolin") ? block + 2 : block;
 }
 
 export function effectiveCardCost(
@@ -296,7 +308,10 @@ export function resolveCardTarget(
     const dynamicDefinition = createStudiedWorkCard(cycle.lastWorkCard);
     generatedCards.push({ cardId: dynamicDefinition.id, dynamicDefinition });
   }
-  const tacticBlock = (card.block ?? 0) + (card.blockPerCardPlayed ?? 0) * cycle.cardsPlayedThisDay;
+  const tacticBlock = cardBlockWithTools(
+    run,
+    (card.block ?? 0) + (card.blockPerCardPlayed ?? 0) * cycle.cardsPlayedThisDay,
+  );
   const tacticBase: Omit<ResolvedCardBase, "label"> = {
     legal: true,
     cost,
@@ -450,7 +465,6 @@ export function resolveCardTarget(
     }
 
     const scriptPower = card.scriptPowerPerIncompleteRequirement ?? 0;
-    const scriptMultiplier = run.tools.includes("cron-upgrade") ? 2 : 1;
     const reviews = targetTasks.map((task) => {
       const amount = Math.min(taskUnverifiedWork(task), card.amount);
       const reviewedTask = verifyTask(task, amount);
@@ -465,7 +479,7 @@ export function resolveCardTarget(
             discipline: requirement.discipline,
             powerAdded: scriptPower,
             runAmount: run.tools.includes("ci-runner")
-              ? Math.min(scriptPower * scriptMultiplier, remainingWork(requirement))
+              ? Math.min(triggeredAutomationAmount(run, scriptPower), remainingWork(requirement))
               : 0,
           })),
       };
@@ -498,7 +512,10 @@ export function resolveCardTarget(
       triggeredPassiveIds = addTriggeredPassive(triggeredPassiveIds, "irene");
     }
     const amount = reviews.reduce((total, review) => total + review.amount, 0);
-    const blockGained = (card.block ?? 0) + (run.tools.includes("test-suite") ? amount : 0);
+    const blockGained = cardBlockWithTools(
+      run,
+      (card.block ?? 0) + (run.tools.includes("test-suite") ? amount : 0),
+    );
     const cardsDrawn =
       (card.cardsDrawn ?? 0) +
       passiveCardsDrawn +
@@ -593,11 +610,10 @@ export function resolveCardTarget(
     : pitchedIn
       ? "unverified"
       : (card.workKind ?? "verified");
-  const scriptMultiplier = run.tools.includes("cron-upgrade") ? 2 : 1;
   const countsAsWorkPlay = card.amount > 0 && card.automation?.kind !== "trigger";
   let amount =
     card.automation?.kind === "trigger"
-      ? requirement.scriptPower * scriptMultiplier
+      ? triggeredAutomationAmount(run, requirement.scriptPower)
       : pitchedIn
         ? 1
         : card.amount;
@@ -638,17 +654,17 @@ export function resolveCardTarget(
   const remainingAfterWork = Math.max(0, remainingWork(requirement) - amount);
   const scriptInstallRunAmount =
     scriptPowerAdded > 0 && run.tools.includes("ci-runner")
-      ? Math.min(scriptPowerAdded * scriptMultiplier, remainingAfterWork)
+      ? Math.min(triggeredAutomationAmount(run, scriptPowerAdded), remainingAfterWork)
       : 0;
   const remainingAfterInstallRun = Math.max(0, remainingAfterWork - scriptInstallRunAmount);
   const scriptTriggerRunAmount = card.triggerTargetScriptAfterWork
     ? Math.min(
-        (requirement.scriptPower + scriptPowerAdded) * scriptMultiplier,
+        triggeredAutomationAmount(run, requirement.scriptPower + scriptPowerAdded),
         remainingAfterInstallRun,
       )
     : 0;
   const scriptRunAmount = scriptInstallRunAmount + scriptTriggerRunAmount;
-  const blockGained = card.block ?? 0;
+  const blockGained = cardBlockWithTools(run, card.block ?? 0);
   const verifiedCompletion = requirementCompletedByVerifiedWork(
     requirement,
     (workKind === "verified" ? amount : 0) + scriptRunAmount,

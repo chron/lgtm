@@ -110,6 +110,8 @@ function createAppInitialState(base: GameState): GameState {
   }
   if (qa === "event" && state.run) {
     const requestedEventId = searchParams.get("event");
+    const requestedCreditsParam = searchParams.get("credits");
+    const requestedCredits = Number(requestedCreditsParam);
     state = {
       screen:
         requestedEventId && eventDefinitions.some((event) => event.id === requestedEventId)
@@ -117,6 +119,12 @@ function createAppInitialState(base: GameState): GameState {
           : { name: "map" },
       run: {
         ...state.run,
+        credits:
+          requestedCreditsParam !== null &&
+          Number.isFinite(requestedCredits) &&
+          requestedCredits >= 0
+            ? requestedCredits
+            : state.run.credits,
         currentNodeId: "cycle-1",
         completedNodeIds: ["cycle-1"],
       },

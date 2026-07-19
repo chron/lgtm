@@ -14,10 +14,18 @@ describe("Event catalogue", () => {
   it("authors unique typed definitions with one usable foundation choice each", () => {
     const run = testRun();
     expect(eventDefinitions.map((event) => event.id)).toEqual([
-      "scope-creep",
+      "quarterly-connect",
+      "level-up-day",
+      "quiet-hours",
       "karaoke-night",
+      "coffee-summit",
       "cat-tax",
+      "mascot-council",
+      "founder-hackathon",
+      "customer-feedback-flood",
+      "enterprise-request",
       "design-opened-a-pr",
+      "daylight-saving-incident",
     ]);
     expect(new Set(eventDefinitions.map((event) => event.id)).size).toBe(eventDefinitions.length);
     for (const event of eventDefinitions) {
@@ -34,15 +42,17 @@ describe("Event catalogue", () => {
 
   it("resolves exact dynamic ledger previews and concise disabled reasons", () => {
     const baseRun = testRun();
-    const scope = getEvent("scope-creep");
-    const pushBack = scope.choices.find((choice) => choice.id === "push-back");
-    if (!pushBack) throw new Error("Expected Push Back");
+    const quarterlyConnect = getEvent("quarterly-connect");
+    const retro = quarterlyConnect.choices.find((choice) => choice.id === "retro");
+    if (!retro) throw new Error("Expected Retro");
 
-    expect(resolveEventChoice(pushBack, { ...baseRun, morale: 9 }).outcome).toEqual([
+    expect(resolveEventChoice(retro, { ...baseRun, morale: 9 }).outcome).toEqual([
       { text: "+1 Morale", tone: "good" },
+      { text: "0 Tech Debt", tone: "good" },
     ]);
-    expect(resolveEventChoice(pushBack, { ...baseRun, morale: 10 }).outcome).toEqual([
+    expect(resolveEventChoice(retro, { ...baseRun, morale: 10 }).outcome).toEqual([
       { text: "Morale Full", tone: "neutral" },
+      { text: "0 Tech Debt", tone: "good" },
     ]);
 
     const duet = getEvent("karaoke-night").choices.find((choice) => choice.id === "duet");
@@ -66,7 +76,7 @@ describe("Event catalogue", () => {
   it("filters ineligible definitions and excludes seen Events while alternatives remain", () => {
     const run = testRun();
     const excluded: EventDefinition = {
-      ...getEvent("scope-creep"),
+      ...getEvent("quarterly-connect"),
       id: "excluded",
       eligibility: () => false,
       weight: () => 100,

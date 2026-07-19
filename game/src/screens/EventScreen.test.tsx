@@ -17,16 +17,16 @@ describe("EventScreen", () => {
       <EventScreen
         dispatch={() => undefined}
         run={{ ...testRun(), morale: 9 }}
-        eventId="scope-creep"
+        eventId="quarterly-connect"
         onInspectDeck={() => undefined}
       />,
     );
 
-    expect(markup).toContain("Scope Creep");
-    expect(markup).toContain("It&#x27;s only one tiny thing");
+    expect(markup).toContain("Quarterly Connect");
+    expect(markup).toContain("briefly remembers");
     expect(markup).toContain("+1 Morale");
-    expect(markup).toContain("+35 Credits");
-    expect(markup).toContain("+3 Tech Debt");
+    expect(markup).toContain("Borrow 1 Starter next Cycle");
+    expect(markup).toContain("card choice");
   });
 
   it("keeps conditional and deferred choices visible with their reason", () => {
@@ -51,7 +51,7 @@ describe("EventScreen", () => {
       <MapScreen dispatch={() => undefined} run={testRun()} onInspectDeck={() => undefined} />,
     );
 
-    expect(markup).not.toContain("Scope Creep");
+    expect(markup).not.toContain("Quarterly Connect");
     expect(markup).not.toContain("One Tiny Thing");
     expect(markup).not.toContain("Ship It Friday");
     expect(markup).toContain("Event, Locked");

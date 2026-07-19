@@ -67,9 +67,51 @@ export const tools: readonly ToolDefinition[] = [
     symbol: "×2",
     rules: "Scripts run twice.",
   },
+  {
+    id: "cat-tax",
+    name: "Cat Tax",
+    symbol: "=^•⟩•^=",
+    rules: "Whenever a Status card is drawn, draw 1 additional card.",
+  },
+  {
+    id: "reef-shark",
+    name: "Reef Shark",
+    symbol: "▲",
+    rules: "Whenever a non-final Task ships, draw 1 card.",
+  },
+  {
+    id: "platypus",
+    name: "Platypus",
+    symbol: "≋",
+    rules: "Script and Guard triggers produce 1 additional Work or Block.",
+  },
+  {
+    id: "pangolin",
+    name: "Pangolin",
+    symbol: "◉",
+    rules: "Whenever a card grants Block, gain 2 additional Block.",
+  },
+  {
+    id: "timezone-wrangler",
+    name: "Timezone Wrangler",
+    symbol: "UTC",
+    rules: "Unspent Focus carries into the next Day.",
+  },
 ] as const;
 
-export const toolIds = tools.map((tool) => tool.id);
+const toolIds = tools.map((tool) => tool.id);
+
+const eventExclusiveToolIds = [
+  "cat-tax",
+  "reef-shark",
+  "platypus",
+  "pangolin",
+  "timezone-wrangler",
+] as const satisfies readonly ToolDefinition["id"][];
+
+export const standardToolIds = toolIds.filter(
+  (toolId) => !eventExclusiveToolIds.some((eventToolId) => eventToolId === toolId),
+);
 
 export function getTool(id: ToolDefinition["id"]): ToolDefinition {
   const tool = tools.find((candidate) => candidate.id === id);

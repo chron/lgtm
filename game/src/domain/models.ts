@@ -14,7 +14,12 @@ export type ToolId =
   | "merge-queue"
   | "noise-cancelling-headphones"
   | "enterprise-ai-licence"
-  | "cron-upgrade";
+  | "cron-upgrade"
+  | "cat-tax"
+  | "reef-shark"
+  | "platypus"
+  | "pangolin"
+  | "timezone-wrangler";
 type CardKind = "work" | "review" | "tactic" | "status";
 export type CardTag =
   | "ai-assisted"
@@ -258,7 +263,8 @@ export type EventNextCycleModifier =
 type EventBountyReward =
   | { kind: "credits"; amount: number }
   | { kind: "tool-offer" }
-  | { kind: "rare-card-offer" };
+  | { kind: "rare-card-offer" }
+  | { kind: "credits-and-rare-card-offer"; amount: number };
 
 export interface EventBountyTask {
   id: string;
