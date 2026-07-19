@@ -60,6 +60,8 @@ interface ReactionState extends CharacterCue {
   id: number;
 }
 
+const END_DAY_CEREMONY_DURATION_MS = 1050;
+
 export function taskBoardLayoutClass(taskCount: number): string {
   return taskCount >= 5 ? "compact" : String(Math.max(1, taskCount));
 }
@@ -160,7 +162,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
         setDayBanner(cycle && cycle.day < maxDays ? `Day ${cycle.day + 1}` : "Deadline");
         dispatch({ type: "END_DAY" });
       },
-      reducedMotion ? 80 : 720,
+      reducedMotion ? 80 : END_DAY_CEREMONY_DURATION_MS,
     );
     return () => window.clearTimeout(timer);
   }, [ceremony, cycle, dispatch, maxDays]);
