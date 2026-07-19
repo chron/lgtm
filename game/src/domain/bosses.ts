@@ -28,6 +28,11 @@ export interface BossDefinition {
   eligibility: (seed: number) => boolean;
   project: CycleDefinition;
   phases: readonly BossPhaseDefinition[];
+  retroLines: {
+    victory: string;
+    knownIssues: string;
+    defeat: string;
+  };
 }
 
 const genericFinalProject = (id: string, name: string): CycleDefinition => ({
@@ -100,6 +105,11 @@ export const bossDefinitions: readonly BossDefinition[] = [
     eligibility: alwaysEligible,
     project: genericFinalProject("mateja-weekend-pivot", "Datum: Monday Launch"),
     phases: sharedPhases(matejaMaster, matejaPitching, matejaDelighted),
+    retroLines: {
+      victory: "shipped before he invented a third product",
+      knownIssues: "datum has entered its iterate-in-public era",
+      defeat: "the demo was extremely compelling, technically",
+    },
   },
   {
     id: "tristan-significance-test",
@@ -111,6 +121,11 @@ export const bossDefinitions: readonly BossDefinition[] = [
     eligibility: alwaysEligible,
     project: genericFinalProject("tristan-significance-test", "Prove the Fraud Model"),
     phases: sharedPhases(tristanMaster, tristanThinking, tristanSatisfied),
+    retroLines: {
+      victory: "sample size: acceptable",
+      knownIssues: "directionally significant",
+      defeat: "further research required",
+    },
   },
 ] as const;
 

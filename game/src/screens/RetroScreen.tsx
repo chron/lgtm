@@ -1,34 +1,59 @@
 import type { DispatchProps } from "../app/types";
+import { CharacterToken } from "../components/CharacterToken";
+import { getBossDefinition } from "../domain/bosses";
+import type { RunState } from "../domain/models";
+import { buildRetroBoard, type RetroCause, type RetroOutcome } from "../domain/retro";
 import { createRunSeed } from "../game/random";
 
 interface RetroScreenProps extends DispatchProps {
-  outcome: "victory" | "defeat";
+  outcome: RetroOutcome;
+  cause?: RetroCause;
+  run: RunState | null;
 }
 
-export function RetroScreen({ dispatch, outcome }: RetroScreenProps) {
+export function RetroScreen({ dispatch, outcome, cause, run }: RetroScreenProps) {
+  if (!run) return null;
+  const board = buildRetroBoard(run, outcome, cause);
+  const boss = getBossDefinition(run.selectedBossId);
+
   return (
     <section className="screen retro-screen" aria-labelledby="retro-heading">
-      <div className="screen-heading">
-        <h1 id="retro-heading" className="display-title">
-          RETRO
-        </h1>
-        <span>{outcome === "victory" ? "SHIPPED" : "ROLL BACK"}</span>
-      </div>
+      <header className="retro-heading">
+        <div>
+          <span>Release Retrospective</span>
+          <h1 id="retro-heading">{board.result}</h1>
+          <p>{board.resultDetail}</p>
+        </div>
+        <div className="squad-strip" aria-label="Final squad">
+          {run.squad.map((developerId) => (
+            <CharacterToken key={developerId} developerId={developerId} compact />
+          ))}
+        </div>
+      </header>
 
       <div className="retro-board">
-        <section>
-          <h2>WENT WELL</h2>
-          <div className="sticky sticky--mint">Team remained mostly human</div>
-        </section>
-        <section>
-          <h2>DIDN'T</h2>
-          <div className="sticky sticky--pink">Tests were a future-Paul problem</div>
-        </section>
-        <section>
-          <h2>ACTIONS</h2>
-          <div className="sticky sticky--yellow">Do it again, but deliberately</div>
-        </section>
+        {board.columns.map((column) => (
+          <section
+            className={`retro-column retro-column--${column.kind}`}
+            aria-label={`${column.kind === "good" ? "Good" : column.kind === "bad" ? "Bad" : "Actions"}: ${column.label}`}
+            key={column.kind}
+          >
+            <h2>{column.label}</h2>
+            <div className="retro-stickies">
+              {column.stickies.map((sticky) => (
+                <div className="sticky" key={sticky}>
+                  {sticky}
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
       </div>
+
+      <aside className="retro-facilitator-note">
+        <span>{boss.stakeholder} added</span>
+        <blockquote>{board.bossNote}</blockquote>
+      </aside>
 
       <div className="screen-actions">
         <button

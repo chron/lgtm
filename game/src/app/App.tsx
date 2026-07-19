@@ -38,7 +38,9 @@ function createAppInitialState(base: GameState): GameState {
   const qa = searchParams.get("qa");
   if (
     !import.meta.env.DEV ||
-    !["paul", "madi", "odin", "irene", "basics", "event", "boss", "cycle"].includes(qa ?? "")
+    !["paul", "madi", "odin", "irene", "basics", "event", "boss", "cycle", "retro"].includes(
+      qa ?? "",
+    )
   ) {
     return base;
   }
@@ -67,6 +69,52 @@ function createAppInitialState(base: GameState): GameState {
     state = gameReducer(state, { type: "TOGGLE_DEVELOPER", developerId });
   }
   state = gameReducer(state, { type: "CONFIRM_SQUAD" });
+  if (qa === "retro" && state.run) {
+    const retro = searchParams.get("outcome") ?? "known";
+    const defects = retro === "known" ? 1 : retro === "technical" ? 3 : 0;
+    const cause =
+      retro === "technical"
+        ? ("technically-shipped" as const)
+        : retro === "morale"
+          ? ("morale" as const)
+          : retro === "deadline"
+            ? ("final-release" as const)
+            : undefined;
+    return {
+      screen: {
+        name: "retro",
+        outcome: cause ? "defeat" : "victory",
+        cause,
+      },
+      run: {
+        ...state.run,
+        tools: ["merge-queue", "test-suite"],
+        morale: retro === "morale" ? 0 : 6,
+        techDebt: 3,
+        history: [
+          ...state.run.history,
+          {
+            kind: "task-shipped",
+            nodeId: "cycle-1",
+            taskId: "status-composer",
+            defects: 0,
+            moraleLoss: 0,
+            techDebtAdded: 0,
+            focusGained: 0,
+          },
+          {
+            kind: "task-shipped",
+            nodeId: "final-release",
+            taskId: "final-release",
+            defects,
+            moraleLoss: defects,
+            techDebtAdded: defects > 1 ? 1 : 0,
+            focusGained: 0,
+          },
+        ],
+      },
+    };
+  }
   if (qa === "cycle" && state.run) {
     const requestedCycleId = searchParams.get("cycle") ?? "every-methodology";
     let cycleState = gameReducer(state, { type: "VISIT_NODE", nodeId: "cycle-1" });
@@ -399,7 +447,14 @@ export function App() {
         );
         break;
       case "retro":
-        screen = <RetroScreen dispatch={dispatch} outcome={state.screen.outcome} />;
+        screen = (
+          <RetroScreen
+            dispatch={dispatch}
+            outcome={state.screen.outcome}
+            cause={state.screen.cause}
+            run={state.run}
+          />
+        );
         break;
     }
 
