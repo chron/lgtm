@@ -153,10 +153,24 @@ Paul's catalogue is **LOCKED** for its first playable pass. Values may still mov
 
 - **Fantasy:** assemble an extremely custom toolchain, unleash several agents, and accept that the output may have opinions.
 - **Passive:** **Custom Setup** — every AI Assisted card installs Script 1 on its target.
-- **Starter:** **Agent Swarm** — Backend 5, Unverified, AI Assisted.
 - **Core space:** AI Assisted bursts, Script installation, triggering automation now, deliberate Tech Debt.
 - **Bridges:** Steph refunds and accelerates installs; Toby converts Guard output; Paul and Debt payoffs embrace the risk.
-- **Rare direction:** parallel agents that touch multiple requirements, install multiple Scripts, or trade a large amount of Debt for a spectacular turn.
+
+Madi's catalogue is **LOCKED** for its first playable pass. Values may still move during playtesting.
+
+| Slot | Card | Cost | Effect |
+| --- | --- | ---: | --- |
+| Starter | **Agent Swarm** | 1 | Backend 5, Unverified, AI Assisted. |
+| Normal | **Yak Shave** | 1 | Install Script 2 on a requirement. Add 1 Distraction at the start of the next Day. |
+| Normal | **Custom Toolchain** | 1 | AI Assisted Work gains +2 Work for the rest of this Cycle. Exhaust. |
+| Normal | **Plan It Out** | 1 | Draw 3 additional cards at the start of the next Day. Exhaust. |
+| Normal | **Write the RFC** | 1 | Verify 3, then install Script 1 on each incomplete requirement on that Task. |
+| Normal | **Agentic Loop** | 1 | Flexible 2, Unverified, AI Assisted. After its Work, trigger the target requirement's Script. |
+| Rare | **Parallel Agents** | 1 | Generate 3 Sub-Agents. Gain 1 Tech Debt. Exhaust. |
+
+**Sub-Agent** is a zero-cost Generated token: Flexible 1, Unverified, AI Assisted; after its Work, trigger the target requirement's Script; Exhaust.
+
+Custom Setup installs its Script before **Agentic Loop** or **Sub-Agent** triggers the target, so either card has a useful floor and scales aggressively from existing automation. **Write the RFC** resolves its Review first, then installs Script 1 only on requirements that remain incomplete. **Plan It Out** adds to the ordinary five-card next-Day draw rather than replacing it. Multiple copies of **Custom Toolchain** stack; Focus, Cycle duration, Exhaust, and encounter pressure are its natural constraints.
 
 ### Seb — reuse and distribution
 
