@@ -214,11 +214,29 @@ Custom Setup installs its Script before **Agentic Loop** or **Sub-Agent** trigge
 ### Toby — defensive conversion
 
 - **Fantasy:** notice the problem, absorb the blast radius, and turn operational calm into forward progress.
-- **Passive direction:** whenever Block prevents Morale loss, add that much Verified Infra Work to the intent's Task.
-- **Starter direction:** **Check the Logs** — gain Block and apply a small Infra or Guard effect.
+- **Passive:** **Quietly On It** — whenever Block prevents Morale loss from a Crunch Intent, add that much Verified Work to that Intent's Task.
 - **Core space:** Block, Guard Scripts, observability, profiting from telegraphed Crunch.
 - **Bridges:** Elspeth supplies repeatable Block; Steph builds Guard automation; Odin chooses which intents to Stun and which to safely absorb.
-- **Rare direction:** **Nothing Gets Past Me** — a major defensive stance that converts the Day's prevented damage into broad Infra progress.
+
+Toby's catalogue is **LOCKED** for its first playable pass. Values may still move during playtesting.
+
+| Slot | Card | Cost | Effect |
+| --- | --- | ---: | --- |
+| Starter | **Check the Logs** | 1 | Infra 2, Verified. Gain 3 Block. |
+| Normal | **On Call** | 1 | Gain Block equal to the total incoming Morale this Day. |
+| Normal | **Useful Alerting** | 1 | Install Guard 2, then trigger it. |
+| Normal | **Above and Beyond** | 0 | Gain 2 Block, then double your Block. Exhaust. |
+| Normal | **Keep It Humming** | 1 | Infra 2, Verified. Trigger every Guard on that Task. |
+| Normal | **Triage** | 1 | Stun one non-Crunch Intent. Gain 4 Block. |
+| Rare | **Nothing Gets Past Me** | 1 | Gain 6 Block. This Day, prevented Crunch damage becomes Verified Work on every open Task instead of only its source Task. Exhaust. |
+
+Quietly On It applies its Work to the open requirement on the Intent's Task with the least Work remaining, preferring Infra and using board order to break ties. It must not become inactive merely because a Task has no Infra requirement. Each Crunch resolves against the ordinary shared Block pool, and the amount actually prevented produces one conversion trigger.
+
+**On Call** reads the current total displayed incoming Morale from unstunned open Intents. **Useful Alerting** installs before it triggers. **Above and Beyond** gains its flat Block before doubling, giving it a floor of 4 while allowing large setup turns; Exhaust is its natural limiter. **Keep It Humming** triggers Guards in requirement order.
+
+**Triage** deliberately cannot Stun Crunch: it removes Scope, Distraction, and other disruptive Intents while leaving manageable damage for Toby to convert. **Nothing Gets Past Me** broadens Quietly On It for the Day rather than triggering it twice on the source Task. For each point of prevented Crunch damage, every open Task receives the same amount of Verified Work using the ordinary target rule above. Block is still spent normally and expires at the end of the Day.
+
+At least one later encounter must present multiple telegraphed Crunch Intents on the same Day. That is Toby's showcase: assemble enough Block, decide which non-Crunch effects to cancel, and turn an apparent disaster into a board-wide burst of progress.
 
 ### Steph — automation accelerator
 
