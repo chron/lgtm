@@ -135,10 +135,24 @@ Paul's catalogue is **LOCKED** for its first playable pass. Values may still mov
 
 - **Fantasy:** see the architectural problem coming, raise concerns, and make the work survive contact with reality.
 - **Passive:** **I Have Concerns** — every Review also Stuns that Task's intent.
-- **Starter:** **Design Review** — Review 5.
 - **Core space:** large Review, Stun, retained answers, rewards when Review exceeds its minimum cleanup job.
 - **Bridges:** Matt supplies excess Review; Nick schedules answers; Paul and Madi create risk worth reviewing.
-- **Rare direction:** a sweeping architectural intervention that Reviews or Stuns across several Tasks.
+
+Odin's catalogue is **LOCKED** for its first playable pass. Values may still move during playtesting.
+
+| Slot | Card | Cost | Effect |
+| --- | --- | ---: | --- |
+| Starter | **Design Review** | 1 | Verify 5. |
+| Normal | **One More Diagram** | 1 | Verify 6. Retain. |
+| Normal | **Strong Opinions, Loosely Held** | 1 | This Day, whenever a Review Stuns an Intent, gain 1 Focus. Exhaust. |
+| Normal | **Approved With Comments** | 1 | Verify 3. Generate 2 Comments. |
+| Normal | **Boring Technology** | 1 | Backend 4 Verified. Add +3 Work if the target Task's Intent is Stunned. |
+| Normal | **Manual Mode** | 1 | Discard every AI Assisted card in hand. Non-AI Work gains +2 Work for the rest of this Day. Exhaust. |
+| Rare | **Architecture Review** | 1 | Verify 5 on every Task. Draw 1 for each Intent Stunned this way. Exhaust. |
+
+**Comment** is the shared zero-cost Generated token: Verify 1; Exhaust.
+
+Odin's cards do not independently duplicate his passive's Stun. They create Review volume, reward the resulting control, or turn a Stunned Task into Backend progress. A Task with no Unverified Work cannot be Reviewed by these cards, so Odin cannot cancel its Intent without a shared direct-Stun effect. **Strong Opinions, Loosely Held** stacks when multiple copies are played and only rewards Stuns caused by Review. **Architecture Review** skips Tasks with no Unverified Work and draws only for Intents that I Have Concerns actually Stuns. **Manual Mode** discards AI Assisted cards currently in hand; it does not remove them from other piles.
 
 ### Irene — completion engine
 
