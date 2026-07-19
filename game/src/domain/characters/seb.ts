@@ -1,6 +1,7 @@
 import sebIdle from "../../assets/characters/seb-idle-v1.webp";
 import sebSuccess from "../../assets/characters/seb-success-v1.webp";
 import sebThinking from "../../assets/characters/seb-thinking-v1.webp";
+import type { CharacterContent } from "./types";
 
 /**
  * Seb's locked first-pass catalogue.
@@ -130,4 +131,4 @@ export const sebContent = {
       rarity: "rare",
     },
   ],
-} as const;
+} as const satisfies CharacterContent<"seb">;

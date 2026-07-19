@@ -52,6 +52,8 @@ function createAppInitialState(base: GameState): GameState {
       "final",
       "shop",
       "weekend",
+      "seb",
+      "matt",
     ].includes(qa ?? "")
   ) {
     return base;
@@ -68,15 +70,19 @@ function createAppInitialState(base: GameState): GameState {
         : 0x0facade,
   });
   const squad =
-    qa === "madi"
-      ? (["madi", "irene", "odin"] as const)
-      : qa === "irene"
-        ? (["irene", "madi", "odin"] as const)
-        : qa === "basics"
-          ? (["odin", "irene", "paul"] as const)
-          : qa === "odin"
-            ? (["odin", "madi", "irene"] as const)
-            : (["paul", "odin", "madi"] as const);
+    qa === "seb"
+      ? (["seb", "matt", "irene"] as const)
+      : qa === "matt"
+        ? (["matt", "seb", "odin"] as const)
+        : qa === "madi"
+          ? (["madi", "irene", "odin"] as const)
+          : qa === "irene"
+            ? (["irene", "madi", "odin"] as const)
+            : qa === "basics"
+              ? (["odin", "irene", "paul"] as const)
+              : qa === "odin"
+                ? (["odin", "madi", "irene"] as const)
+                : (["paul", "odin", "madi"] as const);
   for (const developerId of squad) {
     state = gameReducer(state, { type: "TOGGLE_DEVELOPER", developerId });
   }
@@ -328,61 +334,98 @@ function createAppInitialState(base: GameState): GameState {
   if (!state.run?.cycle) return state;
 
   const cardIds =
-    qa === "madi"
+    qa === "seb"
       ? [
-          "yak-shave",
-          "custom-toolchain",
-          "plan-it-out",
-          "write-the-rfc",
-          "agentic-loop",
-          "parallel-agents",
-          "agent-swarm",
+          "use-the-component",
+          "design-tokens",
+          "ladle",
+          "extract-component",
+          "used-everywhere",
+          "polish-the-primitives",
+          "design-system-migration",
         ]
-      : qa === "irene"
+      : qa === "matt"
         ? [
-            "quietly-automated",
-            "last-10-percent",
-            "no-fuss",
-            "while-im-here",
-            "quick-study",
-            "all-sorted",
-            "already-fixed",
+            "delight-moment",
+            "one-more-pass",
+            "polish-budget",
+            "no-rough-edges",
+            "delight-budget",
+            "microinteraction",
+            "pixel-perfect",
           ]
-        : qa === "basics"
-          ? ["frontend-3", "frontend-3", "backend-3", "review-3", "flexible-2", "standup-cover"]
-          : qa === "odin"
+        : qa === "madi"
+          ? [
+              "yak-shave",
+              "custom-toolchain",
+              "plan-it-out",
+              "write-the-rfc",
+              "agentic-loop",
+              "parallel-agents",
+              "agent-swarm",
+            ]
+          : qa === "irene"
             ? [
-                "one-more-diagram",
-                "strong-opinions-loosely-held",
-                "approved-with-comments",
-                "boring-technology",
-                "manual-mode",
-                "architecture-review",
-                "design-review",
+                "quietly-automated",
+                "last-10-percent",
+                "no-fuss",
+                "while-im-here",
+                "quick-study",
+                "all-sorted",
+                "already-fixed",
               ]
-            : [
-                "side-quest",
-                "full-stack",
-                "new-model-dropped",
-                "post-through-it",
-                "spike-it",
-                "ebb-and-flow",
-                "vibe-code",
-              ];
+            : qa === "basics"
+              ? ["frontend-3", "frontend-3", "backend-3", "review-3", "flexible-2", "standup-cover"]
+              : qa === "odin"
+                ? [
+                    "one-more-diagram",
+                    "strong-opinions-loosely-held",
+                    "approved-with-comments",
+                    "boring-technology",
+                    "manual-mode",
+                    "architecture-review",
+                    "design-review",
+                  ]
+                : [
+                    "side-quest",
+                    "full-stack",
+                    "new-model-dropped",
+                    "post-through-it",
+                    "spike-it",
+                    "ebb-and-flow",
+                    "vibe-code",
+                  ];
   return {
     ...state,
     run: {
       ...state.run,
       cycle: {
         ...state.run.cycle,
-        focus: qa === "madi" || qa === "odin" || qa === "irene" || qa === "basics" ? 12 : 10,
+        focus:
+          qa === "madi" ||
+          qa === "odin" ||
+          qa === "irene" ||
+          qa === "basics" ||
+          qa === "seb" ||
+          qa === "matt"
+            ? 12
+            : 10,
         tasks:
-          qa === "madi" || qa === "odin" || qa === "irene"
+          qa === "madi" || qa === "odin" || qa === "irene" || qa === "seb" || qa === "matt"
             ? state.run.cycle.tasks.map((task) => ({
                 ...task,
                 requirements: task.requirements.map((requirement) => ({
                   ...requirement,
-                  unverified: qa === "madi" ? 1 : Math.min(3, requirement.target),
+                  verified:
+                    qa === "seb" && requirement.discipline === "frontend"
+                      ? Math.max(0, requirement.target - 2)
+                      : requirement.verified,
+                  unverified:
+                    qa === "madi" || qa === "matt"
+                      ? Math.min(2, requirement.target)
+                      : qa === "seb"
+                        ? 0
+                        : Math.min(3, requirement.target),
                   scriptPower: qa === "madi" && requirement.discipline === "frontend" ? 2 : 0,
                 })),
               }))

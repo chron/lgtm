@@ -118,6 +118,7 @@ function fixtureRun(): { run: RunState; cycle: CycleState } {
     cardTagWorkBonuses: {},
     dayWorkBonuses: [],
     reviewStunFocusBonus: 0,
+    polishBudgetPower: 0,
     queuedDistractions: 0,
     queuedCardsDrawn: 0,
     intentProtections: {},

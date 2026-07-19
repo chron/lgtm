@@ -117,6 +117,20 @@ export interface CardDefinition {
   triggerTargetScriptAfterWork?: boolean;
   fullStackAdded?: number;
   spawnSideQuest?: boolean;
+  frontendSpreadToOtherTasks?: number;
+  frontendWorkToEveryTask?: number;
+  extraSharedComponentsOnCompletion?: number;
+  workPerOtherIncompleteFrontendTask?: number;
+  frontendSpreadIfTaskClean?: number;
+  scriptPowerOnEveryIncompleteFrontend?: number;
+  triggerInstalledScripts?: boolean;
+  cardsDrawnOnRequirementComplete?: number;
+  blockPerFinishingTouchesReview?: number;
+  focusIfTaskFullyVerified?: number;
+  cardsDrawnIfTaskFullyVerified?: number;
+  blockPerCompletedRequirement?: number;
+  finishingTouchesEveryTask?: boolean;
+  cardsDrawnPerTaskCleaned?: number;
   display?: { value: string; label: string; rules?: string };
   rarity?: "normal" | "rare";
   rules: string;
@@ -253,6 +267,7 @@ export interface CycleState {
   cardTagWorkBonuses: Partial<Record<CardTag, number>>;
   dayWorkBonuses: readonly { amount: number; excludedTags: readonly CardTag[] }[];
   reviewStunFocusBonus: number;
+  polishBudgetPower: number;
   lastWorkCard?: {
     cardId: string;
     discipline: Discipline | "flexible";

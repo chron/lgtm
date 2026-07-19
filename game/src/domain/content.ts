@@ -244,7 +244,7 @@ const sharedCards: readonly CardDefinition[] = [
     tags: ["flexible", "reward"],
   },
   {
-    id: "pixel-perfect",
+    id: "ui-polish",
     name: "UI Polish",
     cost: 1,
     kind: "work",

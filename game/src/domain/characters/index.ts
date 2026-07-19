@@ -6,6 +6,8 @@ import { madiContent } from "./madi";
 import { nickContent } from "./nick";
 import { odinContent } from "./odin";
 import { paulContent } from "./paul";
+import { sebContent } from "./seb";
+import { mattContent } from "./matt";
 import type { CharacterContent } from "./types";
 
 export const characterContents = [
@@ -16,6 +18,8 @@ export const characterContents = [
   kirstenContent,
   nickContent,
   leviContent,
+  sebContent,
+  mattContent,
 ] as const;
 
 const characterContentCatalog: readonly CharacterContent[] = characterContents;

@@ -1,6 +1,7 @@
 import mattIdle from "../../assets/characters/matt-idle-v2.webp";
 import mattSuccess from "../../assets/characters/matt-success-v1.webp";
 import mattThinking from "../../assets/characters/matt-thinking-v1.webp";
+import type { CharacterContent } from "./types";
 
 /** See Seb's catalogue note: shared typing is intentionally added by the integration pass. */
 export const mattContent = {
@@ -123,4 +124,4 @@ export const mattContent = {
       rarity: "rare",
     },
   ],
-} as const;
+} as const satisfies CharacterContent<"matt">;

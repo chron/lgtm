@@ -18,6 +18,33 @@ const glossary: readonly GlossaryDefinition[] = [
     appliesTo: (card) => Boolean(card.spawnSideQuest),
   },
   {
+    id: "shared-components",
+    term: "Shared Components",
+    description:
+      "Completing Frontend with Verified Work echoes 1 Frontend Work to every other open Task; echoes can cascade.",
+    appliesTo: (card) =>
+      Boolean(
+        card.frontendSpreadToOtherTasks ||
+        card.frontendWorkToEveryTask ||
+        card.extraSharedComponentsOnCompletion ||
+        card.frontendSpreadIfTaskClean,
+      ),
+  },
+  {
+    id: "finishing-touches",
+    term: "Finishing Touches",
+    description:
+      "Verified Work beyond a requirement becomes real Review on its Task; only converted Unverified Work counts.",
+    appliesTo: (card) =>
+      Boolean(card.blockPerFinishingTouchesReview || card.finishingTouchesEveryTask),
+  },
+  {
+    id: "overflow-review",
+    term: "Overflow Review",
+    description: "Duplicates this Work packet's unused amount as Review on the stated Tasks.",
+    appliesTo: (card) => Boolean(card.finishingTouchesEveryTask),
+  },
+  {
     id: "side-quest",
     term: "Side Quest",
     description: "A required 3-Work Task with no Intent. Ship it to gain Prototype.",
@@ -169,7 +196,8 @@ const glossary: readonly GlossaryDefinition[] = [
       Boolean(
         card.automation ||
         card.scriptPowerPerIncompleteRequirement ||
-        card.triggerTargetScriptAfterWork,
+        card.triggerTargetScriptAfterWork ||
+        card.scriptPowerOnEveryIncompleteFrontend,
       ),
   },
   {

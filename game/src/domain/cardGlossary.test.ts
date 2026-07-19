@@ -85,4 +85,11 @@ describe("card glossary", () => {
     expect(termsFor("heads-down")).toEqual(["Chain"]);
     expect(termsFor("flow-state")).toEqual(["Chain", "Exhaust"]);
   });
+
+  it("explains Seb's cascades and Matt's real overflow Review", () => {
+    expect(termsFor("use-the-component")).toEqual(["Shared Components"]);
+    expect(termsFor("design-system-migration")).toEqual(["Script", "Exhaust"]);
+    expect(termsFor("polish-budget")).toEqual(["Finishing Touches", "Exhaust"]);
+    expect(termsFor("pixel-perfect")).toEqual(["Finishing Touches", "Overflow Review", "Exhaust"]);
+  });
 });

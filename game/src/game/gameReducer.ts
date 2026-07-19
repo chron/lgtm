@@ -56,6 +56,7 @@ import {
 } from "./bossEngine";
 import {
   applyCardResolutionToTask,
+  applyRosterBoardEffects,
   absorbMoraleDamage,
   createCycleReport,
   getCurrentIntent,
@@ -79,6 +80,7 @@ import {
   type EventPendingSelection,
 } from "./eventResolution";
 import { normalizeSeed, sampleOne } from "./random";
+import { resolveSebCascade, type SebTaskSnapshot, type SebWorkPacket } from "./sebMechanics";
 
 type Screen =
   | { name: "title" }
@@ -492,6 +494,7 @@ function createCycleState(
     cardTagWorkBonuses: {},
     dayWorkBonuses: [],
     reviewStunFocusBonus: 0,
+    polishBudgetPower: 0,
     queuedDistractions: 0,
     queuedCardsDrawn: 0,
     intentProtections,
@@ -712,13 +715,27 @@ function launchFinalRelease(run: RunState, cycle: CycleState): GameState | undef
   };
 }
 
+interface ScriptPacket {
+  taskId: string;
+  discipline: Discipline;
+  attempted: number;
+  applied: number;
+  completed: boolean;
+}
+
 function runScripts(
   tasks: readonly TaskState[],
   multiplier: number,
   triggerBonus: number,
-): { tasks: TaskState[]; block: number; verifiedCompletions: number } {
+): {
+  tasks: TaskState[];
+  block: number;
+  verifiedCompletions: number;
+  packets: ScriptPacket[];
+} {
   let block = 0;
   let verifiedCompletions = 0;
+  const packets: ScriptPacket[] = [];
   const nextTasks = tasks.map((task) => {
     if (task.status === "shipped") return task;
     block += task.requirements.reduce(
@@ -735,12 +752,21 @@ function runScripts(
           0,
           requirement.target - requirement.verified - requirement.unverified,
         );
-        const verifiedAdded = Math.min(
-          requirement.scriptPower * multiplier + (requirement.scriptPower > 0 ? triggerBonus : 0),
-          remaining,
-        );
-        if (requirementCompletedByVerifiedWork(requirement, verifiedAdded)) {
+        const attempted =
+          requirement.scriptPower * multiplier + (requirement.scriptPower > 0 ? triggerBonus : 0);
+        const verifiedAdded = Math.min(attempted, remaining);
+        const completed = requirementCompletedByVerifiedWork(requirement, verifiedAdded);
+        if (completed) {
           verifiedCompletions += 1;
+        }
+        if (attempted > 0) {
+          packets.push({
+            taskId: task.taskId,
+            discipline: requirement.discipline,
+            attempted,
+            applied: verifiedAdded,
+            completed,
+          });
         }
         return {
           ...requirement,
@@ -749,7 +775,106 @@ function runScripts(
       }),
     });
   });
-  return { tasks: nextTasks, block, verifiedCompletions };
+  return { tasks: nextTasks, block, verifiedCompletions, packets };
+}
+
+function applyStartDayRosterEffects(
+  run: RunState,
+  cycle: CycleState,
+  scripts: ReturnType<typeof runScripts>,
+): {
+  tasks: TaskState[];
+  block: number;
+  cardsDrawn: number;
+  triggeredPassiveIds: DeveloperId[];
+} {
+  let tasks = scripts.tasks.map((task) => ({
+    ...task,
+    stunned: false,
+    requirements: task.requirements.map((requirement) => ({ ...requirement })),
+  }));
+  let block = scripts.block;
+  let cardsDrawn = 0;
+  const triggeredPassiveIds: DeveloperId[] = [];
+  const mark = (id: DeveloperId) => {
+    if (!triggeredPassiveIds.includes(id)) triggeredPassiveIds.push(id);
+  };
+
+  if (run.squad.includes("matt")) {
+    for (const packet of scripts.packets) {
+      let overflow = Math.max(0, packet.attempted - packet.applied);
+      if (overflow === 0) continue;
+      const taskIndex = tasks.findIndex((task) => task.taskId === packet.taskId);
+      const task = tasks[taskIndex];
+      if (!task || task.status === "shipped") continue;
+      let reviewed = 0;
+      const requirements = task.requirements.map((requirement) => {
+        const amount = Math.min(requirement.unverified, overflow);
+        overflow -= amount;
+        reviewed += amount;
+        return amount > 0
+          ? {
+              ...requirement,
+              verified: requirement.verified + amount,
+              unverified: requirement.unverified - amount,
+            }
+          : requirement;
+      });
+      let updated = { ...task, requirements };
+      if (reviewed > 0) {
+        mark("matt");
+        if (run.tools.includes("test-suite")) block += reviewed;
+        if (run.squad.includes("odin")) {
+          const tomorrow = { ...cycle, day: cycle.day + 1, tasks };
+          if (getScheduledIntent(tomorrow, updated)) {
+            updated = { ...updated, stunned: true };
+            mark("odin");
+          }
+        }
+      }
+      tasks = tasks.map((candidate, index) => (index === taskIndex ? updated : candidate));
+    }
+  }
+
+  if (run.squad.includes("seb")) {
+    const initialPackets: SebWorkPacket[] = [];
+    for (const packet of scripts.packets) {
+      if (packet.discipline !== "frontend" || !packet.completed) continue;
+      mark("seb");
+      for (const task of tasks) {
+        if (task.taskId !== packet.taskId) {
+          initialPackets.push({
+            taskId: task.taskId,
+            amount: 1,
+            source: "shared-components",
+          });
+        }
+      }
+    }
+    if (initialPackets.length > 0) {
+      const snapshots: SebTaskSnapshot[] = tasks.map((task) => ({
+        taskId: task.taskId,
+        status: task.status,
+        requirements: task.requirements,
+      }));
+      const cascade = resolveSebCascade(snapshots, initialPackets);
+      tasks = tasks.map((task, taskIndex) => ({
+        ...task,
+        status: cascade.tasks[taskIndex]?.status ?? task.status,
+        requirements: task.requirements.map((requirement, requirementIndex) => ({
+          ...requirement,
+          verified:
+            cascade.tasks[taskIndex]?.requirements[requirementIndex]?.verified ??
+            requirement.verified,
+        })),
+      }));
+      cardsDrawn += run.squad.includes("irene")
+        ? cascade.packets.filter((packet) => packet.completed).length
+        : 0;
+    }
+  }
+
+  return { tasks, block, cardsDrawn, triggeredPassiveIds };
 }
 
 function taskShippingDefeat(run: RunState): GameState {
@@ -957,7 +1082,9 @@ function endDay(run: RunState, cycle: CycleState): GameState {
     scriptMultiplier,
     run.tools.includes("platypus") ? 1 : 0,
   );
-  const ireneDraws = run.squad.includes("irene") ? scripts.verifiedCompletions : 0;
+  const rosterStart = applyStartDayRosterEffects(run, cycle, scripts);
+  const ireneDraws =
+    (run.squad.includes("irene") ? scripts.verifiedCompletions : 0) + rosterStart.cardsDrawn;
   const nextDraw = drawCards(
     [...distractions, ...resolvedCycle.drawPile],
     resolvedCycle.discardPile,
@@ -969,13 +1096,18 @@ function endDay(run: RunState, cycle: CycleState): GameState {
     ...resolvedCycle,
     day: cycle.day + 1,
     focus: 3 + (run.tools.includes("timezone-wrangler") ? cycle.focus : 0),
-    block: scripts.block + (run.tools.includes("error-budget") ? resolvedCycle.block : 0),
-    tasks: scripts.tasks.map((task) => ({ ...task, stunned: false })),
+    block: rosterStart.block + (run.tools.includes("error-budget") ? resolvedCycle.block : 0),
+    tasks: rosterStart.tasks,
     drawPile: nextDraw.drawPile,
     hand: [...retainedHand, ...nextDraw.drawn],
     discardPile: nextDraw.discardPile,
     blockedDisciplines,
-    triggeredPassiveIds: ireneDraws > 0 ? ["irene"] : [],
+    triggeredPassiveIds: [
+      ...new Set([
+        ...(ireneDraws > 0 ? (["irene"] as const) : []),
+        ...rosterStart.triggeredPassiveIds,
+      ]),
+    ],
     temporaryCardCounter: cycle.temporaryCardCounter + totalDistractions,
     cardsPlayedThisDay: 0,
     generatedCardsPlayedThisDay: 0,
@@ -988,6 +1120,7 @@ function endDay(run: RunState, cycle: CycleState): GameState {
     lastWorkCard: undefined,
     dayWorkBonuses: [],
     reviewStunFocusBonus: 0,
+    polishBudgetPower: 0,
     queuedDistractions: 0,
     queuedCardsDrawn: 0,
   };
@@ -1136,9 +1269,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (resolution.kind === "tactic" && resolution.sideQuestDiscipline) {
         tasks = [...tasks, createSideQuestState(cycle, resolution.sideQuestDiscipline)];
       }
+      const rosterEffects = applyRosterBoardEffects(state.run, instance, resolution, tasks);
+      tasks = [...rosterEffects.tasks];
       const triggeredPassiveIds = [
-        ...cycle.triggeredPassiveIds,
-        ...resolution.triggeredPassiveIds.filter((id) => !cycle.triggeredPassiveIds.includes(id)),
+        ...new Set([
+          ...cycle.triggeredPassiveIds,
+          ...resolution.triggeredPassiveIds,
+          ...rosterEffects.triggeredPassiveIds,
+        ]),
       ];
       const cardDraw = resolution.drawEntireDrawPile
         ? {
@@ -1146,11 +1284,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             discardPile: cycle.discardPile,
             drawn: [...cycle.drawPile],
           }
-        : resolution.cardsDrawn > 0
+        : resolution.cardsDrawn + rosterEffects.cardsDrawn > 0
           ? drawCards(
               cycle.drawPile,
               cycle.discardPile,
-              resolution.cardsDrawn,
+              resolution.cardsDrawn + rosterEffects.cardsDrawn,
               state.run.tools.includes("noise-cancelling-headphones"),
               state.run.tools.includes("cat-tax"),
             )
@@ -1205,7 +1343,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const nextCycle: CycleState = {
         ...cycle,
         focus: cycle.focus - resolution.cost + resolution.focusGained + nickFocus,
-        block: cycle.block + resolution.blockGained,
+        block: cycle.block + resolution.blockGained + rosterEffects.blockGained,
         techDebtAdded: cycle.techDebtAdded + resolution.techDebtAdded,
         tasks,
         drawPile: cardDraw?.drawPile ?? cycle.drawPile,
@@ -1270,6 +1408,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ? [...cycle.dayWorkBonuses, resolution.dayWorkBonus]
           : cycle.dayWorkBonuses,
         reviewStunFocusBonus: cycle.reviewStunFocusBonus + resolution.dayReviewStunFocusAdded,
+        polishBudgetPower: cycle.polishBudgetPower + resolution.polishBudgetAdded,
         lastWorkCard:
           resolution.kind === "work" && resolution.countsAsWorkPlay && definition.discipline
             ? {

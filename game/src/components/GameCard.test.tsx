@@ -27,7 +27,7 @@ describe("GameCard", () => {
   it("omits glossary markup when a card has no specialist vocabulary", () => {
     const markup = renderToStaticMarkup(
       <GameCard
-        instance={{ cardId: "pixel-perfect", instanceId: "test-ui-polish" }}
+        instance={{ cardId: "ui-polish", instanceId: "test-ui-polish" }}
         effectiveCost={1}
         selected={false}
       />,

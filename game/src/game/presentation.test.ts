@@ -15,6 +15,52 @@ function startCycle(squad: readonly DeveloperId[]): GameState {
 }
 
 describe("getCardPresentation", () => {
+  it("presents Seb's cascading passive and Matt's rare polish as character moments", () => {
+    const sebState = startCycle(["seb", "matt", "irene"]);
+    const sebRun = sebState.run;
+    if (!sebRun?.cycle) throw new Error("Expected Seb Cycle");
+    const sebInstance = { cardId: "use-the-component", instanceId: "seb-presentation" };
+    const preparedSebRun = {
+      ...sebRun,
+      cycle: {
+        ...sebRun.cycle,
+        hand: [...sebRun.cycle.hand, sebInstance],
+        tasks: sebRun.cycle.tasks.map((task) => ({
+          ...task,
+          requirements: task.requirements.map((requirement) => ({
+            ...requirement,
+            verified:
+              requirement.discipline === "frontend" ? Math.max(0, requirement.target - 3) : 0,
+          })),
+        })),
+      },
+    };
+    expect(
+      getCardPresentation(preparedSebRun, sebInstance, {
+        taskId: "status-composer",
+        discipline: "frontend",
+      }),
+    ).toMatchObject({
+      cue: { developerId: "seb", level: "hero", title: "Use the Component" },
+      triggeredPassiveIds: expect.arrayContaining(["seb"]),
+    });
+
+    const mattInstance = { cardId: "pixel-perfect", instanceId: "matt-presentation" };
+    expect(
+      getCardPresentation(
+        {
+          ...preparedSebRun,
+          squad: ["matt", "seb", "odin"],
+          cycle: {
+            ...preparedSebRun.cycle,
+            hand: [...preparedSebRun.cycle.hand, mattInstance],
+          },
+        },
+        mattInstance,
+        { taskId: "status-composer", discipline: "frontend" },
+      ),
+    ).toMatchObject({ cue: { developerId: "matt", level: "hero", title: "Pixel Perfect" } });
+  });
   it("promotes a signature card plus its passive to a hero reaction", () => {
     const state = startCycle(["paul", "irene", "madi"]);
     const run = state.run;

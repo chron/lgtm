@@ -71,6 +71,7 @@ interface ResolvedCardBase {
   dayWorkBonus?: { amount: number; excludedTags: readonly CardTag[] };
   dayReviewStunFocusAdded: number;
   fullStackAdded: number;
+  polishBudgetAdded: number;
   triggeredPassiveIds: DeveloperId[];
   chainAfterPlay: CycleState["chain"];
   label: string;
@@ -90,6 +91,9 @@ export type CardResolution =
       scriptRunAmount: number;
       pitchedIn: boolean;
       countsAsWorkPlay: boolean;
+      attemptedAmount: number;
+      overflow: number;
+      requirementCompleted: boolean;
     })
   | (ResolvedCardBase & {
       kind: "review";
@@ -408,7 +412,12 @@ export function resolveCardTarget(
       ((card.block ?? 0) > 0 ? generatedOutputBonus : 0) +
       (card.blockPerCardPlayed ?? 0) * cycle.cardsPlayedThisDay +
       (card.blockPerExhaustedThisDay ?? 0) * cycle.cardsExhaustedThisDay +
-      (card.blockPerChain ?? 0) * cycle.chain.count,
+      (card.blockPerChain ?? 0) * cycle.chain.count +
+      (card.blockPerCompletedRequirement ?? 0) *
+        cycle.tasks
+          .filter((task) => task.status === "open")
+          .flatMap((task) => task.requirements)
+          .filter((requirement) => remainingWork(requirement) === 0).length,
   );
   const tacticBase: Omit<ResolvedCardBase, "label"> = {
     legal: true,
@@ -448,6 +457,7 @@ export function resolveCardTarget(
       : undefined,
     dayReviewStunFocusAdded: card.dayReviewStunFocusBonus ?? 0,
     fullStackAdded: card.fullStackAdded ?? 0,
+    polishBudgetAdded: card.blockPerFinishingTouchesReview ?? 0,
     triggeredPassiveIds: generatedOutputBonus > 0 ? ["kirsten"] : [],
     chainAfterPlay,
   };
@@ -612,6 +622,15 @@ export function resolveCardTarget(
         ? `Discard ${tacticBase.discardedCardInstanceIds.length} ${card.discardedHandTags.map((tag) => (tag === "ai-assisted" ? "AI Assisted" : tag)).join("/")}`
         : undefined,
       card.dayWorkBonus ? `Eligible Work +${card.dayWorkBonus.amount} this Day` : undefined,
+      card.frontendWorkToEveryTask
+        ? `Frontend +${card.frontendWorkToEveryTask} · Every Task`
+        : undefined,
+      card.scriptPowerOnEveryIncompleteFrontend
+        ? `Script +${card.scriptPowerOnEveryIncompleteFrontend} · Every Frontend${card.triggerInstalledScripts ? " · Trigger" : ""}`
+        : undefined,
+      card.blockPerFinishingTouchesReview
+        ? `Finishing Touches · Block ${card.blockPerFinishingTouchesReview}:1`
+        : undefined,
     ]
       .filter(Boolean)
       .join(" · ");
@@ -706,8 +725,20 @@ export function resolveCardTarget(
     const cardsDrawn =
       (card.cardsDrawn ?? 0) +
       passiveCardsDrawn +
-      reviewStuns * (card.cardsDrawnPerReviewStun ?? 0);
-    const focusGained = (card.focusGained ?? 0) + reviewStuns * cycle.reviewStunFocusBonus;
+      reviewStuns * (card.cardsDrawnPerReviewStun ?? 0) +
+      reviews.filter((review) => {
+        const source = targetTasks.find((task) => task.taskId === review.taskId);
+        return source ? taskUnverifiedWork(verifyTask(source, review.amount)) === 0 : false;
+      }).length *
+        (card.cardsDrawnIfTaskFullyVerified ?? 0);
+    const focusGained =
+      (card.focusGained ?? 0) +
+      reviewStuns * cycle.reviewStunFocusBonus +
+      reviews.filter((review) => {
+        const source = targetTasks.find((task) => task.taskId === review.taskId);
+        return source ? taskUnverifiedWork(verifyTask(source, review.amount)) === 0 : false;
+      }).length *
+        (card.focusIfTaskFullyVerified ?? 0);
     const scriptInstallations = reviews.flatMap((review) => review.scriptInstallations);
     return {
       ...tacticBase,
@@ -734,6 +765,9 @@ export function resolveCardTarget(
         blockGained ? `Block ${blockGained}` : undefined,
         focusGained ? `Focus +${focusGained}` : undefined,
         cardsDrawn ? `Draw ${cardsDrawn}` : undefined,
+        card.frontendSpreadIfTaskClean
+          ? `Clean · spread Frontend ${card.frontendSpreadIfTaskClean}`
+          : undefined,
       ]
         .filter(Boolean)
         .join(" · "),
@@ -814,6 +848,21 @@ export function resolveCardTarget(
         ? 1
         : card.amount;
 
+  if (card.workPerOtherIncompleteFrontendTask) {
+    amount +=
+      card.workPerOtherIncompleteFrontendTask *
+      cycle.tasks.filter(
+        (candidate) =>
+          candidate.taskId !== task.taskId &&
+          candidate.status === "open" &&
+          candidate.requirements.some(
+            (candidateRequirement) =>
+              candidateRequirement.discipline === "frontend" &&
+              remainingWork(candidateRequirement) > 0,
+          ),
+      ).length;
+  }
+
   if (countsAsWorkPlay) {
     amount += generatedOutputBonus;
     amount += (card.amountPerGeneratedCardPlayed ?? 0) * cycle.generatedCardsPlayedThisDay;
@@ -851,7 +900,8 @@ export function resolveCardTarget(
   }
 
   const workRemaining = remainingWork(requirement);
-  amount = Math.min(amount, workRemaining);
+  const attemptedAmount = amount;
+  amount = Math.min(attemptedAmount, workRemaining);
   const madiScript = aiAssisted && run.squad.includes("madi") ? 1 : 0;
   if (madiScript) {
     triggeredPassiveIds = addTriggeredPassive(triggeredPassiveIds, "madi");
@@ -917,6 +967,7 @@ export function resolveCardTarget(
     triggeredPassiveIds = addTriggeredPassive(triggeredPassiveIds, "irene");
   }
   const cardsDrawn = passiveCardsDrawn + tacticBase.cardsDrawn;
+  const completionCardsDrawn = verifiedCompletion ? (card.cardsDrawnOnRequirementComplete ?? 0) : 0;
   const focusGained =
     (card.focusGained ?? 0) + (verifiedCompletion ? (card.focusOnRequirementComplete ?? 0) : 0);
   const techDebtAdded =
@@ -943,8 +994,19 @@ export function resolveCardTarget(
             scriptBlockAdded > 0 ? `Guard +${scriptBlockAdded}` : undefined,
             blockGained > 0 ? `Block ${blockGained}` : undefined,
             techDebtAdded > 0 ? `Debt +${techDebtAdded}` : undefined,
-            cardsDrawn > 0 ? `Draw ${cardsDrawn}` : undefined,
+            cardsDrawn + completionCardsDrawn > 0
+              ? `Draw ${cardsDrawn + completionCardsDrawn}`
+              : undefined,
             focusGained > 0 ? `Focus +${focusGained}` : undefined,
+            card.frontendSpreadToOtherTasks
+              ? `Spread Frontend ${card.frontendSpreadToOtherTasks}`
+              : undefined,
+            card.extraSharedComponentsOnCompletion
+              ? `Complete · echo +${card.extraSharedComponentsOnCompletion}`
+              : undefined,
+            card.finishingTouchesEveryTask && Math.max(0, attemptedAmount - amount) > 0
+              ? `Overflow ${Math.max(0, attemptedAmount - amount)} · Review every Task`
+              : undefined,
           ]
             .filter(Boolean)
             .join(" · ")
@@ -958,8 +1020,19 @@ export function resolveCardTarget(
             verifiedWorkHits[0]
               ? `${disciplineLabel(verifiedWorkHits[0].discipline)} spill +${verifiedWorkHits[0].amount}`
               : undefined,
-            cardsDrawn > 0 ? `Draw ${cardsDrawn}` : undefined,
+            cardsDrawn + completionCardsDrawn > 0
+              ? `Draw ${cardsDrawn + completionCardsDrawn}`
+              : undefined,
             focusGained > 0 ? `Focus +${focusGained}` : undefined,
+            card.frontendSpreadToOtherTasks
+              ? `Spread Frontend ${card.frontendSpreadToOtherTasks}`
+              : undefined,
+            card.extraSharedComponentsOnCompletion
+              ? `Complete · echo +${card.extraSharedComponentsOnCompletion}`
+              : undefined,
+            card.finishingTouchesEveryTask && Math.max(0, attemptedAmount - amount) > 0
+              ? `Overflow ${Math.max(0, attemptedAmount - amount)} · Review every Task`
+              : undefined,
           ]
             .filter(Boolean)
             .join(" · ");
@@ -977,11 +1050,14 @@ export function resolveCardTarget(
     scriptTriggerRunAmount,
     scriptRunAmount,
     techDebtAdded,
-    cardsDrawn,
+    cardsDrawn: cardsDrawn + completionCardsDrawn,
     focusGained,
     verifiedWorkHits,
     pitchedIn,
     countsAsWorkPlay,
+    attemptedAmount,
+    overflow: Math.max(0, attemptedAmount - amount),
+    requirementCompleted: verifiedCompletion,
     triggeredPassiveIds,
     label,
   };
@@ -1045,6 +1121,257 @@ export function applyCardResolutionToTask(
     }),
     resolution.verifiedWorkHits,
   );
+}
+
+export interface RosterBoardEffects {
+  tasks: readonly TaskState[];
+  cardsDrawn: number;
+  blockGained: number;
+  triggeredPassiveIds: readonly DeveloperId[];
+  labels: readonly string[];
+}
+
+interface FrontendPacket {
+  taskId: string;
+  amount: number;
+  source: "spread" | "shared-components" | "script";
+}
+
+function reviewOverflowOnTask(
+  task: TaskState,
+  amount: number,
+): { task: TaskState; reviewed: number; cleaned: boolean } {
+  const before = taskUnverifiedWork(task);
+  let remaining = Math.max(0, amount);
+  const requirements = disciplineOrder
+    .map((discipline) => task.requirements.find((item) => item.discipline === discipline))
+    .filter((requirement): requirement is RequirementState => Boolean(requirement))
+    .map((requirement) => {
+      const reviewed = Math.min(requirement.unverified, remaining);
+      remaining -= reviewed;
+      return {
+        ...requirement,
+        verified: requirement.verified + reviewed,
+        unverified: requirement.unverified - reviewed,
+      };
+    });
+  const reviewed =
+    before - requirements.reduce((sum, requirement) => sum + requirement.unverified, 0);
+  return {
+    task: { ...task, requirements },
+    reviewed,
+    cleaned: before > 0 && reviewed === before,
+  };
+}
+
+/**
+ * Resolve distributed roster effects after the played card's ordinary packet.
+ * The queue is intentionally FIFO and board ordered so Seb cascades, Matt
+ * overflow Review, and their cross-character combo stay deterministic.
+ */
+export function applyRosterBoardEffects(
+  run: RunState,
+  instance: CardInstance,
+  resolution: Exclude<CardResolution, { legal: false }>,
+  baseTasks: readonly TaskState[],
+): RosterBoardEffects {
+  const card = getCardForInstance(instance);
+  let tasks = baseTasks.map((task) => ({
+    ...task,
+    requirements: task.requirements.map((requirement) => ({ ...requirement })),
+  }));
+  const triggeredPassiveIds: DeveloperId[] = [];
+  const labels: string[] = [];
+  let cardsDrawn = 0;
+  let blockGained = 0;
+  const queue: FrontendPacket[] = [];
+
+  const markPassive = (id: DeveloperId) => {
+    if (!triggeredPassiveIds.includes(id)) triggeredPassiveIds.push(id);
+  };
+
+  const applyMattReview = (sourceTaskId: string, overflow: number, everyTask = false) => {
+    if (!run.squad.includes("matt") || overflow <= 0) return;
+    const targetIds = everyTask
+      ? tasks.filter((task) => task.status !== "shipped").map((task) => task.taskId)
+      : [sourceTaskId];
+    let totalReviewed = 0;
+    let cleaned = 0;
+    for (const taskId of targetIds) {
+      const taskIndex = tasks.findIndex((task) => task.taskId === taskId);
+      const task = tasks[taskIndex];
+      if (!task || task.status === "shipped") continue;
+      const review = reviewOverflowOnTask(task, overflow);
+      if (review.reviewed > 0 && run.squad.includes("odin") && !review.task.stunned) {
+        const scheduled = getScheduledIntent(run.cycle!, review.task);
+        if (scheduled) {
+          review.task = { ...review.task, stunned: true };
+          markPassive("odin");
+        }
+      }
+      tasks = tasks.map((candidate, index) => (index === taskIndex ? review.task : candidate));
+      totalReviewed += review.reviewed;
+      cleaned += Number(review.cleaned);
+    }
+    if (totalReviewed > 0) {
+      markPassive("matt");
+      blockGained += totalReviewed * run.cycle!.polishBudgetPower;
+      if (run.tools.includes("test-suite")) blockGained += totalReviewed;
+      labels.push(`Finishing Touches · Review ${totalReviewed}`);
+    }
+    if (everyTask) cardsDrawn += cleaned * (card.cardsDrawnPerTaskCleaned ?? 0);
+  };
+
+  if (resolution.kind === "work" && resolution.workKind === "verified") {
+    applyMattReview(
+      resolution.taskId,
+      resolution.overflow,
+      Boolean(card.finishingTouchesEveryTask),
+    );
+    if (
+      run.squad.includes("seb") &&
+      resolution.discipline === "frontend" &&
+      resolution.requirementCompleted
+    ) {
+      markPassive("seb");
+      const triggers = 1 + (card.extraSharedComponentsOnCompletion ?? 0);
+      for (let trigger = 0; trigger < triggers; trigger += 1) {
+        for (const task of tasks) {
+          if (task.taskId !== resolution.taskId) {
+            queue.push({ taskId: task.taskId, amount: 1, source: "shared-components" });
+          }
+        }
+      }
+    }
+  }
+
+  for (const hit of resolution.verifiedWorkHits) {
+    const beforeTask = run.cycle?.tasks.find((task) => task.taskId === hit.taskId);
+    const beforeRequirement = beforeTask?.requirements.find(
+      (requirement) => requirement.discipline === hit.discipline,
+    );
+    if (!beforeRequirement) continue;
+    const beforeRemaining = remainingWork(beforeRequirement);
+    const attempted =
+      card.spilloverVerifiedOnCompletion && resolution.kind === "work"
+        ? card.spilloverVerifiedOnCompletion
+        : hit.amount;
+    applyMattReview(hit.taskId, Math.max(0, attempted - hit.amount));
+    if (
+      run.squad.includes("seb") &&
+      hit.discipline === "frontend" &&
+      beforeRemaining > 0 &&
+      hit.amount >= beforeRemaining
+    ) {
+      markPassive("seb");
+      for (const task of tasks) {
+        if (task.taskId !== hit.taskId) {
+          queue.push({ taskId: task.taskId, amount: 1, source: "shared-components" });
+        }
+      }
+    }
+  }
+
+  const sourceTaskId = resolution.taskId;
+  if (card.frontendSpreadToOtherTasks && sourceTaskId) {
+    for (const task of tasks) {
+      if (task.taskId !== sourceTaskId) {
+        queue.push({
+          taskId: task.taskId,
+          amount: card.frontendSpreadToOtherTasks,
+          source: "spread",
+        });
+      }
+    }
+  }
+  if (card.frontendWorkToEveryTask) {
+    for (const task of tasks) {
+      queue.push({ taskId: task.taskId, amount: card.frontendWorkToEveryTask, source: "spread" });
+    }
+  }
+  if (card.frontendSpreadIfTaskClean && sourceTaskId) {
+    const source = tasks.find((task) => task.taskId === sourceTaskId);
+    if (source && taskUnverifiedWork(source) === 0) {
+      for (const task of tasks) {
+        if (task.taskId !== sourceTaskId) {
+          queue.push({
+            taskId: task.taskId,
+            amount: card.frontendSpreadIfTaskClean,
+            source: "spread",
+          });
+        }
+      }
+    }
+  }
+
+  if (card.scriptPowerOnEveryIncompleteFrontend) {
+    for (const task of tasks) {
+      if (task.status === "shipped") continue;
+      const requirement = task.requirements.find(
+        (candidate) => candidate.discipline === "frontend" && remainingWork(candidate) > 0,
+      );
+      if (!requirement) continue;
+      const power = requirement.scriptPower + card.scriptPowerOnEveryIncompleteFrontend;
+      tasks = tasks.map((candidate) =>
+        candidate.taskId === task.taskId
+          ? {
+              ...candidate,
+              requirements: candidate.requirements.map((item) =>
+                item === requirement ? { ...item, scriptPower: power } : item,
+              ),
+            }
+          : candidate,
+      );
+      if (card.triggerInstalledScripts) {
+        const multiplier = run.tools.includes("cron-upgrade") ? 2 : 1;
+        const bonus = run.tools.includes("platypus") ? 1 : 0;
+        queue.push({ taskId: task.taskId, amount: power * multiplier + bonus, source: "script" });
+      }
+    }
+  }
+
+  for (let cursor = 0; cursor < queue.length; cursor += 1) {
+    const packet = queue[cursor];
+    if (!packet) continue;
+    const taskIndex = tasks.findIndex((task) => task.taskId === packet.taskId);
+    const task = tasks[taskIndex];
+    if (!task || task.status === "shipped") continue;
+    const target = task.requirements
+      .map((requirement, index) => ({ requirement, index, remaining: remainingWork(requirement) }))
+      .filter(
+        ({ requirement, remaining }) => requirement.discipline === "frontend" && remaining > 0,
+      )
+      .sort((left, right) => left.remaining - right.remaining || left.index - right.index)[0];
+    if (!target) continue;
+    const applied = Math.min(packet.amount, target.remaining);
+    const completed = applied === target.remaining;
+    const updated = refreshTaskStatus({
+      ...task,
+      requirements: task.requirements.map((requirement, index) =>
+        index === target.index
+          ? { ...requirement, verified: requirement.verified + applied }
+          : requirement,
+      ),
+    });
+    tasks = tasks.map((candidate, index) => (index === taskIndex ? updated : candidate));
+    applyMattReview(task.taskId, Math.max(0, packet.amount - applied));
+    if (completed && run.squad.includes("seb")) {
+      markPassive("seb");
+      for (const candidate of tasks) {
+        if (candidate.taskId !== task.taskId) {
+          queue.push({
+            taskId: candidate.taskId,
+            amount: 1,
+            source: "shared-components",
+          });
+        }
+      }
+    }
+  }
+
+  const appliedPackets = queue.length;
+  if (appliedPackets > 0) labels.push(`Frontend spread · ${appliedPackets} packets`);
+  return { tasks, cardsDrawn, blockGained, triggeredPassiveIds, labels };
 }
 
 function applyVerifiedWorkHits(

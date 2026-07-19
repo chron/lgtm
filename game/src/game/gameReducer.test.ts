@@ -265,8 +265,9 @@ describe("gameReducer", () => {
     expect(getCard("standup-cover")).toMatchObject({ kind: "tactic", block: 4 });
   });
 
-  it("renames the shared reward to UI Polish without changing its stable id", () => {
-    expect(getCard("pixel-perfect")).toMatchObject({ id: "pixel-perfect", name: "UI Polish" });
+  it("reserves Pixel Perfect for Matt and renames the shared reward to UI Polish", () => {
+    expect(getCard("ui-polish")).toMatchObject({ id: "ui-polish", name: "UI Polish" });
+    expect(getCard("pixel-perfect")).toMatchObject({ ownerId: "matt", name: "Pixel Perfect" });
   });
 
   it("uses Pitch In for one Unverified Work on a mismatched requirement", () => {

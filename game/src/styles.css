@@ -294,8 +294,8 @@ main:focus {
 .developer-pick {
   position: relative;
   display: flex;
+  height: 468px;
   min-width: 0;
-  min-height: 468px;
   margin-top: 2rem;
   padding: 0;
   border: var(--line);
@@ -335,7 +335,8 @@ main:focus {
 .developer-pick__stage {
   position: relative;
   display: block;
-  height: 314px;
+  height: 300px;
+  flex: 0 0 auto;
   border-bottom: var(--line);
   border-radius: 0.75rem 0.75rem 0 0;
   background-color: color-mix(in oklch, var(--ink) 11%, var(--panel));
@@ -350,6 +351,9 @@ main:focus {
 
 .developer-pick__copy {
   display: grid;
+  min-height: 0;
+  flex: 1;
+  align-content: start;
   gap: 0.25rem;
   padding: 1rem;
 }
@@ -5005,11 +5009,11 @@ main:focus {
   }
 
   .developer-pick {
-    min-height: 430px;
+    height: 430px;
   }
 
   .developer-pick__stage {
-    height: 286px;
+    height: 272px;
   }
 
   .character-token {
