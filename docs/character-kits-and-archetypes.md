@@ -38,6 +38,17 @@ With a three-person squad, the eligible character catalogue is three Starters, f
 
 The starting deck remains ten cards: three selected character Starters plus seven Basics.
 
+| Basic | Copies | Quality |
+| --- | ---: | --- |
+| **Frontend 3** | 1 | Unverified |
+| **Backend 3** | 1 | Unverified |
+| **Infra 3** | 1 | Unverified |
+| **Flexible 2** | 2 | Verified |
+| **Review 3** | 1 | Review |
+| **Standup Cover** | 1 | Block 4 |
+
+The discipline Basics are deliberately risky filler. They make verification, shipping defects, Morale loss, and Tech Debt part of the opening game, while the weaker Flexible cards preserve a safe route for squads without a Review specialist. Character cards should usually feel stronger through mechanics, output, or Verified quality. Tune shipping penalties after playtesting this deck rather than making every Basic safe pre-emptively.
+
 ## Shared engine vocabulary
 
 ### Generated
@@ -318,11 +329,29 @@ Learning by Doing turns the initial token set into Snippet 2 Verified Work, Quic
 ### Matt — polish and overflow
 
 - **Fantasy:** finish the job, then find the tiny thing that makes it feel much better than anyone budgeted for.
-- **Passive direction:** excess Verified Work becomes Review on the same Task instead of being wasted.
-- **Starter direction:** **Delight Moment** — Frontend Work with a reward for completing or overfilling its requirement.
+- **Passive:** **Finishing Touches** — when Verified Work exceeds what its requirement needs, use the overflow as Review on that Task.
 - **Core space:** overkill, Review, completion polish, high-quality finishing turns.
 - **Bridges:** Seb creates distributed overflow; Odin turns Review into control; Irene rewards requirements completed on the way.
-- **Rare direction:** **Pixel Perfect** — convert a large amount of excess or completed Work into broad Review and a splashy payoff.
+
+Matt's catalogue is **LOCKED** for its first playable pass. Values may still move during playtesting.
+
+| Slot | Card | Cost | Effect |
+| --- | --- | ---: | --- |
+| Starter | **Delight Moment** | 1 | Frontend 4, Verified. If it completes the requirement, draw 1. |
+| Normal | **One More Pass** | 1 | Flexible 5, Verified. Only target a requirement with 3 or less Work remaining. Exhaust. |
+| Normal | **Polish Budget** | 1 | This Day, whenever Finishing Touches actually Reviews Work, gain equal Block. Exhaust. |
+| Normal | **No Rough Edges** | 1 | Verify 5. If the Task has no Unverified Work afterward, gain 1 Focus and draw 1. |
+| Normal | **Delight Budget** | 1 | Gain 3 Block for every completed requirement on open Tasks. |
+| Normal | **Microinteraction** | 1 | Flexible 2, Verified. If it completes the requirement, add 2 Verified Work to the incomplete requirement on that Task with the least Work remaining. |
+| Rare | **Pixel Perfect** | 1 | Frontend 10, Verified. Apply its overflow as Review to every open Task. Draw 1 for each Task from which this removes the last Unverified Work. Exhaust. |
+
+Finishing Touches observes every Verified Work packet, including played cards, Scripts, automation triggers, secondary hits, and Seb's Shared Components echoes. Work resolution records the attempted amount, amount actually applied, and overflow. The overflow then becomes a real Review event on the same Task, activating Odin and other Review triggers. Only Work actually converted from Unverified to Verified counts as Review; unused overflow is lost.
+
+The Unverified discipline Basics give Matt ambient material from the opening encounter. Paul, Madi, Quick Fixes, Pitch-In, and future risky rewards amplify the engine but are not required to switch it on. Removing every Unverified card remains a valid deck-building choice that weakens Finishing Touches in exchange for safer shipping.
+
+**One More Pass** checks remaining Work before play. **Polish Budget** gains Block only for the amount Finishing Touches actually converts and stacks when multiple copies are active. **Microinteraction's** second hit is its own Verified Work packet and can produce another finishing trigger.
+
+**Pixel Perfect** replaces Finishing Touches' ordinary single-Task conversion for its Work packet rather than double-dipping the source Task. It duplicates the full overflow as Review on every open Task in board order and draws only for Tasks whose last Unverified Work it actually removes. The shared reward previously named **Pixel Perfect** becomes **UI Polish**, reserving the stronger name for Matt's rare.
 
 ### Nick — hand planner and Exhaust engine
 
