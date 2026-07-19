@@ -247,7 +247,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
     updateAim({
       instanceId,
       startX: rect.left + rect.width / 2,
-      startY: rect.top,
+      startY: rect.top + Math.min(52, rect.height * 0.22),
       endX: event.clientX,
       endY: event.clientY,
     });

@@ -21,10 +21,30 @@ export function TargetingArrow({ startX, startY, endX, endY, locked }: Targeting
   const tangentX = endX - secondControlX;
   const tangentY = endY - secondControlY;
   const tangentLength = Math.max(1, Math.hypot(tangentX, tangentY));
-  const arrowLength = Math.min(24, distance * 0.3);
-  const arrowBaseX = endX - (tangentX / tangentLength) * arrowLength;
-  const arrowBaseY = endY - (tangentY / tangentLength) * arrowLength;
-  const path = `M ${startX} ${startY} C ${firstControlX} ${firstControlY}, ${secondControlX} ${secondControlY}, ${arrowBaseX} ${arrowBaseY}`;
+  const tangentUnitX = tangentX / tangentLength;
+  const tangentUnitY = tangentY / tangentLength;
+  const perpendicularX = -tangentUnitY;
+  const perpendicularY = tangentUnitX;
+  const arrowLength = Math.min(24, Math.max(14, distance * 0.3));
+  const arrowHalfWidth = arrowLength * 0.52;
+  const shaftOuterHalfWidth = 6.5;
+  const neckOverlap = Math.min(8, arrowLength * 0.35);
+  const arrowBaseX = endX - tangentUnitX * arrowLength;
+  const arrowBaseY = endY - tangentUnitY * arrowLength;
+  const shaftEndX = arrowBaseX + tangentUnitX * neckOverlap;
+  const shaftEndY = arrowBaseY + tangentUnitY * neckOverlap;
+  const headLeftX = arrowBaseX + perpendicularX * arrowHalfWidth;
+  const headLeftY = arrowBaseY + perpendicularY * arrowHalfWidth;
+  const headRightX = arrowBaseX - perpendicularX * arrowHalfWidth;
+  const headRightY = arrowBaseY - perpendicularY * arrowHalfWidth;
+  const neckLeftX = arrowBaseX + perpendicularX * shaftOuterHalfWidth;
+  const neckLeftY = arrowBaseY + perpendicularY * shaftOuterHalfWidth;
+  const neckRightX = arrowBaseX - perpendicularX * shaftOuterHalfWidth;
+  const neckRightY = arrowBaseY - perpendicularY * shaftOuterHalfWidth;
+  const shaftPath = `M ${startX} ${startY} C ${firstControlX} ${firstControlY}, ${secondControlX} ${secondControlY}, ${shaftEndX} ${shaftEndY}`;
+  const headFillPath = `M ${headLeftX} ${headLeftY} L ${endX} ${endY} L ${headRightX} ${headRightY} Z`;
+  const headEdgePath = `M ${headLeftX} ${headLeftY} L ${endX} ${endY} L ${headRightX} ${headRightY}`;
+  const headBasePath = `M ${headLeftX} ${headLeftY} L ${neckLeftX} ${neckLeftY} M ${neckRightX} ${neckRightY} L ${headRightX} ${headRightY}`;
 
   return (
     <svg
@@ -33,23 +53,11 @@ export function TargetingArrow({ startX, startY, endX, endY, locked }: Targeting
       height="100%"
       aria-hidden="true"
     >
-      <defs>
-        <marker
-          id="target-arrowhead"
-          viewBox="0 0 28 28"
-          refX="2"
-          refY="14"
-          markerWidth="28"
-          markerHeight="28"
-          markerUnits="userSpaceOnUse"
-          orient="auto"
-        >
-          <path className="target-arrowhead__fill" d="M 1.5 1.5 L 26 14 L 1.5 26.5 Z" />
-          <path className="target-arrowhead__edge" d="M 1.5 1.5 L 26 14 L 1.5 26.5" />
-        </marker>
-      </defs>
-      <path className="targeting-arrow__outline" d={path} />
-      <path className="targeting-arrow__line" d={path} markerEnd="url(#target-arrowhead)" />
+      <path className="targeting-arrow__outline" d={shaftPath} />
+      <path className="targeting-arrow__head-fill" d={headFillPath} />
+      <path className="targeting-arrow__head-edge" d={headEdgePath} />
+      <path className="targeting-arrow__head-base" d={headBasePath} />
+      <path className="targeting-arrow__line" d={shaftPath} />
     </svg>
   );
 }

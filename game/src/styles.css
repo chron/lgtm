@@ -1619,6 +1619,7 @@ main:focus {
 }
 
 .game-card.is-selected {
+  z-index: calc(var(--z-arrow) + 1);
   background: color-mix(in oklch, var(--card-accent) 42%, var(--panel));
   box-shadow: 9px 9px 0 var(--ink);
 }
@@ -1936,17 +1937,18 @@ main:focus {
   stroke-linejoin: round;
 }
 
-.targeting-arrow marker .target-arrowhead__fill {
+.targeting-arrow__head-fill {
   fill: var(--coral);
   stroke: none;
 }
 
-.targeting-arrow marker .target-arrowhead__edge {
+.targeting-arrow__head-edge,
+.targeting-arrow__head-base {
   fill: none;
   stroke: var(--ink);
-  stroke-linecap: round;
+  stroke-linecap: butt;
   stroke-linejoin: round;
-  stroke-width: 4px;
+  stroke-width: 6px;
 }
 
 .targeting-arrow__outline {
@@ -1963,7 +1965,7 @@ main:focus {
   stroke: var(--mint);
 }
 
-.targeting-arrow.is-locked marker .target-arrowhead__fill {
+.targeting-arrow.is-locked .targeting-arrow__head-fill {
   fill: var(--mint);
 }
 
@@ -2673,9 +2675,12 @@ main:focus {
   }
 
   .cycle-bottom .hand .game-card:hover,
-  .cycle-bottom .hand .game-card:focus-visible,
-  .cycle-bottom .hand .game-card.is-selected {
+  .cycle-bottom .hand .game-card:focus-visible {
     z-index: 4;
+  }
+
+  .cycle-bottom .hand .game-card.is-selected {
+    z-index: calc(var(--z-arrow) + 1);
   }
 
   .cycle-bottom .game-card__title {
