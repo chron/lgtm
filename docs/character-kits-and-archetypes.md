@@ -115,7 +115,7 @@ Names and values are **PROVISIONAL**. Their roles are the contract: precise comp
 
 ## Character identities
 
-The current four have implemented first-pass Starters and passives. Their full kits should deepen those identities rather than replace them. The remaining eight identities are **PROVISIONAL** until their exact seven-card catalogues are reviewed.
+All twelve character identities and seven-card catalogues are **LOCKED** for their first playable passes. Values remain tunable through deterministic and browser playtests; implementation status lives in Beads rather than this design contract.
 
 ### Paul — shipping engine
 
@@ -295,11 +295,27 @@ Install-then-trigger cards resolve in that order, so **One-Click Setup** and **G
 ### Elspeth — sustainable support
 
 - **Fantasy:** make space for the team, smooth the sharp edges, and keep the pace survivable.
-- **Passive direction:** whenever a Flexible card is played, gain Block.
-- **Starter direction:** **Make Space** — Flexible Work plus Block.
+- **Passive:** **Healthy Pace** — whenever a card with the Flexible tag is played, gain 2 Block.
 - **Core space:** Flexible Work, Block generation, morale support, squad-wide stabilisation.
 - **Bridges:** Toby converts her Block into progress; Irene rewards precise Flexible completion; Paul gains room to take risk.
-- **Rare direction:** **Sustainable Pace** — a powerful team-wide defensive and tempo reset rather than a single large Work number.
+
+Elspeth's catalogue is **LOCKED** for its first playable pass. Values may still move during playtesting.
+
+| Slot | Card | Cost | Effect |
+| --- | --- | ---: | --- |
+| Starter | **Make Space** | 1 | Flexible 3, Verified. Gain 3 Block. |
+| Normal | **Psychological Safety** | 1 | Flexible cards gain 2 additional Block for the rest of this Cycle. Exhaust. |
+| Normal | **Check In** | 1 | Generate a Snippet and a Checklist. |
+| Normal | **Air Cover** | 1 | Gain 3 Block for every open Task. |
+| Normal | **Room to Breathe** | 1 | Flexible 3, Verified. If your Block now covers all incoming Morale, draw 2. |
+| Normal | **Healthy Guardrails** | 1 | Flexible 1, Verified. Install Guard 2, then trigger it. |
+| Rare | **Sustainable Pace** | 1 | Gain 10 Block, gain 3 Focus, and draw 3. Exhaust. |
+
+Healthy Pace checks the card's explicit Flexible tag, not the discipline of the requirement it ultimately targets. Pay the card's Focus cost first, then resolve Healthy Pace and any **Psychological Safety** stacks before the card's own effects. Pitching In with a non-Flexible card does not count. Flexible Basics, Snippets, Quick Fixes, and other genuinely Flexible cards do count.
+
+**Psychological Safety** adds 2 Block to every future Flexible-card trigger this Cycle and stacks without a cap. It does not benefit from its own effect because it is not itself Flexible. **Check In** generates the shared Snippet and Checklist tokens; playing the Snippet later activates Healthy Pace, while generating it does not.
+
+**Air Cover** counts currently open Tasks when it resolves. **Room to Breathe** checks Block after Healthy Pace and its Work have resolved, against the current total displayed incoming Morale from unstunned Intents. **Healthy Guardrails** resolves Healthy Pace, its Work, the Guard installation, and then the immediate Guard trigger in that order. **Sustainable Pace** is intentionally a dramatic reset turn whose finite draw and Exhaust are its natural constraints.
 
 ### Kirsten — generated-card learner
 
@@ -527,5 +543,3 @@ A character becomes playable only when their passive, Starter, five normal cards
 ## Open design questions
 
 - Should Tech Debt payoffs inspect all persistent Debt, or only Debt currently visible in hand/draw/discard? Prefer the persistent deck count unless a card explicitly Exhausts a visible copy.
-- How much distributed Work can Seb create before three-Task encounters become automatic? Preserve the cascade, then tune values.
-- Can Matt's overflow Review cross to another Task? Default to the same Task for clarity; consider a rare that breaks the rule.
