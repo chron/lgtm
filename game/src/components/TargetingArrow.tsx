@@ -27,7 +27,6 @@ export function TargetingArrow({ startX, startY, endX, endY, locked }: Targeting
   const perpendicularY = tangentUnitX;
   const arrowLength = Math.min(24, Math.max(14, distance * 0.3));
   const arrowHalfWidth = arrowLength * 0.52;
-  const shaftOuterHalfWidth = 6.5;
   const neckOverlap = Math.min(8, arrowLength * 0.35);
   const arrowBaseX = endX - tangentUnitX * arrowLength;
   const arrowBaseY = endY - tangentUnitY * arrowLength;
@@ -37,14 +36,8 @@ export function TargetingArrow({ startX, startY, endX, endY, locked }: Targeting
   const headLeftY = arrowBaseY + perpendicularY * arrowHalfWidth;
   const headRightX = arrowBaseX - perpendicularX * arrowHalfWidth;
   const headRightY = arrowBaseY - perpendicularY * arrowHalfWidth;
-  const neckLeftX = arrowBaseX + perpendicularX * shaftOuterHalfWidth;
-  const neckLeftY = arrowBaseY + perpendicularY * shaftOuterHalfWidth;
-  const neckRightX = arrowBaseX - perpendicularX * shaftOuterHalfWidth;
-  const neckRightY = arrowBaseY - perpendicularY * shaftOuterHalfWidth;
   const shaftPath = `M ${startX} ${startY} C ${firstControlX} ${firstControlY}, ${secondControlX} ${secondControlY}, ${shaftEndX} ${shaftEndY}`;
-  const headFillPath = `M ${headLeftX} ${headLeftY} L ${endX} ${endY} L ${headRightX} ${headRightY} Z`;
-  const headEdgePath = `M ${headLeftX} ${headLeftY} L ${endX} ${endY} L ${headRightX} ${headRightY}`;
-  const headBasePath = `M ${headLeftX} ${headLeftY} L ${neckLeftX} ${neckLeftY} M ${neckRightX} ${neckRightY} L ${headRightX} ${headRightY}`;
+  const headPath = `M ${headLeftX} ${headLeftY} L ${endX} ${endY} L ${headRightX} ${headRightY} Z`;
 
   return (
     <svg
@@ -54,9 +47,7 @@ export function TargetingArrow({ startX, startY, endX, endY, locked }: Targeting
       aria-hidden="true"
     >
       <path className="targeting-arrow__outline" d={shaftPath} />
-      <path className="targeting-arrow__head-fill" d={headFillPath} />
-      <path className="targeting-arrow__head-edge" d={headEdgePath} />
-      <path className="targeting-arrow__head-base" d={headBasePath} />
+      <path className="targeting-arrow__head" d={headPath} />
       <path className="targeting-arrow__line" d={shaftPath} />
     </svg>
   );

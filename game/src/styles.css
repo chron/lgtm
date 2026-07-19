@@ -1932,31 +1932,26 @@ main:focus {
 }
 
 .targeting-arrow path {
-  fill: none;
   stroke-linecap: butt;
   stroke-linejoin: round;
 }
 
-.targeting-arrow__head-fill {
+.targeting-arrow__head {
   fill: var(--coral);
-  stroke: none;
-}
-
-.targeting-arrow__head-edge,
-.targeting-arrow__head-base {
-  fill: none;
   stroke: var(--ink);
   stroke-linecap: butt;
   stroke-linejoin: round;
-  stroke-width: 6px;
+  stroke-width: 3px;
 }
 
 .targeting-arrow__outline {
+  fill: none;
   stroke: var(--ink);
   stroke-width: 13px;
 }
 
 .targeting-arrow__line {
+  fill: none;
   stroke: var(--coral);
   stroke-width: 7px;
 }
@@ -1965,7 +1960,7 @@ main:focus {
   stroke: var(--mint);
 }
 
-.targeting-arrow.is-locked .targeting-arrow__head-fill {
+.targeting-arrow.is-locked .targeting-arrow__head {
   fill: var(--mint);
 }
 
