@@ -1,4 +1,4 @@
-import nickIdle from "../../assets/characters/nick-idle-v1.webp";
+import nickIdle from "../../assets/characters/nick-idle-v2.webp";
 import nickSuccess from "../../assets/characters/nick-success-v1.webp";
 import nickThinking from "../../assets/characters/nick-thinking-v1.webp";
 import type { CharacterContent } from "./types";

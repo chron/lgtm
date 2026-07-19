@@ -1,4 +1,4 @@
-import mattIdle from "../../assets/characters/matt-idle-v1.webp";
+import mattIdle from "../../assets/characters/matt-idle-v2.webp";
 import mattSuccess from "../../assets/characters/matt-success-v1.webp";
 import mattThinking from "../../assets/characters/matt-thinking-v1.webp";
 

@@ -1,4 +1,4 @@
-import leviIdle from "../../assets/characters/levi-idle-v1.webp";
+import leviIdle from "../../assets/characters/levi-idle-v2.webp";
 import leviSuccess from "../../assets/characters/levi-success-v1.webp";
 import leviThinking from "../../assets/characters/levi-thinking-v1.webp";
 import type { CharacterContent } from "./types";

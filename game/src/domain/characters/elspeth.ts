@@ -1,4 +1,4 @@
-import elspethIdle from "../../assets/characters/elspeth-idle-v1.webp";
+import elspethIdle from "../../assets/characters/elspeth-idle-v2.webp";
 import elspethSuccess from "../../assets/characters/elspeth-success-v1.webp";
 import elspethThinking from "../../assets/characters/elspeth-thinking-v1.webp";
 

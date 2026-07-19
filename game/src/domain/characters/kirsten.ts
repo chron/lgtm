@@ -1,4 +1,4 @@
-import kirstenIdle from "../../assets/characters/kirsten-idle-v1.webp";
+import kirstenIdle from "../../assets/characters/kirsten-idle-v2.webp";
 import kirstenSuccess from "../../assets/characters/kirsten-success-v1.webp";
 import kirstenThinking from "../../assets/characters/kirsten-thinking-v1.webp";
 import type { CharacterContent } from "./types";
