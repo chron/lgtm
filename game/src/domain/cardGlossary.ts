@@ -30,6 +30,42 @@ const glossary: readonly GlossaryDefinition[] = [
     appliesTo: (card) => card.kind === "review",
   },
   {
+    id: "retain",
+    term: "Retain",
+    description: "If unplayed, this card stays in hand when the next Day begins.",
+    appliesTo: (card) => Boolean(card.retain),
+  },
+  {
+    id: "review-stun",
+    term: "Review Stun",
+    description: "Triggers only when Review newly Stuns an active Intent.",
+    appliesTo: (card) => Boolean(card.dayReviewStunFocusBonus || card.cardsDrawnPerReviewStun),
+  },
+  {
+    id: "day-bonus",
+    term: "Day Bonus",
+    description: "Lasts until the next Day begins. Additional copies stack.",
+    appliesTo: (card) => Boolean(card.dayWorkBonus || card.dayReviewStunFocusBonus),
+  },
+  {
+    id: "stunned-task",
+    term: "Stunned Task",
+    description: "A Task whose Intent has been cancelled for the current Day.",
+    appliesTo: (card) => Boolean(card.bonusWorkIfTaskStunned),
+  },
+  {
+    id: "hand-discard",
+    term: "Discard",
+    description: "Moves matching cards currently in hand to the discard pile.",
+    appliesTo: (card) => Boolean(card.discardedHandTags),
+  },
+  {
+    id: "every-task",
+    term: "Every Task",
+    description: "Affects each unshipped Task that has eligible Unverified Work.",
+    appliesTo: (card) => Boolean(card.reviewEveryTask),
+  },
+  {
     id: "distraction",
     term: "Distraction",
     description: "An unplayable card that clogs a hand for one Day, then disappears.",
@@ -88,7 +124,12 @@ const glossary: readonly GlossaryDefinition[] = [
     term: "AI Assisted",
     description: "A card tag used by AI synergies and Madi's Custom Setup.",
     appliesTo: (card) =>
-      card.tags.includes("ai-assisted") || card.cycleWorkBonus?.tag === "ai-assisted",
+      Boolean(
+        card.tags.includes("ai-assisted") ||
+        card.cycleWorkBonus?.tag === "ai-assisted" ||
+        card.dayWorkBonus?.excludedTags?.includes("ai-assisted") ||
+        card.discardedHandTags?.includes("ai-assisted"),
+      ),
   },
   {
     id: "cycle-work-bonus",

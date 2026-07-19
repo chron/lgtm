@@ -37,11 +37,14 @@ describe("character content aggregate", () => {
       characterContents.map((content) => content.startingCard),
     );
     expect(characterRewardCards).toEqual(moduleRewardCards);
-    expect(characterGeneratedCards).toEqual(
-      characterContents.flatMap((content) =>
-        "generatedCards" in content ? content.generatedCards : [],
-      ),
+    const moduleGeneratedCards = characterContents.reduce<readonly CardDefinition[]>(
+      (allCards, content) => [
+        ...allCards,
+        ...("generatedCards" in content ? content.generatedCards : []),
+      ],
+      [],
     );
+    expect(characterGeneratedCards).toEqual(moduleGeneratedCards);
     expect(cards).toEqual(expect.arrayContaining([...characterGeneratedCards]));
 
     for (const content of characterContents) {

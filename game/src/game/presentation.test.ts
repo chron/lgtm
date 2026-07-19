@@ -137,4 +137,44 @@ describe("getCardPresentation", () => {
       title: "Custom Setup",
     });
   });
+
+  it("gives Odin's Architecture Review a hero moment and shared Comments a passive cue", () => {
+    const state = startCycle(["odin", "madi", "paul"]);
+    const baseRun = state.run;
+    if (!baseRun?.cycle) throw new Error("Expected an active Cycle");
+    const run = {
+      ...baseRun,
+      cycle: {
+        ...baseRun.cycle,
+        hand: [
+          ...baseRun.cycle.hand,
+          { cardId: "architecture-review", instanceId: "test-architecture-review" },
+          { cardId: "comment", instanceId: "test-comment", generated: true },
+        ],
+        tasks: baseRun.cycle.tasks.map((task) => ({
+          ...task,
+          requirements: task.requirements.map((requirement, index) => ({
+            ...requirement,
+            unverified: index === 0 ? 2 : 0,
+          })),
+        })),
+      },
+    };
+    const architectureReview = run.cycle.hand.find(
+      (card) => card.instanceId === "test-architecture-review",
+    );
+    const comment = run.cycle.hand.find((card) => card.instanceId === "test-comment");
+    if (!architectureReview || !comment) throw new Error("Expected Odin cards in hand");
+
+    expect(getCardPresentation(run, architectureReview, { kind: "squad" })?.cue).toMatchObject({
+      developerId: "odin",
+      level: "hero",
+      title: "Architecture Review",
+    });
+    expect(getCardPresentation(run, comment, { taskId: "status-composer" })?.cue).toMatchObject({
+      developerId: "odin",
+      level: "micro",
+      title: "I Have Concerns",
+    });
+  });
 });

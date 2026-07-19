@@ -63,6 +63,13 @@ export interface CardDefinition {
   techDebtAdded?: number;
   queuedDistractions?: number;
   cycleWorkBonus?: { tag: CardTag; amount: number };
+  dayWorkBonus?: { amount: number; excludedTags?: readonly CardTag[] };
+  dayReviewStunFocusBonus?: number;
+  discardedHandTags?: readonly CardTag[];
+  bonusWorkIfTaskStunned?: number;
+  reviewEveryTask?: boolean;
+  cardsDrawnPerReviewStun?: number;
+  retain?: boolean;
   scriptPowerPerIncompleteRequirement?: number;
   triggerTargetScriptAfterWork?: boolean;
   fullStackAdded?: number;
@@ -158,6 +165,8 @@ export interface CycleState {
   prototypePower: number;
   fullStackPower: number;
   cardTagWorkBonuses: Partial<Record<CardTag, number>>;
+  dayWorkBonuses: readonly { amount: number; excludedTags: readonly CardTag[] }[];
+  reviewStunFocusBonus: number;
   lastWorkDiscipline?: Discipline;
   queuedDistractions: number;
   queuedCardsDrawn: number;

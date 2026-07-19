@@ -42,6 +42,7 @@ export function GameCard({
     card.tags.includes("review") ? "Review" : undefined,
     card.tags.includes("defense") ? "Defense" : undefined,
     card.tags.includes("stun") ? "Stun" : undefined,
+    card.retain ? "Retain" : undefined,
   ].filter((tag): tag is string => Boolean(tag));
   const outputLabel =
     card.display?.label ??

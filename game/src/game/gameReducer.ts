@@ -281,6 +281,8 @@ function createCycleState(run: RunState, nodeId: string, cycleId: string): Cycle
     prototypePower: 0,
     fullStackPower: 0,
     cardTagWorkBonuses: {},
+    dayWorkBonuses: [],
+    reviewStunFocusBonus: 0,
     queuedDistractions: 0,
     queuedCardsDrawn: 0,
     defects: 0,
@@ -506,7 +508,10 @@ function removeRegressionWork(task: TaskState, discipline: Discipline, amount: n
 
 function endDay(run: RunState, cycle: CycleState): GameState {
   const definition = getCycle(cycle.cycleId);
-  const permanentHand = cycle.hand.filter((card) => !card.temporary);
+  const retainedHand = cycle.hand.filter((card) => !card.temporary && getCard(card.cardId).retain);
+  const permanentHand = cycle.hand.filter(
+    (card) => !card.temporary && !getCard(card.cardId).retain,
+  );
   let tasks = cycle.tasks.map((task) => ({
     ...task,
     requirements: task.requirements.map((requirement) => ({ ...requirement })),
@@ -592,7 +597,7 @@ function endDay(run: RunState, cycle: CycleState): GameState {
     ...cycle,
     block,
     tasks: tasks.map(refreshTaskStatus),
-    hand: [],
+    hand: retainedHand,
     discardPile: [...cycle.discardPile, ...permanentHand],
     resolvedIntents: [...cycle.resolvedIntents, ...resolvedIntents],
   };
@@ -645,13 +650,15 @@ function endDay(run: RunState, cycle: CycleState): GameState {
     block: scripts.block + (run.tools.includes("error-budget") ? resolvedCycle.block : 0),
     tasks: scripts.tasks.map((task) => ({ ...task, stunned: false })),
     drawPile: nextDraw.drawPile,
-    hand: nextDraw.drawn,
+    hand: [...retainedHand, ...nextDraw.drawn],
     discardPile: nextDraw.discardPile,
     blockedDisciplines,
     triggeredPassiveIds: ireneDraws > 0 ? ["irene"] : [],
     temporaryCardCounter: cycle.temporaryCardCounter + totalDistractions,
     cardsPlayedThisDay: 0,
     lastWorkDiscipline: undefined,
+    dayWorkBonuses: [],
+    reviewStunFocusBonus: 0,
     queuedDistractions: 0,
     queuedCardsDrawn: 0,
   };
@@ -751,7 +758,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (!resolution.legal) return state;
 
       let tasks = cycle.tasks.map((task) =>
-        task.taskId === resolution.taskId ? applyCardResolutionToTask(task, resolution) : task,
+        resolution.kind === "review"
+          ? applyCardResolutionToTask(task, resolution)
+          : task.taskId === resolution.taskId
+            ? applyCardResolutionToTask(task, resolution)
+            : task,
       );
       if (resolution.kind === "tactic" && resolution.sideQuestDiscipline) {
         tasks = [...tasks, createSideQuestState(cycle, resolution.sideQuestDiscipline)];
@@ -775,6 +786,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         generated: true,
       }));
       const definition = getCard(instance.cardId);
+      const discardedCards = cycle.hand.filter((candidate) =>
+        resolution.discardedCardInstanceIds.includes(candidate.instanceId),
+      );
       const cardTagWorkBonuses = { ...cycle.cardTagWorkBonuses };
       if (resolution.cycleWorkBonus) {
         cardTagWorkBonuses[resolution.cycleWorkBonus.tag] =
@@ -789,13 +803,17 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         tasks,
         drawPile: cardDraw?.drawPile ?? cycle.drawPile,
         hand: [
-          ...cycle.hand.filter((candidate) => candidate.instanceId !== instance.instanceId),
+          ...cycle.hand.filter(
+            (candidate) =>
+              candidate.instanceId !== instance.instanceId &&
+              !resolution.discardedCardInstanceIds.includes(candidate.instanceId),
+          ),
           ...(cardDraw?.drawn ?? []),
           ...generatedCards,
         ],
         discardPile: definition.exhaust
-          ? (cardDraw?.discardPile ?? cycle.discardPile)
-          : [...(cardDraw?.discardPile ?? cycle.discardPile), instance],
+          ? [...(cardDraw?.discardPile ?? cycle.discardPile), ...discardedCards]
+          : [...(cardDraw?.discardPile ?? cycle.discardPile), ...discardedCards, instance],
         exhaustPile: definition.exhaust ? [...cycle.exhaustPile, instance] : cycle.exhaustPile,
         triggeredPassiveIds,
         temporaryCardCounter: cycle.temporaryCardCounter + generatedCards.length,
@@ -807,6 +825,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         prototypePower: cycle.prototypePower,
         fullStackPower: cycle.fullStackPower + resolution.fullStackAdded,
         cardTagWorkBonuses,
+        dayWorkBonuses: resolution.dayWorkBonus
+          ? [...cycle.dayWorkBonuses, resolution.dayWorkBonus]
+          : cycle.dayWorkBonuses,
+        reviewStunFocusBonus: cycle.reviewStunFocusBonus + resolution.dayReviewStunFocusAdded,
         lastWorkDiscipline:
           resolution.kind === "work" && resolution.countsAsWorkPlay
             ? resolution.discipline

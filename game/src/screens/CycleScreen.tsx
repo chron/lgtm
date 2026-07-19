@@ -351,7 +351,10 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
   const squadResolution = selectedCard
     ? resolveCardTarget(run, selectedCard, { kind: "squad" })
     : undefined;
-  const squadTargetable = squadResolution?.legal && squadResolution.kind === "tactic";
+  const squadTargetable =
+    squadResolution?.legal &&
+    (squadResolution.kind === "tactic" ||
+      (squadResolution.kind === "review" && !squadResolution.taskId));
   const sideQuestTargets = selectedCard
     ? (["frontend", "backend", "infra"] as const)
         .map((discipline) => ({
@@ -443,6 +446,32 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
                     </span>
                   </button>
                 ),
+            )}
+            {cycle.dayWorkBonuses.map((bonus, index) => (
+              <button
+                className="status-buff status-buff--variety"
+                type="button"
+                key={`${bonus.amount}-${bonus.excludedTags.join("-")}-${index}`}
+                aria-label={`Eligible Work gains ${bonus.amount} this Day. Excludes ${bonus.excludedTags.map(cardTagLabel).join(", ") || "nothing"}.`}
+              >
+                Non-{bonus.excludedTags.map(cardTagLabel).join("/")} Work +{bonus.amount}
+                <span className="game-tooltip" role="tooltip">
+                  Eligible Work gains +{bonus.amount} this Day.
+                </span>
+              </button>
+            ))}
+            {cycle.reviewStunFocusBonus > 0 && (
+              <button
+                className="status-buff status-buff--prototype"
+                type="button"
+                aria-label={`Gain ${cycle.reviewStunFocusBonus} Focus whenever a Review Stuns an Intent this Day.`}
+              >
+                Review Stun · +{cycle.reviewStunFocusBonus} Focus
+                <span className="game-tooltip" role="tooltip">
+                  Gain +{cycle.reviewStunFocusBonus} Focus whenever a Review Stuns an Intent this
+                  Day.
+                </span>
+              </button>
             )}
             {cycle.queuedCardsDrawn > 0 && (
               <span className="status-counter">Next Draw +{cycle.queuedCardsDrawn}</span>

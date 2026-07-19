@@ -47,4 +47,22 @@ describe("card glossary", () => {
       "Any",
     ]);
   });
+
+  it("covers Odin's Retain, control, AI tradeoff, and broad Review vocabulary", () => {
+    expect(termsFor("one-more-diagram")).toEqual(["Verify", "Retain"]);
+    expect(termsFor("strong-opinions-loosely-held")).toEqual([
+      "Review Stun",
+      "Day Bonus",
+      "Exhaust",
+    ]);
+    expect(termsFor("boring-technology")).toEqual(["Stunned Task"]);
+    expect(termsFor("manual-mode")).toEqual(["Day Bonus", "Discard", "AI Assisted", "Exhaust"]);
+    expect(termsFor("architecture-review")).toEqual([
+      "Verify",
+      "Review Stun",
+      "Every Task",
+      "Exhaust",
+    ]);
+    expect(termsFor("comment")).toEqual(["Verify", "Generated", "Exhaust"]);
+  });
 });

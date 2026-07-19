@@ -34,18 +34,32 @@ interface OpenCardCollection {
 
 function createAppInitialState(base: GameState): GameState {
   const qa = new URLSearchParams(window.location.search).get("qa");
-  if (!import.meta.env.DEV || (qa !== "paul" && qa !== "madi")) {
+  if (!import.meta.env.DEV || !["paul", "madi", "odin"].includes(qa ?? "")) {
     return base;
   }
 
   let state = gameReducer(base, { type: "START_RUN", seed: 0x0facade });
   const squad =
-    qa === "madi" ? (["madi", "irene", "odin"] as const) : (["paul", "odin", "madi"] as const);
+    qa === "madi"
+      ? (["madi", "irene", "odin"] as const)
+      : qa === "odin"
+        ? (["odin", "madi", "irene"] as const)
+        : (["paul", "odin", "madi"] as const);
   for (const developerId of squad) {
     state = gameReducer(state, { type: "TOGGLE_DEVELOPER", developerId });
   }
   state = gameReducer(state, { type: "CONFIRM_SQUAD" });
-  state = gameReducer(state, { type: "VISIT_NODE", nodeId: "cycle-1" });
+  if (qa === "odin" && state.run) {
+    state = {
+      ...state,
+      run: {
+        ...state.run,
+        currentNodeId: "event-1",
+        completedNodeIds: ["cycle-1", "event-1"],
+      },
+    };
+  }
+  state = gameReducer(state, { type: "VISIT_NODE", nodeId: qa === "odin" ? "cycle-2" : "cycle-1" });
   if (!state.run?.cycle) return state;
 
   const cardIds =
@@ -59,30 +73,40 @@ function createAppInitialState(base: GameState): GameState {
           "parallel-agents",
           "agent-swarm",
         ]
-      : [
-          "side-quest",
-          "full-stack",
-          "new-model-dropped",
-          "post-through-it",
-          "spike-it",
-          "ebb-and-flow",
-          "vibe-code",
-        ];
+      : qa === "odin"
+        ? [
+            "one-more-diagram",
+            "strong-opinions-loosely-held",
+            "approved-with-comments",
+            "boring-technology",
+            "manual-mode",
+            "architecture-review",
+            "design-review",
+          ]
+        : [
+            "side-quest",
+            "full-stack",
+            "new-model-dropped",
+            "post-through-it",
+            "spike-it",
+            "ebb-and-flow",
+            "vibe-code",
+          ];
   return {
     ...state,
     run: {
       ...state.run,
       cycle: {
         ...state.run.cycle,
-        focus: qa === "madi" ? 12 : 10,
+        focus: qa === "madi" || qa === "odin" ? 12 : 10,
         tasks:
-          qa === "madi"
+          qa === "madi" || qa === "odin"
             ? state.run.cycle.tasks.map((task) => ({
                 ...task,
                 requirements: task.requirements.map((requirement) => ({
                   ...requirement,
-                  unverified: 1,
-                  scriptPower: requirement.discipline === "frontend" ? 2 : 0,
+                  unverified: qa === "madi" ? 1 : Math.min(3, requirement.target),
+                  scriptPower: qa === "madi" && requirement.discipline === "frontend" ? 2 : 0,
                 })),
               }))
             : state.run.cycle.tasks,
