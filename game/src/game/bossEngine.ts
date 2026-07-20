@@ -417,7 +417,17 @@ export function getBossLaunchPreview(
     (task) => projectTaskIds.has(task.taskId) && task.status === "ready",
   );
   const previews = pendingTasks.map(taskShippingPreview);
-  const unverifiedWork = previews.reduce((total, preview) => total + preview.unverified, 0);
+  const unverifiedWork = cycle.tasks
+    .filter((task) => projectTaskIds.has(task.taskId))
+    .reduce(
+      (taskTotal, task) =>
+        taskTotal +
+        task.requirements.reduce(
+          (requirementTotal, requirement) => requirementTotal + requirement.unverified,
+          0,
+        ),
+      0,
+    );
   const defects = cycle.defects + previews.reduce((total, preview) => total + preview.defects, 0);
   const shippingDamage = absorbMoraleDamage(
     cycle.block,
@@ -434,10 +444,7 @@ export function getBossLaunchPreview(
           : "clean";
 
   return {
-    ready:
-      cycle.boss?.phase === "launch-window" &&
-      isBossLaunchReady(cycle, boss) &&
-      pendingTasks.length > 0,
+    ready: cycle.boss?.phase === "launch-window" && isBossLaunchReady(cycle, boss),
     taskIds: pendingTasks.map((task) => task.taskId),
     unverifiedWork,
     defects,

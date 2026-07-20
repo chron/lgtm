@@ -30,6 +30,10 @@ describe("Matt's locked catalogue", () => {
     });
     expect(mattContent.startingCard.cardsDrawnOnRequirementComplete).toBe(1);
     expect(mattContent.rewardCards[1]).toMatchObject({ blockPerFinishingTouchesReview: 1 });
+    expect(mattContent.rewardCards[3]).toMatchObject({
+      blockPerCompletedRequirement: 3,
+      display: { value: "×3", label: "Block", rules: "Per complete bar on unfinished Tasks." },
+    });
     expect(mattContent.rewardCards[4]).toMatchObject({ spilloverVerifiedOnCompletion: 2 });
     expect(mattContent.rewardCards[5]).toMatchObject({
       amount: 10,

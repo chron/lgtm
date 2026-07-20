@@ -473,6 +473,33 @@ describe("gameReducer", () => {
     });
   });
 
+  it("finishes Final Release when every project Task was already shipped", () => {
+    let state = readyFinalRelease(3);
+    if (!state.run?.cycle) throw new Error("Expected an active Final Release");
+    state = {
+      ...state,
+      run: {
+        ...state.run,
+        cycle: {
+          ...state.run.cycle,
+          defects: 1,
+          tasks: state.run.cycle.tasks.map((task) => ({ ...task, status: "shipped" as const })),
+        },
+      },
+    };
+
+    state = gameReducer(state, { type: "LAUNCH_FINAL_RELEASE" });
+
+    expect(state.screen).toEqual({ name: "retro", outcome: "victory" });
+    expect(state.run?.cycle).toBeNull();
+    expect(state.run?.history.at(-2)).toMatchObject({
+      kind: "final-release-launched",
+      unverifiedWork: 3,
+      defects: 1,
+      outcome: "known-issues",
+    });
+  });
+
   it("ships one survivable Defect as a Known Issues victory", () => {
     const state = gameReducer(readyFinalRelease(3), { type: "LAUNCH_FINAL_RELEASE" });
 

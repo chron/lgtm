@@ -1365,6 +1365,9 @@ main:focus {
   top: 0;
   bottom: 0;
   display: block;
+  transition:
+    width 170ms var(--ease-out-quint),
+    left 170ms var(--ease-out-quint);
 }
 
 .requirement__fill--verified {
@@ -2157,12 +2160,39 @@ main:focus {
 .cycle-hud.is-squad-targetable,
 .task-board.is-squad-targetable {
   border-radius: 0.8rem;
-  background: color-mix(in oklch, var(--yellow) 10%, transparent);
+  background: color-mix(in oklch, var(--yellow) 24%, transparent);
+}
+
+.task-board.is-squad-targetable {
+  outline: 3px dashed color-mix(in oklch, var(--ink) 72%, transparent);
+  outline-offset: 0.35rem;
+}
+
+.task-board.is-squad-targetable::after {
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  left: 50%;
+  padding: 0.25rem 0.55rem;
+  border: 2px solid var(--ink);
+  background: var(--yellow);
+  box-shadow: 3px 3px 0 var(--ink);
+  content: "PLAY TO SQUAD";
+  font-family: var(--display);
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+  transform: translate(-50%, -58%) rotate(-1deg);
 }
 
 .cycle-hud.is-squad-targetable.is-aimed,
 .task-board.is-squad-targetable.is-aimed {
-  background: color-mix(in oklch, var(--mint) 20%, transparent);
+  background: color-mix(in oklch, var(--mint) 38%, transparent);
+}
+
+.task-board.is-squad-targetable.is-aimed::after {
+  background: var(--mint);
 }
 
 .squad-status-rack > b,
