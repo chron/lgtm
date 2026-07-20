@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Trophy } from "lucide-react";
 import type { DispatchProps } from "../app/types";
+import titleMergeConflict from "../assets/title/title-merge-conflict-v1.webp";
+import titleShipIt from "../assets/title/title-ship-it-v1.webp";
+import titleSquadCutIn from "../assets/title/title-squad-cut-in-v1.webp";
 import { formatLgtmExpansion, getLgtmExpansion, lgtmExpansions } from "../brand";
 import { createRequestedRunSeed } from "../game/random";
 import { restartCombatTutorial } from "../tutorial/combatTutorialState";
@@ -9,11 +12,28 @@ interface TitleScreenProps extends DispatchProps {
   onOpenAchievements: () => void;
 }
 
+const titleHeroOptions = {
+  "cut-in": { label: "Squad Cut-In", src: titleSquadCutIn },
+  merge: { label: "Merge Conflict", src: titleMergeConflict },
+  ship: { label: "Ship It", src: titleShipIt },
+} as const;
+
+type TitleHeroKey = keyof typeof titleHeroOptions;
+
+const titleHeroKeys = Object.keys(titleHeroOptions) as TitleHeroKey[];
+
+function getRequestedTitleHero(): TitleHeroKey {
+  const requested = new URLSearchParams(window.location.search).get("hero");
+  return requested && requested in titleHeroOptions ? (requested as TitleHeroKey) : "cut-in";
+}
+
 export function TitleScreen({ dispatch, onOpenAchievements }: TitleScreenProps) {
   const [expansionIndex, setExpansionIndex] = useState(() =>
     Math.floor(Math.random() * lgtmExpansions.length),
   );
+  const [titleHeroKey, setTitleHeroKey] = useState(getRequestedTitleHero);
   const expansion = getLgtmExpansion(expansionIndex);
+  const titleHero = titleHeroOptions[titleHeroKey];
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -24,6 +44,13 @@ export function TitleScreen({ dispatch, onOpenAchievements }: TitleScreenProps) 
 
   const startRun = () =>
     dispatch({ type: "START_RUN", seed: createRequestedRunSeed(window.location.search) });
+
+  const selectTitleHero = (heroKey: TitleHeroKey) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("hero", heroKey);
+    window.history.replaceState(null, "", url);
+    setTitleHeroKey(heroKey);
+  };
 
   return (
     <section className="screen title-screen" aria-labelledby="title-heading">
@@ -67,10 +94,29 @@ export function TitleScreen({ dispatch, onOpenAchievements }: TitleScreenProps) 
           </button>
         </div>
       </div>
-      <div className="title-screen__canvas" aria-hidden="true">
-        <div className="canvas-note canvas-note--one">LOOKS GOOD*</div>
-        <div className="canvas-note canvas-note--two">*TO ME</div>
-        <div className="canvas-cursor">Paul ↗</div>
+      <div className={`title-screen__canvas title-screen__canvas--${titleHeroKey}`}>
+        <div className="canvas-note canvas-note--one" aria-hidden="true">
+          LOOKS GOOD*
+        </div>
+        <div className="canvas-note canvas-note--two" aria-hidden="true">
+          *TO ME
+        </div>
+        <img className="title-screen__art" src={titleHero.src} alt="" key={titleHeroKey} />
+        {import.meta.env.DEV && (
+          <fieldset className="title-art-picker">
+            <legend className="sr-only">Preview title artwork</legend>
+            {titleHeroKeys.map((heroKey) => (
+              <button
+                type="button"
+                key={heroKey}
+                aria-pressed={heroKey === titleHeroKey}
+                onClick={() => selectTitleHero(heroKey)}
+              >
+                {titleHeroOptions[heroKey].label}
+              </button>
+            ))}
+          </fieldset>
+        )}
       </div>
     </section>
   );
