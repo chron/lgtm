@@ -33,7 +33,6 @@ export function TitleScreen({ dispatch, onOpenAchievements }: TitleScreenProps) 
   );
   const [titleHeroKey, setTitleHeroKey] = useState(getRequestedTitleHero);
   const expansion = getLgtmExpansion(expansionIndex);
-  const titleHero = titleHeroOptions[titleHeroKey];
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -41,6 +40,19 @@ export function TitleScreen({ dispatch, onOpenAchievements }: TitleScreenProps) 
     const interval = window.setInterval(() => setExpansionIndex((current) => current + 1), 3600);
     return () => window.clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const interval = window.setInterval(() => {
+      setTitleHeroKey((current) => {
+        const currentIndex = titleHeroKeys.indexOf(current);
+        return titleHeroKeys[(currentIndex + 1) % titleHeroKeys.length];
+      });
+    }, 10_000);
+
+    return () => window.clearInterval(interval);
+  }, [titleHeroKey]);
 
   const startRun = () =>
     dispatch({ type: "START_RUN", seed: createRequestedRunSeed(window.location.search) });
@@ -101,7 +113,14 @@ export function TitleScreen({ dispatch, onOpenAchievements }: TitleScreenProps) 
         <div className="canvas-note canvas-note--two" aria-hidden="true">
           *TO ME
         </div>
-        <img className="title-screen__art" src={titleHero.src} alt="" key={titleHeroKey} />
+        {titleHeroKeys.map((heroKey) => (
+          <img
+            className={`title-screen__art ${heroKey === titleHeroKey ? "is-active" : ""}`}
+            src={titleHeroOptions[heroKey].src}
+            alt=""
+            key={heroKey}
+          />
+        ))}
         {import.meta.env.DEV && (
           <fieldset className="title-art-picker">
             <legend className="sr-only">Preview title artwork</legend>

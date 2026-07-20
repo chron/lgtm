@@ -346,21 +346,18 @@ main:focus {
   object-fit: contain;
   object-position: center bottom;
   filter: drop-shadow(5px 6px 0 color-mix(in oklch, var(--ink) 82%, transparent));
-  animation: title-art-in 520ms var(--ease-out-quint) both;
+  opacity: 0;
+  transform: translateY(12px) scale(0.985);
+  transition:
+    opacity 650ms var(--ease-out-quint),
+    transform 650ms var(--ease-out-quint);
   pointer-events: none;
   user-select: none;
 }
 
-@keyframes title-art-in {
-  from {
-    opacity: 0;
-    transform: translateY(18px) scale(0.97) rotate(-0.5deg);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1) rotate(0);
-  }
+.title-screen__art.is-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
 .canvas-note {
