@@ -99,6 +99,9 @@ describe("Kirsten's Generated learner", () => {
       "on-a-roll",
     );
     state = play(state, "give-it-a-go", { kind: "squad" });
+    expect(state.run?.cycle?.hand.map((card) => card.cardId)).toEqual(
+      expect.arrayContaining(["snippet", "checklist", "comment"]),
+    );
     state = play(state, "snippet", { taskId: "status-composer", discipline: "frontend" });
     state = play(state, "checklist", { kind: "squad" });
     expect(state.run?.cycle).toMatchObject({
@@ -114,7 +117,7 @@ describe("Kirsten's Generated learner", () => {
       taskId: "reconnect-logic",
       discipline: "backend",
     });
-    expect(state.run?.cycle?.tasks[1]?.requirements[0]?.verified).toBe(2);
+    expect(state.run?.cycle?.tasks[1]?.requirements[0]?.verified).toBe(3);
   });
 
   it("retrieves Generated cards and makes safe full-definition temporary copies", () => {
@@ -129,6 +132,7 @@ describe("Kirsten's Generated learner", () => {
     state = play(state, "snippet", { taskId: "status-composer", discipline: "frontend" });
     const snippet = state.run?.cycle?.exhaustPile.find((card) => card.cardId === "snippet");
     if (!snippet) throw new Error("Expected an Exhausted Snippet");
+    const handSizeBeforeRetrieval = state.run?.cycle?.hand.length ?? 0;
     state = play(state, "second-attempt", {
       kind: "exhaust-card",
       instanceId: snippet.instanceId,
@@ -136,6 +140,7 @@ describe("Kirsten's Generated learner", () => {
     expect(state.run?.cycle?.hand.some((card) => card.instanceId === snippet.instanceId)).toBe(
       true,
     );
+    expect(state.run?.cycle?.hand).toHaveLength(handSizeBeforeRetrieval + 1);
 
     state = play(state, "backend-3", {
       taskId: "reconnect-logic",

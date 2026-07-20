@@ -25,7 +25,7 @@ describe("EventScreen", () => {
 
     expect(markup).toContain("Quarterly Connect");
     expect(markup).toContain("briefly remembers");
-    expect(markup).toContain("+1 Morale");
+    expect(markup).toContain("+3 Morale");
     expect(markup).toContain("Borrow 1 Starter next Cycle");
     expect(markup).toContain("card choice");
   });

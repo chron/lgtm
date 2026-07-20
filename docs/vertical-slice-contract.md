@@ -172,7 +172,7 @@ The Ship button must always preview the exact outcome, for example: `SHIP · 2 D
 
 ### RECOMMENDED
 
-- Start at **10 Morale**, with a cap of **10**.
+- Start at **12 Morale**, with a cap of **12**.
 - Normal Morale intents deal 1 damage. Incidents and the Final Release may telegraph 2 damage.
 - Missing a normal Cycle costs **3 Morale** and adds one Tech Debt card.
 - Missing an Incident costs **4 Morale** and gives no Tool.

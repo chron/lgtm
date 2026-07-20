@@ -27,8 +27,10 @@ export const paulContent = {
     discipline: "flexible",
     amount: 4,
     workKind: "unverified",
-    rules: "Any 4. Unverified.",
-    tags: ["character", "ai-assisted", "flexible"],
+    block: 2,
+    display: { value: "4", label: "Any", rules: "Unverified. Block 2." },
+    rules: "Any 4. Unverified. Gain 2 Block.",
+    tags: ["character", "ai-assisted", "defense", "flexible"],
   },
   rewardCards: [
     {

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { DispatchProps, RunProps } from "../app/types";
+import { CardCollectionBrowser } from "../components/CardCollectionBrowser";
 import { CharacterReaction } from "../components/CharacterReaction";
 import { BossIntentPanel } from "../components/BossIntentPanel";
 import { GameCard } from "../components/GameCard";
@@ -85,10 +86,24 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
   const [reaction, setReaction] = useState<ReactionState>();
   const [reactingPassiveIds, setReactingPassiveIds] = useState<DeveloperId[]>([]);
   const [launchConfirmOpen, setLaunchConfirmOpen] = useState(false);
+  const [retrievalInstanceId, setRetrievalInstanceId] = useState<string>();
   const cycle = run?.cycle;
   const maxDays = cycle ? getEncounterCycleDefinition(cycle).maxDays : 0;
   const activeInstanceId = aim?.instanceId;
   const selectedCard = cycle?.hand.find((instance) => instance.instanceId === activeInstanceId);
+  const retrievalSource = cycle?.hand.find(
+    (instance) => instance.instanceId === retrievalInstanceId,
+  );
+  const retrievalChoices =
+    run && cycle && retrievalSource
+      ? cycle.exhaustPile.filter(
+          (instance) =>
+            resolveCardTarget(run, retrievalSource, {
+              kind: "exhaust-card",
+              instanceId: instance.instanceId,
+            }).legal,
+        )
+      : [];
   const selectedOwnerId = selectedCard ? getCardForInstance(selectedCard).ownerId : undefined;
   const resolvingCard = reaction?.level === "hero";
   const resolvingBoss = Boolean(cycle?.boss?.transitionNotice);
@@ -99,6 +114,15 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
       setAim(undefined);
     }
   }, [aim, cycle?.hand]);
+
+  useEffect(() => {
+    if (
+      retrievalInstanceId &&
+      !cycle?.hand.some((instance) => instance.instanceId === retrievalInstanceId)
+    ) {
+      setRetrievalInstanceId(undefined);
+    }
+  }, [cycle?.hand, retrievalInstanceId]);
 
   useEffect(() => {
     function handlePointerMove(event: PointerEvent) {
@@ -284,9 +308,21 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
   }
 
   function commitCardPlay(instanceId: string, target: CardTarget) {
-    if (!run) return;
-    const instance = cycle?.hand.find((candidate) => candidate.instanceId === instanceId);
+    if (!run || !cycle) return;
+    const instance = cycle.hand.find((candidate) => candidate.instanceId === instanceId);
     if (!instance) return;
+    const definition = getCardForInstance(instance);
+    if (definition.retrieveGeneratedFromExhaust && target.kind === "squad") {
+      const hasEligibleCard = cycle.exhaustPile.some(
+        (candidate) =>
+          resolveCardTarget(run, instance, {
+            kind: "exhaust-card",
+            instanceId: candidate.instanceId,
+          }).legal,
+      );
+      if (hasEligibleCard) setRetrievalInstanceId(instanceId);
+      return;
+    }
     const presentation = getCardPresentation(run, instance, target);
     if (!presentation) return;
 
@@ -397,21 +433,6 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
   const squadResolution = selectedCard
     ? resolveCardTarget(run, selectedCard, { kind: "squad" })
     : undefined;
-  const squadTargetable =
-    squadResolution?.legal &&
-    (squadResolution.kind === "tactic" ||
-      (squadResolution.kind === "review" && !squadResolution.taskId));
-  const sideQuestTargets = selectedCard
-    ? (["frontend", "backend", "infra"] as const)
-        .map((discipline) => ({
-          discipline,
-          resolution: resolveCardTarget(run, selectedCard, { kind: "discipline", discipline }),
-        }))
-        .filter(({ resolution }) => resolution.legal)
-    : [];
-  const sideQuestTargetable = Boolean(
-    selectedDefinition?.spawnSideQuest && sideQuestTargets.length,
-  );
   const exhaustCardTargets = selectedCard
     ? cycle.exhaustPile
         .map((instance) => ({
@@ -423,6 +444,31 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
         }))
         .filter(({ resolution }) => resolution.legal)
     : [];
+  const retrievalTargetable = Boolean(
+    selectedDefinition?.retrieveGeneratedFromExhaust && exhaustCardTargets.length,
+  );
+  const squadTargetable = Boolean(
+    retrievalTargetable ||
+    (squadResolution?.legal &&
+      (squadResolution.kind === "tactic" ||
+        (squadResolution.kind === "review" && !squadResolution.taskId))),
+  );
+  const squadTargetLabel = retrievalTargetable
+    ? "Choose a Generated card from Exhaust"
+    : squadResolution?.legal
+      ? squadResolution.label
+      : "Squad status";
+  const sideQuestTargets = selectedCard
+    ? (["frontend", "backend", "infra"] as const)
+        .map((discipline) => ({
+          discipline,
+          resolution: resolveCardTarget(run, selectedCard, { kind: "discipline", discipline }),
+        }))
+        .filter(({ resolution }) => resolution.legal)
+    : [];
+  const sideQuestTargetable = Boolean(
+    selectedDefinition?.spawnSideQuest && sideQuestTargets.length,
+  );
   const visibleTasks = cycle.tasks.filter(
     (task) => !(task.role === "side-quest" && task.status === "shipped"),
   );
@@ -468,7 +514,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
             className={`squad-status-rack${squadTargetable ? " is-targetable" : ""}${aim?.hoveredTargetKey === "squad" ? " is-aimed" : ""}`}
             data-card-target={squadTargetable ? "squad" : undefined}
             data-target-kind={squadTargetable ? "squad" : undefined}
-            aria-label={squadTargetable ? squadResolution.label : "Squad status"}
+            aria-label={squadTargetLabel}
           >
             {definition.kind === "incident" && <span className="status-incident">Incident</span>}
             {cycle.block > 0 && <span className="status-buff">Block {cycle.block}</span>}
@@ -605,26 +651,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
                 ))}
               </span>
             )}
-            {exhaustCardTargets.length > 0 && (
-              <span className="side-quest-targets" aria-label="Choose a Generated card">
-                {exhaustCardTargets.map(({ instance, resolution }) => (
-                  <button
-                    className={`side-quest-target${aim?.hoveredTargetKey === `exhaust:${instance.instanceId}` ? " is-aimed" : ""}`}
-                    type="button"
-                    key={instance.instanceId}
-                    data-card-target={`exhaust:${instance.instanceId}`}
-                    data-target-kind="exhaust-card"
-                    data-target-instance-id={instance.instanceId}
-                    aria-label={
-                      resolution.legal ? resolution.label : getCardForInstance(instance).name
-                    }
-                  >
-                    {getCardForInstance(instance).name}
-                  </button>
-                ))}
-              </span>
-            )}
-            {squadTargetable && <b>{squadResolution.label}</b>}
+            {squadTargetable && <b>{squadTargetLabel}</b>}
           </div>
         </div>
 
@@ -809,6 +836,21 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
           endX={aim.endX}
           endY={aim.endY}
           locked={Boolean(aim.hoveredTargetKey)}
+        />
+      )}
+
+      {retrievalInstanceId && retrievalChoices.length > 0 && (
+        <CardCollectionBrowser
+          cards={retrievalChoices}
+          title="Second Attempt"
+          mode="choose-one"
+          confirmLabel="Return to Hand"
+          onClose={() => setRetrievalInstanceId(undefined)}
+          onChoose={(instanceId) => {
+            const sourceInstanceId = retrievalInstanceId;
+            setRetrievalInstanceId(undefined);
+            commitCardPlay(sourceInstanceId, { kind: "exhaust-card", instanceId });
+          }}
         />
       )}
 

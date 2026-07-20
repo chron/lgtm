@@ -8,7 +8,7 @@ describe("Matt's locked catalogue", () => {
       ownerId: "matt",
       cost: 1,
       discipline: "frontend",
-      amount: 4,
+      amount: 5,
       workKind: "verified",
     });
     expect(mattContent.rewardCards.map(({ id }) => id)).toEqual([

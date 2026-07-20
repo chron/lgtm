@@ -188,7 +188,7 @@ describe("support roster integration", () => {
     state = play(state, "nothing-gets-past-me", { kind: "squad" });
     expect(state.run?.cycle?.block).toBe(8);
     state = gameReducer(state, { type: "END_DAY" });
-    expect(state.run?.morale).toBe(10);
+    expect(state.run?.morale).toBe(12);
     expect(state.run?.cycle?.tasks[0]?.requirements[1]?.verified).toBe(2);
     expect(state.run?.cycle?.tasks[1]?.requirements[0]?.verified).toBe(2);
     expect(state.run?.cycle?.triggeredPassiveIds).toContain("toby");

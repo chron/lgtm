@@ -287,7 +287,7 @@ describe("Event outcome engine", () => {
     expect(shippedBounty.run?.queuedBountyToolOffers).toBe(1);
 
     const protectedDay = gameReducer(state, { type: "END_DAY" });
-    expect(protectedDay.run?.morale).toBe(10);
+    expect(protectedDay.run?.morale).toBe(12);
     expect(protectedDay.run?.cycle?.intentProtections.scope).toBe(0);
     expect(protectedDay.run?.cycle?.resolvedIntents).toContain("Protected · Scope · Frontend +2");
   });

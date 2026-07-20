@@ -416,7 +416,7 @@ describe("Final Release boss engine", () => {
       verified: 0,
       unverified: 2,
     });
-    expect(resolved.run.morale).toBe(8);
+    expect(resolved.run.morale).toBe(10);
     expect(resolved.cycle.block).toBe(0);
     expect(resolved.cycle.boss?.effectQueue).toEqual([]);
     expect(resolved.resolutions).toHaveLength(4);

@@ -47,10 +47,14 @@ describe("Event catalogue", () => {
     if (!retro) throw new Error("Expected Retro");
 
     expect(resolveEventChoice(retro, { ...baseRun, morale: 9 }).outcome).toEqual([
-      { text: "+1 Morale", tone: "good" },
+      { text: "+3 Morale", tone: "good" },
       { text: "0 Tech Debt", tone: "good" },
     ]);
     expect(resolveEventChoice(retro, { ...baseRun, morale: 10 }).outcome).toEqual([
+      { text: "+2 Morale", tone: "good" },
+      { text: "0 Tech Debt", tone: "good" },
+    ]);
+    expect(resolveEventChoice(retro, { ...baseRun, morale: 12 }).outcome).toEqual([
       { text: "Morale Full", tone: "neutral" },
       { text: "0 Tech Debt", tone: "good" },
     ]);
