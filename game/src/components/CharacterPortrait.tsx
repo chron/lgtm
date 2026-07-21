@@ -22,7 +22,7 @@ export function CharacterPortrait({
 
   return (
     <span
-      className={`character-portrait character-portrait--${mode}`}
+      className={`character-portrait character-portrait--${mode} character-portrait--${developerId}`}
       style={{ "--character-accent": developer.accent } as React.CSSProperties}
       aria-hidden={decorative || undefined}
     >

@@ -17,6 +17,7 @@ describe("SquadScreen", () => {
     expect(markup).toContain("Randomize");
     expect(markup.indexOf("Randomize")).toBeLessThan(markup.indexOf("squad-grid"));
     expect(markup.indexOf("Lock In")).toBeLessThan(markup.indexOf("squad-grid"));
+    expect(markup).toContain("character-portrait--selection character-portrait--nick");
   });
 
   it("enables Lock In when all three squad members are chosen", () => {

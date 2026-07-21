@@ -574,6 +574,10 @@ main:focus {
     transform 220ms var(--ease-out-quint);
 }
 
+.character-portrait--selection.character-portrait--nick img {
+  transform: translateY(2%);
+}
+
 .developer-pick[aria-pressed="true"] .developer-pick__stage {
   background-color: color-mix(in oklch, var(--character-accent) 38%, var(--panel));
 }
