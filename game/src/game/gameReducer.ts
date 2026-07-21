@@ -409,7 +409,6 @@ function createTaskState(task: TaskDefinition, spawnedDay: number): TaskState {
       verified: 0,
       unverified: 0,
       scriptPower: 0,
-      scriptBlock: 0,
     })),
   };
 }
@@ -439,7 +438,6 @@ function createSideQuestState(cycle: CycleState, discipline: Discipline): TaskSt
         verified: 0,
         unverified: 0,
         scriptPower: 0,
-        scriptBlock: 0,
       },
     ],
   };
@@ -493,7 +491,6 @@ function createCycleState(
       verified: 0,
       unverified: 0,
       scriptPower: 0,
-      scriptBlock: 0,
     })),
   }));
   const intentProtections = run.nextCycleModifiers.reduce<CycleState["intentProtections"]>(
@@ -517,6 +514,7 @@ function createCycleState(
       (run.tools.includes("healthy-runway") ? Math.floor(run.credits / 50) : 0) +
       (run.tools.includes("institutional-knowledge") ? techDebtCardsDrawn(firstDraw.drawn) : 0),
     block: 0,
+    guardPower: 0,
     tasks: [
       ...definition.tasks
         .filter((task) => task.role !== "complication")
@@ -786,6 +784,7 @@ interface ScriptPacket {
 
 function runScripts(
   tasks: readonly TaskState[],
+  guardPower: number,
   multiplier: number,
   triggerBonus: number,
 ): {
@@ -794,18 +793,11 @@ function runScripts(
   verifiedCompletions: number;
   packets: ScriptPacket[];
 } {
-  let block = 0;
+  let block = guardPower * multiplier + (guardPower > 0 ? triggerBonus : 0);
   let verifiedCompletions = 0;
   const packets: ScriptPacket[] = [];
   const nextTasks = tasks.map((task) => {
     if (task.status === "shipped") return task;
-    block += task.requirements.reduce(
-      (sum, requirement) =>
-        sum +
-        requirement.scriptBlock * multiplier +
-        (requirement.scriptBlock > 0 ? triggerBonus : 0),
-      0,
-    );
     return refreshTaskStatus({
       ...task,
       requirements: task.requirements.map((requirement) => {
@@ -992,7 +984,7 @@ function endDay(run: RunState, cycle: CycleState): GameState {
     if (!currentTask || currentTask.status === "shipped") continue;
     const scheduledIntent = getScheduledIntent({ ...cycle, tasks }, currentTask);
     if (currentTask.stunned && scheduledIntent) {
-      resolvedIntents.push(`Stunned · ${formatIntent(scheduledIntent)}`);
+      resolvedIntents.push(`Cancelled Today · ${formatIntent(scheduledIntent)}`);
       continue;
     }
     const intent = getCurrentIntent({ ...cycle, tasks }, currentTask);
@@ -1000,7 +992,7 @@ function endDay(run: RunState, cycle: CycleState): GameState {
 
     if ((intentProtections[intent.kind] ?? 0) > 0) {
       intentProtections[intent.kind] = (intentProtections[intent.kind] ?? 0) - 1;
-      resolvedIntents.push(`Protected · ${formatIntent(intent)}`);
+      resolvedIntents.push(`Prevented · ${formatIntent(intent)}`);
       continue;
     }
 
@@ -1065,10 +1057,7 @@ function endDay(run: RunState, cycle: CycleState): GameState {
               tasks.map((task) => ({
                 taskId: task.taskId,
                 status: task.status,
-                requirements: task.requirements.map((requirement) => ({
-                  ...requirement,
-                  guard: requirement.scriptBlock,
-                })),
+                requirements: task.requirements,
               })),
               currentTask.taskId,
               damage.blocked,
@@ -1190,6 +1179,7 @@ function endDay(run: RunState, cycle: CycleState): GameState {
   const scriptMultiplier = run.tools.includes("cron-upgrade") ? 2 : 1;
   const scripts = runScripts(
     resolvedCycle.tasks,
+    resolvedCycle.guardPower,
     scriptMultiplier,
     run.tools.includes("platypus") ? 1 : 0,
   );
@@ -1501,6 +1491,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           institutionalKnowledgeFocus,
         block:
           cycle.block + resolution.blockGained + rosterEffects.blockGained + definitionOfDoneBlock,
+        guardPower: rosterEffects.guardPower,
         techDebtAdded: cycle.techDebtAdded + resolution.techDebtAdded,
         tasks,
         drawPile: cardDraw?.drawPile ?? cycle.drawPile,

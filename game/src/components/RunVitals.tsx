@@ -5,20 +5,23 @@ import { ToolRack } from "./ToolRack";
 interface RunVitalsProps {
   floating?: boolean;
   run: RunState;
+  showMorale?: boolean;
 }
 
-export function RunVitals({ floating, run }: RunVitalsProps) {
+export function RunVitals({ floating, run, showMorale = true }: RunVitalsProps) {
   const debtUntilJunk = 3 - (run.techDebt % 3);
   const modifierLabels = eventModifierLabels(run);
 
   return (
     <div className={`run-vitals${floating ? " run-vitals--floating" : ""}`} aria-label="Run status">
-      <span>
-        <small>Morale</small>
-        <b>
-          {run.morale}/{run.maxMorale}
-        </b>
-      </span>
+      {showMorale && (
+        <span>
+          <small>Morale</small>
+          <b>
+            {run.morale}/{run.maxMorale}
+          </b>
+        </span>
+      )}
       <span>
         <small>Credits</small>
         <b>${run.credits}</b>

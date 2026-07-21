@@ -244,7 +244,7 @@ Seb needs a wide-board showcase such as **Design System Adoption**: four or five
 
 - **Fantasy:** notice the problem, absorb the blast radius, and turn operational calm into forward progress.
 - **Passive:** **Quietly On It** — whenever Block prevents Morale loss from a Crunch Intent, add that much Verified Work to that Intent's Task.
-- **Core space:** Block, Guard Scripts, observability, profiting from telegraphed Crunch.
+- **Core space:** Block, shared Guard automation, observability, profiting from telegraphed Crunch.
 - **Bridges:** Elspeth supplies repeatable Block; Steph builds Guard automation; Odin chooses which intents to Stun and which to safely absorb.
 
 Toby's catalogue is **LOCKED** for its first playable pass. Values may still move during playtesting.
@@ -255,13 +255,13 @@ Toby's catalogue is **LOCKED** for its first playable pass. Values may still mov
 | Normal | **On Call** | 1 | Gain Block equal to the total incoming Morale this Day. |
 | Normal | **Useful Alerting** | 1 | Install Guard 2, then trigger it. |
 | Normal | **Above and Beyond** | 0 | Gain 2 Block, then double your Block. Exhaust. |
-| Normal | **Keep It Humming** | 1 | Infra 2, Verified. Trigger every Guard on that Task. |
+| Normal | **Keep It Humming** | 1 | Infra 2, Verified. Trigger squad Guard. |
 | Normal | **Triage** | 1 | Stun one non-Crunch Intent. Gain 4 Block. |
 | Rare | **Nothing Gets Past Me** | 1 | Gain 6 Block. This Day, prevented Crunch damage becomes Verified Work on every open Task instead of only its source Task. Exhaust. |
 
 Quietly On It applies its Work to the open requirement on the Intent's Task with the least Work remaining, preferring Infra and using board order to break ties. It must not become inactive merely because a Task has no Infra requirement. Each Crunch resolves against the ordinary shared Block pool, and the amount actually prevented produces one conversion trigger.
 
-**On Call** reads the current total displayed incoming Morale from unstunned open Intents. **Useful Alerting** installs before it triggers. **Above and Beyond** gains its flat Block before doubling, giving it a floor of 4 while allowing large setup turns; Exhaust is its natural limiter. **Keep It Humming** triggers Guards in requirement order.
+**On Call** reads the current total displayed incoming Morale from unstunned open Intents. **Useful Alerting** adds to the shared squad Guard meter before it triggers. **Above and Beyond** gains its flat Block before doubling, giving it a floor of 4 while allowing large setup turns; Exhaust is its natural limiter. **Keep It Humming** triggers the squad Guard once.
 
 **Triage** deliberately cannot Stun Crunch: it removes Scope, Distraction, and other disruptive Intents while leaving manageable damage for Toby to convert. **Nothing Gets Past Me** broadens Quietly On It for the Day rather than triggering it twice on the source Task. For each point of prevented Crunch damage, every open Task receives the same amount of Verified Work using the ordinary target rule above. Block is still spent normally and expires at the end of the Day.
 
@@ -281,14 +281,14 @@ Steph's catalogue is **LOCKED** for its first playable pass. Values may still mo
 | Starter | **One-Click Setup** | 1 | Install Script 1, then trigger it. |
 | Normal | **Automate This Bit** | 1 | Install Script 2. |
 | Normal | **Guardrails, Not Gatekeepers** | 1 | Install Guard 2, then trigger it. |
-| Normal | **Refactor the Workflow** | 1 | Double the target requirement's Script and Guard. Unplayable if both are 0. |
-| Normal | **Hot Reload** | 1 | Trigger the target requirement's Script and Guard twice. |
+| Normal | **Refactor the Workflow** | 1 | Double a requirement's Script and the shared squad Guard; aim at the squad for Guard only. |
+| Normal | **Hot Reload** | 1 | Trigger a requirement's Script and shared squad Guard twice; aim at the squad for Guard only. |
 | Normal | **Make It a Command** | 1 | Generate 2 Macros. |
 | Rare | **Golden Path** | 2 | Install Script 1 on every incomplete requirement. Exhaust. |
 
-**Macro** is a zero-cost Generated token: trigger the target requirement's Script and Guard once; Exhaust.
+**Macro** is a zero-cost Generated token: trigger a requirement's Script and shared squad Guard once, or aim at the squad for Guard only; Exhaust.
 
-Paved Road has no once-per-Day limit. Each automation meter increased is a separate trigger: installing both Script and Guard gains 2 Focus, and doubling both with **Refactor the Workflow** does the same. **Golden Path** triggers Paved Road separately for every incomplete requirement it installs on, allowing a busy board to produce an indecent but finite Focus surplus. Triggering an existing Script or Guard does not activate Paved Road because its meter did not increase.
+Guard is one shared Cycle meter because it creates generic squad Block; Script remains local to a requirement. Paved Road has no once-per-Day limit. Each automation meter increased is a separate trigger: increasing a Script and the shared Guard gains 2 Focus, and doubling both with **Refactor the Workflow** does the same. **Golden Path** triggers Paved Road separately for every incomplete requirement it installs on, allowing a busy board to produce an indecent but finite Focus surplus. Triggering an existing Script or Guard does not activate Paved Road because its meter did not increase.
 
 Install-then-trigger cards resolve in that order, so **One-Click Setup** and **Guardrails, Not Gatekeepers** always have an immediate floor. **Hot Reload** and Macro skip automation types at 0. The cards' ordinary Focus costs, available automation targets, finite draw, and Exhausting Generated Macros are the natural constraints; do not add an artificial trigger cap before playtesting the complete engine.
 
@@ -503,7 +503,7 @@ Example squads:
 | Irene + Seb | Distributed Work creates several completion-and-draw triggers. |
 | Irene + Kirsten | Tiny Generated cards land exact finishing points. |
 | Madi + Steph | Every AI install can refund Focus and accelerate automation. |
-| Madi + Toby | Guard Scripts become both defence and Infra progress. |
+| Madi + Toby | Shared Guard becomes both defence and Infra progress. |
 | Toby + Elspeth | Repeatable Block becomes a proactive engine. |
 | Kirsten + Nick | Generated cards Exhaust into Focus. |
 | Kirsten + Levi | Cheap tokens turn the Chain meter into a proper combo. |

@@ -49,7 +49,7 @@ interface CeremonyItem {
   taskId?: string;
   taskName: string;
   label: string;
-  eyebrow: "Intent Resolves" | "Automation Runs" | "Intent Cancelled";
+  eyebrow: "End Day" | "Automation Runs" | "Cancelled Today";
 }
 
 interface CeremonyState {
@@ -347,7 +347,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
               taskId: bossIntent.sourceTaskId,
               taskName: `${boss.stakeholder} · ${bossIntent.label}`,
               label: bossIntent.stunned ? `${bossIntent.summary} · No Effect` : bossIntent.summary,
-              eyebrow: bossIntent.stunned ? "Intent Cancelled" : "Intent Resolves",
+              eyebrow: bossIntent.stunned ? "Cancelled Today" : "End Day",
             },
           ]
         : [];
@@ -360,7 +360,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
             taskId: task.taskId,
             taskName: task.name ?? definitionTask?.name ?? task.taskId,
             label: `${formatIntent(scheduledIntent)} · No Effect`,
-            eyebrow: "Intent Cancelled" as const,
+            eyebrow: "Cancelled Today" as const,
           },
         ];
       }
@@ -372,7 +372,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
           taskId: task.taskId,
           taskName: task.name ?? definitionTask?.name ?? task.taskId,
           label: formatIntent(intent),
-          eyebrow: "Intent Resolves" as const,
+          eyebrow: "End Day" as const,
         },
       ];
     });
@@ -386,14 +386,9 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
                 requirement.scriptPower * scriptMultiplier,
                 Math.max(0, requirement.target - requirement.verified - requirement.unverified),
               );
-              return [
-                amount > 0
-                  ? `${disciplineLabel(requirement.discipline)} Script · +${amount} Verified`
-                  : undefined,
-                requirement.scriptBlock > 0
-                  ? `Guard · +${requirement.scriptBlock * scriptMultiplier} Block`
-                  : undefined,
-              ].filter((label): label is string => Boolean(label));
+              return amount > 0
+                ? [`${disciplineLabel(requirement.discipline)} Script · +${amount} Verified`]
+                : [];
             });
             if (scripted.length === 0) return [];
             const definitionTask = definition.tasks.find(
@@ -406,7 +401,20 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
               eyebrow: "Automation Runs" as const,
             }));
           });
-    const items = [...bossIntentItems, ...intentItems, ...automationItems];
+    const guardAmount =
+      cycle.guardPower * scriptMultiplier +
+      (cycle.guardPower > 0 && run.tools.includes("platypus") ? 1 : 0);
+    const guardItems: CeremonyItem[] =
+      cycle.day < definition.maxDays && run.morale > moraleIncoming && guardAmount > 0
+        ? [
+            {
+              taskName: "Squad Guard",
+              label: `Guard · +${guardAmount} Block`,
+              eyebrow: "Automation Runs",
+            },
+          ]
+        : [];
+    const items = [...bossIntentItems, ...intentItems, ...automationItems, ...guardItems];
     setCeremony({
       items:
         items.length > 0
@@ -414,8 +422,8 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
           : [
               {
                 taskName: "All Tasks",
-                label: "No open intents",
-                eyebrow: "Intent Resolves",
+                label: "No open End Day effects",
+                eyebrow: "End Day",
               },
             ],
       index: 0,
@@ -489,12 +497,8 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
       className={`screen cycle-screen${cycle.boss ? " cycle-screen--boss" : ""}`}
       aria-label={definition.name}
     >
-      <header
-        className={`cycle-hud${squadTargetable || sideQuestTargetable ? " is-squad-targetable" : ""}${aim?.hoveredTargetKey === "squad" ? " is-aimed" : ""}`}
-        data-card-target={squadTargetable ? "squad" : undefined}
-        data-target-kind={squadTargetable ? "squad" : undefined}
-      >
-        <RunVitals run={run} />
+      <header className="cycle-hud">
+        <RunVitals run={run} showMorale={false} />
 
         <div className="squad-zone">
           <div className="passive-rack" aria-label="Squad passives">
@@ -516,8 +520,37 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
             data-target-kind={squadTargetable ? "squad" : undefined}
             aria-label={squadTargetLabel}
           >
-            {definition.kind === "incident" && <span className="status-incident">Incident</span>}
-            {cycle.block > 0 && <span className="status-buff">Block {cycle.block}</span>}
+            <span className="player-state-vital player-state-vital--morale">
+              <small>Morale</small>
+              <b>
+                {run.morale}/{run.maxMorale}
+              </b>
+            </span>
+            <button
+              className="player-state-vital player-state-vital--focus"
+              type="button"
+              data-tutorial-anchor="focus"
+              aria-label={`Focus ${cycle.focus}. Start each Day with 3 Focus. Effects can raise it above 3.`}
+            >
+              <small>Focus</small>
+              <b>{cycle.focus}</b>
+              <span className="game-tooltip" role="tooltip">
+                Start each Day with 3 Focus. Effects can raise it above 3.
+              </span>
+            </button>
+            <span className="status-buff status-buff--block">Block {cycle.block}</span>
+            {cycle.guardPower > 0 && (
+              <button
+                className="status-buff status-buff--guard"
+                type="button"
+                aria-label={`Guard ${cycle.guardPower}. At the start of each Day, gain ${cycle.guardPower} Block before Tool bonuses.`}
+              >
+                Guard {cycle.guardPower}
+                <span className="game-tooltip" role="tooltip">
+                  At the start of each Day, gain {cycle.guardPower} Block before Tool bonuses.
+                </span>
+              </button>
+            )}
             {cycle.prototypePower > 0 && (
               <button
                 className="status-buff status-buff--prototype"
@@ -575,12 +608,12 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
               <button
                 className="status-buff status-buff--prototype"
                 type="button"
-                aria-label={`Gain ${cycle.reviewStunFocusBonus} Focus whenever a Review Stuns an Intent this Day.`}
+                aria-label={`Gain ${cycle.reviewStunFocusBonus} Focus whenever a Review cancels an End Day effect this Day.`}
               >
-                Review Stun · +{cycle.reviewStunFocusBonus} Focus
+                Review Cancel · +{cycle.reviewStunFocusBonus} Focus
                 <span className="game-tooltip" role="tooltip">
-                  Gain +{cycle.reviewStunFocusBonus} Focus whenever a Review Stuns an Intent this
-                  Day.
+                  Gain +{cycle.reviewStunFocusBonus} Focus whenever a Review cancels an End Day
+                  effect this Day.
                 </span>
               </button>
             )}
@@ -656,15 +689,12 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
         </div>
 
         <div className="cycle-counters">
+          {definition.kind === "incident" && <span className="status-incident">Incident</span>}
           <span>
             <small>Day</small>
             <b>
               {cycle.day}/{definition.maxDays}
             </b>
-          </span>
-          <span data-tutorial-anchor="focus">
-            <small>Focus</small>
-            <b>{cycle.focus}/3</b>
           </span>
         </div>
       </header>
@@ -944,7 +974,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
 
       {ceremonyItem && (
         <output
-          className={`day-ceremony${ceremonyItem.eyebrow === "Intent Cancelled" ? " day-ceremony--cancelled" : ""}`}
+          className={`day-ceremony${ceremonyItem.eyebrow === "Cancelled Today" ? " day-ceremony--cancelled" : ""}`}
           aria-live="assertive"
         >
           <span>

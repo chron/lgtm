@@ -88,9 +88,11 @@ Presentation cues are derived deterministically from the same card resolution us
 ## Cycle Stage
 
 - The cycle is a fixed tactical stage on ordinary desktop viewports, not a vertically stacked page.
-- The upper HUD contains run vitals on the left, squad passives in the centre, and Day and Focus on the right.
+- The upper HUD contains long-term run resources and Tools on the left, squad passives in the centre, and Day on the right.
+- Morale, Focus, Block, shared Guard, and temporary player effects live in one non-wrapping strip directly above the hand. Tooltips open upward from the strip.
+- The player strip is the visible target for squad cards. The task field remains a forgiving invisible extension of that drop target without gaining a second heavy outline.
 - Task names carry encounter flavour; persistent cycle numbers and encounter titles are omitted.
-- Intent badges always include the functional `Intent` label.
+- Task consequence badges use the functional `End Day` label. Player-facing control language is `Cancel` / `Cancelled Today`; `Intent` and `Stun` remain engine terms only.
 - Requirements show progress as `current/target`; do not repeat the same information as work remaining.
 - Draw anchors the lower-left corner, the playable hand owns the lower centre, and actions plus Discard anchor the lower-right corner.
 - One boss uses the full task field. Two tasks use two columns, three tasks use three columns, and four tasks use a two-by-two arrangement.

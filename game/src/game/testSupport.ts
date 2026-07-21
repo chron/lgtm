@@ -28,7 +28,6 @@ export function useTestCycle(state: GameState, cycleId: string): GameState {
               verified: 0,
               unverified: 0,
               scriptPower: 0,
-              scriptBlock: 0,
             })),
           })),
       },

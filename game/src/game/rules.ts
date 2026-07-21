@@ -90,7 +90,7 @@ export type CardResolution =
       amount: number;
       workKind: WorkKind;
       scriptPowerAdded: number;
-      scriptBlockAdded: number;
+      guardPowerAdded: number;
       scriptInstallRunAmount: number;
       scriptTriggerRunAmount: number;
       scriptRunAmount: number;
@@ -597,6 +597,61 @@ export function resolveCardTarget(
     };
   }
 
+  const installsGuardOnly =
+    card.kind === "tactic" &&
+    card.automation?.kind === "install" &&
+    card.automation.power === 0 &&
+    (card.automation.blockPower ?? 0) > 0;
+  if (installsGuardOnly && card.automation?.kind === "install") {
+    if (target.kind !== "squad") {
+      return { legal: false, reason: "Aim this at the squad." };
+    }
+    const installedGuardPower = cycle.guardPower + (card.automation.blockPower ?? 0);
+    const afterInstallLabels = (card.triggerAutomationAfterInstall ?? []).map((meter) =>
+      meter === "guard"
+        ? automationPacketLabel("Run", triggeredAutomationAmount(run, installedGuardPower), run)
+        : undefined,
+    );
+    return {
+      ...tacticBase,
+      kind: "tactic",
+      stun: false,
+      label: [`Guard +${card.automation.blockPower ?? 0}`, ...afterInstallLabels]
+        .filter(Boolean)
+        .join(" · "),
+    };
+  }
+
+  if (
+    target.kind === "squad" &&
+    (card.doubleTargetAutomationMeters || card.triggerTargetAutomation)
+  ) {
+    if (cycle.guardPower <= 0) {
+      return { legal: false, reason: "Install Guard first." };
+    }
+    const guardPower = card.doubleTargetAutomationMeters ? cycle.guardPower * 2 : cycle.guardPower;
+    const triggerCount = card.triggerTargetAutomation?.guard
+      ? card.triggerTargetAutomation.times
+      : 0;
+    return {
+      ...tacticBase,
+      kind: "tactic",
+      stun: false,
+      label: [
+        card.doubleTargetAutomationMeters ? "Guard ×2" : undefined,
+        triggerCount > 0
+          ? automationPacketLabel(
+              "Run",
+              triggeredAutomationAmount(run, guardPower) * triggerCount,
+              run,
+            )
+          : undefined,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    };
+  }
+
   if (
     (card.kind === "tactic" && card.automation?.kind === "install") ||
     card.triggerAutomationAfterInstall ||
@@ -618,15 +673,14 @@ export function resolveCardTarget(
     }
     if (
       (card.requiresTargetAutomation || card.triggerTargetAutomation) &&
-      requirement.scriptPower === 0 &&
-      requirement.scriptBlock === 0
+      requirement.scriptPower === 0
     ) {
-      return { legal: false, reason: "Install a Script or Guard here first." };
+      return { legal: false, reason: "Install a Script here first, or aim at the squad's Guard." };
     }
     const installedScriptPower =
       requirement.scriptPower + (card.automation?.kind === "install" ? card.automation.power : 0);
     const installedGuardPower =
-      requirement.scriptBlock +
+      cycle.guardPower +
       (card.automation?.kind === "install" ? (card.automation.blockPower ?? 0) : 0);
     let previewRemaining = remainingWork(requirement);
     const ciRunAmount =
@@ -681,18 +735,18 @@ export function resolveCardTarget(
     const task = cycle.tasks.find((candidate) => candidate.taskId === target.taskId);
     const intent = task ? getTargetableIntent(run, cycle, task) : undefined;
     if (!task || task.status === "shipped" || !intent) {
-      return { legal: false, reason: "Choose a Task with an Intent." };
+      return { legal: false, reason: "Choose a Task with an End Day effect." };
     }
-    if (task.stunned) return { legal: false, reason: "This intent is already Stunned." };
+    if (task.stunned) return { legal: false, reason: "This Task is already Cancelled Today." };
     if (card.stunIntent.excludedKinds?.includes(intent.kind)) {
-      return { legal: false, reason: `${card.name} cannot Stun ${intent.kind}.` };
+      return { legal: false, reason: `${card.name} cannot cancel ${intent.kind}.` };
     }
     return {
       ...tacticBase,
       kind: "tactic",
       taskId: task.taskId,
       stun: true,
-      label: `Stun · Block ${tacticBlock}`,
+      label: `Cancel · Block ${tacticBlock}`,
     };
   }
 
@@ -789,7 +843,7 @@ export function resolveCardTarget(
         ? `${card.cycleWorkBonus.tag === "ai-assisted" ? "AI Assisted" : card.cycleWorkBonus.tag} Work +${card.cycleWorkBonus.amount}`
         : undefined,
       card.dayReviewStunFocusBonus
-        ? `Review Stun · Focus +${card.dayReviewStunFocusBonus}`
+        ? `Review Cancel · Focus +${card.dayReviewStunFocusBonus}`
         : undefined,
       card.discardedHandTags
         ? `Discard ${tacticBase.discardedCardInstanceIds.length} ${card.discardedHandTags.map((tag) => (tag === "ai-assisted" ? "AI Assisted" : tag)).join("/")}`
@@ -937,7 +991,7 @@ export function resolveCardTarget(
         scriptInstallations.reduce((total, installation) => total + installation.runAmount, 0) > 0
           ? `Run +${scriptInstallations.reduce((total, installation) => total + installation.runAmount, 0)}`
           : undefined,
-        reviewStuns > 0 ? (card.reviewEveryTask ? `Stun ${reviewStuns}` : "Stun") : undefined,
+        reviewStuns > 0 ? (card.reviewEveryTask ? `Cancel ${reviewStuns}` : "Cancel") : undefined,
         blockGained ? `Block ${blockGained}` : undefined,
         focusGained ? `Focus +${focusGained}` : undefined,
         cardsDrawn ? `Draw ${cardsDrawn}` : undefined,
@@ -967,10 +1021,10 @@ export function resolveCardTarget(
 
   if (card.kind === "tactic") {
     if (card.stun && task.stunned) {
-      return { legal: false, reason: "This intent is already Stunned." };
+      return { legal: false, reason: "This Task is already Cancelled Today." };
     }
     if (card.stun && !getTargetableIntent(run, cycle, task)) {
-      return { legal: false, reason: "This Task has no intent to Stun." };
+      return { legal: false, reason: "This Task has no End Day effect to cancel." };
     }
     return {
       ...tacticBase,
@@ -978,7 +1032,7 @@ export function resolveCardTarget(
       taskId: task.taskId,
       stun: card.stun ?? false,
       triggeredPassiveIds,
-      label: [card.stun ? "Stun" : undefined, card.block ? `Block ${card.block}` : undefined]
+      label: [card.stun ? "Cancel" : undefined, card.block ? `Block ${card.block}` : undefined]
         .filter(Boolean)
         .join(" · "),
     };
@@ -1087,7 +1141,7 @@ export function resolveCardTarget(
   }
   const scriptPowerAdded =
     (card.automation?.kind === "install" ? card.automation.power : 0) + madiScript;
-  const scriptBlockAdded =
+  const guardPowerAdded =
     card.automation?.kind === "install" ? (card.automation.blockPower ?? 0) : 0;
   const remainingAfterWork = Math.max(0, remainingWork(requirement) - amount);
   const scriptInstallRunAmount =
@@ -1174,7 +1228,7 @@ export function resolveCardTarget(
             verifiedWorkHits[0]
               ? `${disciplineLabel(verifiedWorkHits[0].discipline)} spill +${verifiedWorkHits[0].amount}`
               : undefined,
-            scriptBlockAdded > 0 ? `Guard +${scriptBlockAdded}` : undefined,
+            guardPowerAdded > 0 ? `Guard +${guardPowerAdded}` : undefined,
             blockGained > 0 ? `Block ${blockGained}` : undefined,
             techDebtAdded > 0 ? `Debt +${techDebtAdded}` : undefined,
             cardsDrawn + completionCardsDrawn > 0
@@ -1232,7 +1286,7 @@ export function resolveCardTarget(
     amount,
     workKind,
     scriptPowerAdded,
-    scriptBlockAdded,
+    guardPowerAdded,
     scriptInstallRunAmount,
     scriptTriggerRunAmount,
     scriptRunAmount,
@@ -1302,7 +1356,6 @@ export function applyCardResolutionToTask(
                 requirement.unverified +
                 (resolution.workKind === "unverified" ? resolution.amount : 0),
               scriptPower: requirement.scriptPower + resolution.scriptPowerAdded,
-              scriptBlock: requirement.scriptBlock + resolution.scriptBlockAdded,
             },
       ),
     }),
@@ -1314,6 +1367,7 @@ export interface RosterBoardEffects {
   tasks: readonly TaskState[];
   cardsDrawn: number;
   blockGained: number;
+  guardPower: number;
   focusGained: number;
   triggeredPassiveIds: readonly DeveloperId[];
   labels: readonly string[];
@@ -1372,6 +1426,8 @@ export function applyRosterBoardEffects(
   const labels: string[] = [];
   let cardsDrawn = 0;
   let blockGained = 0;
+  let guardPower = run.cycle?.guardPower ?? 0;
+  const guardPowerBefore = guardPower;
   let focusGained = 0;
   let automationWorkGained = 0;
   const queue: FrontendPacket[] = [];
@@ -1465,6 +1521,13 @@ export function applyRosterBoardEffects(
         ? resolution.discipline
         : undefined;
 
+  if (card.automation?.kind === "install") {
+    guardPower += card.automation.blockPower ?? 0;
+  }
+  if (card.doubleTargetAutomationMeters) {
+    guardPower *= 2;
+  }
+
   if (targetTaskId && targetDiscipline) {
     const taskIndex = tasks.findIndex((task) => task.taskId === targetTaskId);
     const task = tasks[taskIndex];
@@ -1477,22 +1540,19 @@ export function applyRosterBoardEffects(
         : undefined;
     if (task && requirement && requirementIndex !== undefined) {
       let scriptPower = requirement.scriptPower;
-      let scriptBlock = requirement.scriptBlock;
       if (resolution.kind === "tactic" && card.automation?.kind === "install") {
         scriptPower += card.automation.power;
-        scriptBlock += card.automation.blockPower ?? 0;
       }
       if (card.doubleTargetAutomationMeters) {
         scriptPower *= 2;
-        scriptBlock *= 2;
       }
-      if (scriptPower !== requirement.scriptPower || scriptBlock !== requirement.scriptBlock) {
+      if (scriptPower !== requirement.scriptPower) {
         tasks = tasks.map((candidate, index) =>
           index === taskIndex
             ? {
                 ...candidate,
                 requirements: candidate.requirements.map((item, index) =>
-                  index === requirementIndex ? { ...item, scriptPower, scriptBlock } : item,
+                  index === requirementIndex ? { ...item, scriptPower } : item,
                 ),
               }
             : candidate,
@@ -1514,23 +1574,24 @@ export function applyRosterBoardEffects(
       for (let iteration = 0; iteration < (trigger?.times ?? 0); iteration += 1) {
         if (trigger?.script)
           triggerAutomationWork(targetTaskId, targetDiscipline, automationAmount(scriptPower));
-        if (trigger?.guard) blockGained += automationAmount(scriptBlock);
       }
       for (const meter of card.triggerAutomationAfterInstall ?? []) {
         if (meter === "script") {
           triggerAutomationWork(targetTaskId, targetDiscipline, automationAmount(scriptPower));
-        } else {
-          blockGained += automationAmount(scriptBlock);
         }
       }
     }
   }
 
+  if (card.triggerTargetAutomation?.guard) {
+    blockGained += automationAmount(guardPower) * Math.max(0, card.triggerTargetAutomation.times);
+  }
+  if (card.triggerAutomationAfterInstall?.includes("guard")) {
+    blockGained += automationAmount(guardPower);
+  }
+
   if (card.triggerAllTaskGuardsAfterWork && resolution.taskId) {
-    const task = tasks.find((candidate) => candidate.taskId === resolution.taskId);
-    for (const requirement of task?.requirements ?? []) {
-      blockGained += automationAmount(requirement.scriptBlock);
-    }
+    blockGained += automationAmount(guardPower);
   }
 
   if (card.scriptPowerPerIncompleteRequirement && card.id === "golden-path") {
@@ -1573,9 +1634,9 @@ export function applyRosterBoardEffects(
         );
         if (!previous) continue;
         focusGained += Number(requirement.scriptPower > previous.scriptPower);
-        focusGained += Number(requirement.scriptBlock > previous.scriptBlock);
       }
     }
+    focusGained += Number(guardPower > guardPowerBefore);
     if (focusGained > 0) markPassive("steph");
   }
 
@@ -1734,7 +1795,15 @@ export function applyRosterBoardEffects(
 
   const appliedPackets = queue.length;
   if (appliedPackets > 0) labels.push(`Frontend spread · ${appliedPackets} packets`);
-  return { tasks, cardsDrawn, blockGained, focusGained, triggeredPassiveIds, labels };
+  return {
+    tasks,
+    cardsDrawn,
+    blockGained,
+    guardPower,
+    focusGained,
+    triggeredPassiveIds,
+    labels,
+  };
 }
 
 function applyVerifiedWorkHits(

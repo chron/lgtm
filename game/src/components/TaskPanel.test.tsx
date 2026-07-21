@@ -16,7 +16,7 @@ function cycleFixture(squad: readonly DeveloperId[] = ["paul", "odin", "madi"]) 
 }
 
 describe("TaskPanel", () => {
-  it("dims a Stunned Task and explains that its Intent has no effect", () => {
+  it("dims a cancelled Task and explains that its End Day effect has no effect", () => {
     const baseRun = cycleFixture();
     const task = { ...baseRun.cycle!.tasks[0]!, stunned: true };
     const run = { ...baseRun, cycle: { ...baseRun.cycle!, tasks: [task] } };
@@ -31,8 +31,8 @@ describe("TaskPanel", () => {
     );
 
     expect(markup).toContain("task-panel is-stunned");
-    expect(markup).toContain("Stunned ·");
-    expect(markup).toContain("Cancelled for today.");
+    expect(markup).toContain("Cancelled Today");
+    expect(markup).toContain("will not happen today");
   });
 
   it("previews dirty shipping as Defects and Debt without ordinary Morale loss", () => {
@@ -61,25 +61,23 @@ describe("TaskPanel", () => {
     expect(markup).not.toContain("Morale lost");
   });
 
-  it("exposes requirement drop targets for Script and Guard tactics", () => {
+  it("exposes requirement drop targets for Script tactics", () => {
     const run = cycleFixture(["seb", "toby", "steph"] as const);
     const task = run.cycle!.tasks[0]!;
     const requirement = task.requirements[0]!;
 
-    for (const cardId of ["one-click-setup", "guardrails-not-gatekeepers"] as const) {
-      const markup = renderToStaticMarkup(
-        <TaskPanel
-          run={run}
-          task={task}
-          taskName={task.name ?? task.taskId}
-          selectedCard={{ cardId, instanceId: `test-${cardId}` }}
-          onTarget={() => undefined}
-          onShip={() => undefined}
-        />,
-      );
+    const markup = renderToStaticMarkup(
+      <TaskPanel
+        run={run}
+        task={task}
+        taskName={task.name ?? task.taskId}
+        selectedCard={{ cardId: "one-click-setup", instanceId: "test-one-click-setup" }}
+        onTarget={() => undefined}
+        onShip={() => undefined}
+      />,
+    );
 
-      expect(markup).toContain(`data-card-target="${task.taskId}:${requirement.discipline}"`);
-      expect(markup).toContain("is-targetable");
-    }
+    expect(markup).toContain(`data-card-target="${task.taskId}:${requirement.discipline}"`);
+    expect(markup).toContain("is-targetable");
   });
 });

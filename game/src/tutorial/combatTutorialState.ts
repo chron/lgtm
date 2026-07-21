@@ -16,7 +16,7 @@ export const combatTutorialSteps: readonly CombatTutorialStep[] = [
     id: "tasks",
     anchor: "tasks",
     title: "Read the work",
-    body: "Fill every requirement bar. A Task's Intent fires at End Day unless you ship or Stun it.",
+    body: "Fill every requirement bar. A Task's End Day effect happens unless you ship or cancel it.",
   },
   {
     id: "focus",
@@ -34,13 +34,13 @@ export const combatTutorialSteps: readonly CombatTutorialStep[] = [
     id: "end-day",
     anchor: "end-day",
     title: "Let chaos happen",
-    body: "End Day refreshes your hand and Focus, then every open Intent fires. Check the damage first.",
+    body: "End Day refreshes your hand and Focus, then every open End Day effect happens. Check the damage first.",
   },
   {
     id: "shipping",
     anchor: "tasks",
     title: "Ship it",
-    body: "Fill every bar, then Ship Task to cancel its Intent and collect the reward.",
+    body: "Fill every bar, then Ship Task to cancel its End Day effect and collect the reward.",
   },
 ];
 

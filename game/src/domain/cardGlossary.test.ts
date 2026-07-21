@@ -24,8 +24,8 @@ describe("card glossary", () => {
       "Any",
     ]);
     expect(termsFor("review-3")).toEqual(["Verify"]);
-    expect(termsFor("feature-flag")).toEqual(["Stun", "Block"]);
-    expect(termsFor("health-check")).toEqual(["Block", "Script", "Guard"]);
+    expect(termsFor("feature-flag")).toEqual(["Cancel", "Block"]);
+    expect(termsFor("health-check")).toEqual(["Block", "Guard"]);
   });
 
   it("covers Madi's planning, automation, and Generated token vocabulary", () => {
@@ -53,15 +53,15 @@ describe("card glossary", () => {
   it("covers Odin's Retain, control, AI tradeoff, and broad Review vocabulary", () => {
     expect(termsFor("one-more-diagram")).toEqual(["Verify", "Retain"]);
     expect(termsFor("strong-opinions-loosely-held")).toEqual([
-      "Review Stun",
+      "Review Cancel",
       "Day Bonus",
       "Exhaust",
     ]);
-    expect(termsFor("boring-technology")).toEqual(["Stunned Task"]);
+    expect(termsFor("boring-technology")).toEqual(["Cancelled Task"]);
     expect(termsFor("manual-mode")).toEqual(["Day Bonus", "Discard", "AI Assisted", "Exhaust"]);
     expect(termsFor("architecture-review")).toEqual([
       "Verify",
-      "Review Stun",
+      "Review Cancel",
       "Every Task",
       "Exhaust",
     ]);
@@ -103,16 +103,14 @@ describe("card glossary", () => {
 
   it("explains Toby, Steph, and Elspeth's support mechanics", () => {
     expect(termsFor("on-call")).toEqual(["Block"]);
-    expect(termsFor("useful-alerting")).toEqual(
-      expect.arrayContaining(["Script", "Trigger", "Guard"]),
-    );
-    expect(termsFor("refactor-the-workflow")).toEqual(["Script"]);
+    expect(termsFor("useful-alerting")).toEqual(expect.arrayContaining(["Trigger", "Guard"]));
+    expect(termsFor("refactor-the-workflow")).toEqual(["Script", "Guard"]);
     expect(termsFor("macro")).toEqual(
       expect.arrayContaining(["Script", "Trigger", "Guard", "Generated", "Exhaust"]),
     );
     expect(termsFor("psychological-safety")).toEqual(["Exhaust"]);
     expect(termsFor("healthy-guardrails")).toEqual(
-      expect.arrayContaining(["Script", "Trigger", "Guard", "Any"]),
+      expect.arrayContaining(["Trigger", "Guard", "Any"]),
     );
   });
 });

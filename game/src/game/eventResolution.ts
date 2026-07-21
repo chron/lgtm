@@ -219,7 +219,7 @@ function previewEffect(effect: EventEffect, run: RunState): readonly EventOutcom
               : modifier.kind === "intent-protection"
                 ? modifier.intentKind === "interruption"
                   ? `Ignore ${modifier.count} Distraction`
-                  : `Stun next ${modifier.intentKind} Intent`
+                  : `Cancel next ${modifier.intentKind} End Day effect`
                 : `Borrow ${getCard(modifier.cardId).name}`;
       return [{ text, tone: modifier.kind === "queued-status" ? "risk" : "good" }];
     }
@@ -671,7 +671,7 @@ export function eventModifierLabels(run: RunState): readonly string[] {
         : modifier.kind === "queued-status"
           ? `Next Cycle: ${modifier.count} ${getCard(modifier.cardId).name}`
           : modifier.kind === "intent-protection"
-            ? `Next Cycle: block ${modifier.intentKind}`
+            ? `Next Cycle: cancel ${modifier.intentKind}`
             : `Next Cycle: ${getCard(modifier.cardId).name}`,
   );
   if (run.pendingBounties.length > 0) labels.push(`${run.pendingBounties.length} Bounty queued`);

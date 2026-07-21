@@ -289,7 +289,7 @@ describe("Event outcome engine", () => {
     const protectedDay = gameReducer(state, { type: "END_DAY" });
     expect(protectedDay.run?.morale).toBe(12);
     expect(protectedDay.run?.cycle?.intentProtections.scope).toBe(0);
-    expect(protectedDay.run?.cycle?.resolvedIntents).toContain("Protected · Scope · Frontend +2");
+    expect(protectedDay.run?.cycle?.resolvedIntents).toContain("Prevented · Scope · Frontend +2");
   });
 
   it("queues visible reward and map modifiers, then consumes reward modifiers once", () => {

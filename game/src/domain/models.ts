@@ -223,7 +223,6 @@ export interface RequirementState {
   verified: number;
   unverified: number;
   scriptPower: number;
-  scriptBlock: number;
 }
 
 export interface TaskState {
@@ -245,6 +244,7 @@ export interface CycleState {
   day: number;
   focus: number;
   block: number;
+  guardPower: number;
   tasks: TaskState[];
   drawPile: CardInstance[];
   hand: CardInstance[];

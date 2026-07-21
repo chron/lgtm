@@ -166,13 +166,7 @@ describe("event-exclusive Tools", () => {
         cycle: {
           ...guardState.run.cycle,
           block: 20,
-          tasks: guardState.run.cycle.tasks.map((task) => ({
-            ...task,
-            requirements: task.requirements.map((requirement, index) => ({
-              ...requirement,
-              scriptBlock: index === 0 ? 1 : 0,
-            })),
-          })),
+          guardPower: 1,
         },
       },
     };

@@ -18,18 +18,18 @@ export function BossIntentPanel({ run, cycle }: BossIntentPanelProps) {
   return (
     <aside
       className={`boss-intent${intent.stunned ? " boss-intent--stunned" : ""}`}
-      aria-label={`${boss.stakeholder} intent: ${intent.label}`}
+      aria-label={`${boss.stakeholder} End Day effect: ${intent.label}`}
     >
       <img src={phase.reactionArt} alt="" />
       <div className="boss-intent__copy">
         <span>
           {boss.stakeholder} · {phase.title}
         </span>
-        <strong>{intent.stunned ? `Stunned · ${intent.label}` : intent.label}</strong>
+        <strong>{intent.stunned ? `Cancelled Today · ${intent.label}` : intent.label}</strong>
         <p>{intent.summary}</p>
         <small>“{intent.quote}”</small>
       </div>
-      <b className="boss-intent__state">{intent.stunned ? "Cancelled" : "End Day"}</b>
+      <b className="boss-intent__state">{intent.stunned ? "Cancelled Today" : "End Day"}</b>
     </aside>
   );
 }

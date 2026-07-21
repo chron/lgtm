@@ -124,7 +124,6 @@ function useAuthoredCycle(state: GameState, cycleId: string): GameState {
               verified: 0,
               unverified: 0,
               scriptPower: 0,
-              scriptBlock: 0,
             })),
           })),
       },
@@ -418,16 +417,14 @@ describe("gameReducer", () => {
 
     expect(state.run?.morale).toBe(12);
     expect(state.run?.cycle?.tasks[0]?.stunned).toBe(false);
-    expect(state.run?.cycle?.resolvedIntents).toContain("Stunned · Crunch · −2 Morale");
+    expect(state.run?.cycle?.resolvedIntents).toContain("Cancelled Today · Crunch · −2 Morale");
   });
 
-  it("turns an installed Guard Script into fresh Block next Day", () => {
+  it("turns installed squad Guard into fresh Block next Day", () => {
     let state = startCycle();
     state = playCard(state, "health-check", "status-composer", "frontend");
 
-    expect(state.run?.cycle?.tasks[0]?.requirements[0]).toMatchObject({
-      scriptBlock: 2,
-    });
+    expect(state.run?.cycle?.guardPower).toBe(2);
     expect(state.run?.cycle?.block).toBe(1);
 
     state = gameReducer(state, { type: "END_DAY" });
@@ -606,7 +603,7 @@ describe("gameReducer", () => {
     });
     expect(state.run?.cycle?.resolvedIntents).toContain("AI Assist · Backend +3 Unverified");
     expect(describeIntent({ kind: "ai-assist", discipline: "backend", amount: 3 })).toBe(
-      "Adds 3 Unverified Backend Work to this Task. Ship this Task or Stun its intent before End Day to stop it.",
+      "Adds 3 Unverified Backend Work to this Task. This happens if the Task is still open when you End Day. Shipping or cancelling the Task stops it.",
     );
   });
 
@@ -617,7 +614,7 @@ describe("gameReducer", () => {
 
     expect(state.run?.cycle?.tasks[0]?.requirements[0]?.unverified).toBe(0);
     expect(state.run?.cycle?.resolvedIntents).toContain(
-      "Stunned · AI Assist · Backend +3 Unverified",
+      "Cancelled Today · AI Assist · Backend +3 Unverified",
     );
   });
 
@@ -716,7 +713,7 @@ describe("gameReducer", () => {
     state = gameReducer(state, { type: "END_DAY" });
 
     expect(state.run?.cycle?.tasks.map((task) => task.taskId)).toEqual(["restore-service"]);
-    expect(state.run?.cycle?.resolvedIntents).toContain("Stunned · Spawn · Pager Storm");
+    expect(state.run?.cycle?.resolvedIntents).toContain("Cancelled Today · Spawn · Pager Storm");
   });
 
   it("clears spawned Incident complications when the primary Task ships", () => {

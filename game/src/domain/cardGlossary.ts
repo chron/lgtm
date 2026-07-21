@@ -47,7 +47,7 @@ const glossary: readonly GlossaryDefinition[] = [
   {
     id: "side-quest",
     term: "Side Quest",
-    description: "A required 3-Work Task with no Intent. Ship it to gain Prototype.",
+    description: "A required 3-Work Task with no End Day effect. Ship it to gain Prototype.",
     appliesTo: (card) => Boolean(card.spawnSideQuest),
   },
   {
@@ -144,8 +144,8 @@ const glossary: readonly GlossaryDefinition[] = [
   },
   {
     id: "review-stun",
-    term: "Review Stun",
-    description: "Triggers only when Review newly Stuns an active Intent.",
+    term: "Review Cancel",
+    description: "Triggers only when Review newly cancels an active End Day effect.",
     appliesTo: (card) => Boolean(card.dayReviewStunFocusBonus || card.cardsDrawnPerReviewStun),
   },
   {
@@ -156,8 +156,8 @@ const glossary: readonly GlossaryDefinition[] = [
   },
   {
     id: "stunned-task",
-    term: "Stunned Task",
-    description: "A Task whose Intent has been cancelled for the current Day.",
+    term: "Cancelled Task",
+    description: "A Task whose End Day effect has been cancelled for the current Day.",
     appliesTo: (card) => Boolean(card.bonusWorkIfTaskStunned),
   },
   {
@@ -186,8 +186,8 @@ const glossary: readonly GlossaryDefinition[] = [
   },
   {
     id: "stun",
-    term: "Stun",
-    description: "Cancels one Task's Intent for this Day.",
+    term: "Cancel",
+    description: "Cancels one Task's End Day effect for this Day.",
     appliesTo: (card) => Boolean(card.stun || card.stunIntent),
   },
   {
@@ -210,7 +210,8 @@ const glossary: readonly GlossaryDefinition[] = [
     description: "Adds Verified Work to its requirement at the start of every Day.",
     appliesTo: (card) =>
       Boolean(
-        card.automation ||
+        (card.automation?.kind === "install" && card.automation.power > 0) ||
+        card.automation?.kind === "trigger" ||
         card.scriptPowerPerIncompleteRequirement ||
         card.triggerTargetScriptAfterWork ||
         card.scriptPowerOnEveryIncompleteFrontend ||
@@ -221,7 +222,7 @@ const glossary: readonly GlossaryDefinition[] = [
   {
     id: "trigger",
     term: "Trigger",
-    description: "Runs the target requirement's full Script immediately.",
+    description: "Runs a requirement's Script or the squad's full Guard immediately.",
     appliesTo: (card) =>
       card.automation?.kind === "trigger" ||
       Boolean(
@@ -234,12 +235,13 @@ const glossary: readonly GlossaryDefinition[] = [
   {
     id: "guard",
     term: "Guard",
-    description: "Creates Block at the start of every Day.",
+    description: "A shared squad meter that creates that much Block at the start of every Day.",
     appliesTo: (card) =>
       Boolean(
         (card.automation?.kind === "install" && card.automation.blockPower) ||
         card.triggerAllTaskGuardsAfterWork ||
-        card.triggerTargetAutomation?.guard,
+        card.triggerTargetAutomation?.guard ||
+        card.doubleTargetAutomationMeters,
       ),
   },
   {

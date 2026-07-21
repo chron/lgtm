@@ -6,7 +6,6 @@ import {
   resolveTobyCrunchSequence,
   tobyConversionRequirementIndex,
   tobyCrunchConversions,
-  tobyGuardTriggerPackets,
   tobyIncomingMorale,
 } from "./tobyMechanics";
 
@@ -119,26 +118,6 @@ describe("Toby's staged catalogue", () => {
     expect(aboveAndBeyondBlock(5)).toBe(14);
     expect(aboveAndBeyondBlock(-4)).toBe(4);
     expect(aboveAndBeyondBlock(Number.NaN)).toBe(4);
-  });
-
-  it("triggers every present Guard in requirement board order", () => {
-    expect(
-      tobyGuardTriggerPackets({
-        taskId: "source",
-        status: "open",
-        requirements: [
-          { discipline: "frontend", target: 3, verified: 0, unverified: 0, guard: 4 },
-          { discipline: "infra", target: 3, verified: 0, unverified: 0, guard: 0 },
-          { discipline: "backend", target: 3, verified: 0, unverified: 0, guard: 2 },
-        ],
-      }),
-    ).toEqual([
-      { taskId: "source", requirementIndex: 0, block: 4 },
-      { taskId: "source", requirementIndex: 2, block: 2 },
-    ]);
-    expect(
-      tobyGuardTriggerPackets({ taskId: "done", status: "shipped", requirements: [] }),
-    ).toEqual([]);
   });
 
   it("spends shared Block sequentially and converts exactly the prevented damage", () => {

@@ -85,9 +85,9 @@ export const tobyContent = {
       amount: 2,
       workKind: "verified",
       triggerAllTaskGuardsAfterWork: true,
-      display: { value: "2", label: "Infra", rules: "Verified. Trigger Task Guards." },
+      display: { value: "2", label: "Infra", rules: "Verified. Trigger squad Guard." },
       rarity: "normal",
-      rules: "Infra 2. Verified. Trigger every Guard on that Task.",
+      rules: "Infra 2. Verified. Trigger squad Guard.",
       tags: ["automation", "character", "reward"],
     },
     {
@@ -99,9 +99,9 @@ export const tobyContent = {
       amount: 0,
       block: 4,
       stunIntent: { excludedKinds: ["crunch"] },
-      display: { value: "STUN", label: "Intent", rules: "Not Crunch. Block 4." },
+      display: { value: "CANCEL", label: "End Day", rules: "Not Crunch. Block 4." },
       rarity: "normal",
-      rules: "Stun one non-Crunch Intent. Gain 4 Block.",
+      rules: "Cancel one non-Crunch End Day effect. Gain 4 Block.",
       tags: ["character", "defense", "reward", "stun"],
     },
     {

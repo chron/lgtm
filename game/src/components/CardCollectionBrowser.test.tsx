@@ -83,7 +83,7 @@ describe("CardCollectionBrowser", () => {
     expect(markup).toContain("Standup Cover");
     expect(markup).toContain("Feature Flag");
     expect(markup).toContain("<small>Block</small>");
-    expect(markup).toContain("<small>Stun</small>");
+    expect(markup).toContain("<small>Cancel</small>");
     expect(markup).not.toContain("<small>Status</small>");
   });
 

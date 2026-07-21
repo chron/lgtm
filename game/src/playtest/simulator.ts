@@ -497,13 +497,10 @@ function completedRequirements(run: RunState | null): number {
 
 function automationMeters(run: RunState | null): { scripts: number; guards: number } {
   const requirements = run?.cycle?.tasks.flatMap((task) => task.requirements) ?? [];
-  return requirements.reduce(
-    (sum, requirement) => ({
-      scripts: sum.scripts + requirement.scriptPower,
-      guards: sum.guards + requirement.scriptBlock,
-    }),
-    { scripts: 0, guards: 0 },
-  );
+  return {
+    scripts: requirements.reduce((sum, requirement) => sum + requirement.scriptPower, 0),
+    guards: run?.cycle?.guardPower ?? 0,
+  };
 }
 
 function readyTasks(run: RunState | null): number {

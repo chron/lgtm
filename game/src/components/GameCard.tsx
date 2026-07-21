@@ -47,14 +47,14 @@ export function GameCard({
     card.tags.includes("exhaust") ? "Exhaust" : undefined,
     card.tags.includes("review") ? "Review" : undefined,
     card.tags.includes("defense") ? "Defense" : undefined,
-    card.tags.includes("stun") ? "Stun" : undefined,
+    card.tags.includes("stun") ? "Cancel" : undefined,
     card.retain ? "Retain" : undefined,
   ].filter((tag): tag is string => Boolean(tag));
   const outputLabel =
     card.display?.label ??
     (card.kind === "tactic"
       ? card.stun
-        ? "Stun"
+        ? "Cancel"
         : "Block"
       : card.automation?.kind === "install"
         ? (card.automation.blockPower ?? 0) > 0 && card.automation.power === 0

@@ -945,6 +945,7 @@ main:focus {
 }
 
 .cycle-screen {
+  position: relative;
   padding-top: clamp(1.5rem, 3vw, 2.75rem);
 }
 
@@ -2136,62 +2137,86 @@ main:focus {
 
 .squad-status-rack {
   display: flex;
-  min-width: 190px;
-  min-height: 28px;
-  padding: 0.2rem 0.35rem;
-  border: 0;
-  border-radius: 0.35rem;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0.3rem 0.5rem;
+  border: 2px solid var(--ink);
+  border-radius: 0.55rem 0.35rem 0.65rem 0.4rem;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.35rem;
-  background: transparent;
-  transition: background 140ms var(--ease-out-quint);
+  background: color-mix(in oklch, var(--panel) 94%, var(--blue));
+  box-shadow: 3px 3px 0 var(--ink);
+  overflow: visible;
+  scrollbar-width: thin;
+  white-space: nowrap;
+  transition:
+    background 140ms var(--ease-out-quint),
+    box-shadow 140ms var(--ease-out-quint);
 }
 
 .squad-status-rack.is-targetable {
   cursor: crosshair;
-  background: color-mix(in oklch, var(--yellow) 42%, transparent);
+  background: color-mix(in oklch, var(--yellow) 44%, var(--panel));
+  box-shadow: 5px 5px 0 var(--ink);
 }
 
 .squad-status-rack.is-aimed {
-  background: color-mix(in oklch, var(--yellow) 78%, transparent);
+  background: color-mix(in oklch, var(--mint) 62%, var(--panel));
 }
 
-.cycle-hud.is-squad-targetable,
 .task-board.is-squad-targetable {
   border-radius: 0.8rem;
-  background: color-mix(in oklch, var(--yellow) 24%, transparent);
+  background: color-mix(in oklch, var(--yellow) 12%, transparent);
 }
 
-.task-board.is-squad-targetable {
-  outline: 3px dashed color-mix(in oklch, var(--ink) 72%, transparent);
-  outline-offset: 0.35rem;
-}
-
-.task-board.is-squad-targetable::after {
-  position: absolute;
-  z-index: 5;
-  top: 0;
-  left: 50%;
-  padding: 0.25rem 0.55rem;
-  border: 2px solid var(--ink);
-  background: var(--yellow);
-  box-shadow: 3px 3px 0 var(--ink);
-  content: "PLAY TO SQUAD";
-  font-family: var(--display);
-  font-size: 0.62rem;
-  font-weight: 900;
-  line-height: 1;
-  pointer-events: none;
-  transform: translate(-50%, -58%) rotate(-1deg);
-}
-
-.cycle-hud.is-squad-targetable.is-aimed,
 .task-board.is-squad-targetable.is-aimed {
-  background: color-mix(in oklch, var(--mint) 38%, transparent);
+  background: color-mix(in oklch, var(--mint) 18%, transparent);
 }
 
-.task-board.is-squad-targetable.is-aimed::after {
+.player-state-vital {
+  position: relative;
+  display: grid;
+  min-width: 76px;
+  padding: 0.22rem 0.5rem;
+  border: 0;
+  border-right: 2px solid var(--ink);
+  color: var(--ink);
+  background: transparent;
+  font-family: inherit;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  gap: 0.35rem;
+  text-transform: uppercase;
+}
+
+.player-state-vital small {
+  font-size: 0.55rem;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+}
+
+.player-state-vital b {
+  font-family: var(--display);
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.player-state-vital--focus {
+  cursor: help;
+}
+
+.player-state-vital--focus:hover .game-tooltip,
+.player-state-vital--focus:focus-visible .game-tooltip {
+  display: block;
+}
+
+.status-buff--block {
+  background: var(--blue);
+}
+
+.status-buff--guard {
   background: var(--mint);
 }
 
@@ -2234,9 +2259,15 @@ main:focus {
 }
 
 .status-buff .game-tooltip {
-  top: calc(100% + 0.5rem);
+  top: auto;
+  bottom: calc(100% + 0.5rem);
   width: 220px;
   text-transform: none;
+}
+
+.squad-status-rack .game-tooltip {
+  top: auto;
+  bottom: calc(100% + 0.5rem);
 }
 
 .status-counter {
@@ -2340,6 +2371,11 @@ main:focus {
 .cycle-hud .game-tooltip {
   top: calc(100% + 0.75rem);
   width: 260px;
+}
+
+.cycle-hud .squad-status-rack .game-tooltip {
+  top: auto;
+  bottom: calc(100% + 0.5rem);
 }
 
 .cycle-hud .game-tooltip b {
@@ -2665,14 +2701,38 @@ main:focus {
     display: grid;
     height: 100dvh;
     min-height: 0;
-    grid-template-rows: 64px minmax(0, 1fr) 250px;
+    grid-template-rows: 56px minmax(0, 1fr) 44px 240px;
     gap: 0.7rem;
     padding-top: 0.7rem;
     padding-bottom: 0.35rem;
   }
 
   .cycle-screen--boss {
-    grid-template-rows: auto auto minmax(0, 1fr) 250px;
+    grid-template-rows: auto auto minmax(0, 1fr) 44px 240px;
+  }
+
+  .cycle-screen > .cycle-bottom {
+    grid-row: 4;
+  }
+
+  .cycle-screen--boss > .cycle-bottom {
+    grid-row: 5;
+  }
+
+  .cycle-screen--boss .task-board--1 .requirement-stack {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .cycle-screen--boss .task-board--1 .requirement {
+    min-width: 0;
+  }
+
+  .cycle-hud .squad-status-rack {
+    position: absolute;
+    z-index: 8;
+    right: 0;
+    bottom: calc(240px + 0.7rem);
+    left: 0;
   }
 
   .task-board--1 {
@@ -2699,7 +2759,12 @@ main:focus {
   }
 
   .cycle-bottom .hand {
+    height: 240px;
     gap: 0;
+  }
+
+  .cycle-corner {
+    height: 240px;
   }
 
   .cycle-bottom .hand .game-card {
@@ -5020,6 +5085,11 @@ main:focus {
 }
 
 @media (max-width: 820px) {
+  .squad-status-rack {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
   .title-screen {
     grid-template-columns: 1fr;
   }

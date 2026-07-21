@@ -220,7 +220,7 @@ function CollectionCard({
     card.display?.label ??
     (card.kind === "tactic"
       ? card.stun
-        ? "Stun"
+        ? "Cancel"
         : card.automation?.kind === "install" && (card.automation.blockPower ?? 0) > 0
           ? "Guard"
           : "Block"

@@ -5,7 +5,7 @@ import { gameReducer, initialGameState, type GameState } from "./gameReducer";
 import { useTestCycle } from "./testSupport";
 
 function requirement(discipline: Discipline, target: number, verified = 0, unverified = 0) {
-  return { discipline, target, verified, unverified, scriptPower: 0, scriptBlock: 0 };
+  return { discipline, target, verified, unverified, scriptPower: 0 };
 }
 
 function task(taskId: string, requirements: TaskState["requirements"]): TaskState {

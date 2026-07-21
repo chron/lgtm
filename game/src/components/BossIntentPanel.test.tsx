@@ -21,7 +21,6 @@ function taskState(bossId: string): TaskState {
       verified: 0,
       unverified: 0,
       scriptPower: 0,
-      scriptBlock: 0,
     })),
   };
 }
@@ -35,6 +34,7 @@ function fixture(bossId: string): { run: RunState; cycle: CycleState } {
     day: 1,
     focus: 3,
     block: 0,
+    guardPower: 0,
     tasks: [taskState(bossId)],
     drawPile: [],
     hand: [],
@@ -90,7 +90,7 @@ describe("BossIntentPanel", () => {
       tasks: cycle.tasks.map((task) => ({ ...task, stunned: true })),
     };
     const markup = renderToStaticMarkup(<BossIntentPanel run={run} cycle={stunnedCycle} />);
-    expect(markup).toContain("Stunned · Need More Data");
+    expect(markup).toContain("Cancelled Today · Need More Data");
     expect(markup).toContain("Cancelled");
   });
 });

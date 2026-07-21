@@ -170,7 +170,6 @@ function createAppInitialState(base: GameState): GameState {
           verified: 0,
           unverified: 0,
           scriptPower: 0,
-          scriptBlock: 0,
         })),
       }));
     if (searchParams.get("temporary") === "1") {
@@ -188,7 +187,6 @@ function createAppInitialState(base: GameState): GameState {
             verified: 0,
             unverified: 0,
             scriptPower: 0,
-            scriptBlock: 0,
           },
         ],
       });
@@ -497,10 +495,10 @@ function createAppInitialState(base: GameState): GameState {
                     (qa === "madi" && requirement.discipline === "frontend") || qa === "steph"
                       ? 2
                       : 0,
-                  scriptBlock: qa === "steph" || qa === "toby" ? 2 : 0,
                 })),
               }))
             : state.run.cycle.tasks,
+        guardPower: qa === "steph" || qa === "toby" ? 2 : state.run.cycle.guardPower,
         hand: cardIds.map((cardId, index) => ({
           cardId,
           instanceId: `qa-${qa}-${index + 1}`,

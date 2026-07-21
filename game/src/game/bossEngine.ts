@@ -71,7 +71,6 @@ function createTaskState(task: TaskDefinition, day: number): TaskState {
       verified: 0,
       unverified: 0,
       scriptPower: 0,
-      scriptBlock: 0,
     })),
   };
 }
@@ -284,7 +283,7 @@ export function resolveBossDayIntent(
   if (!intent || !cycle.boss) return { run, cycle, resolutions: [] };
   const sourceTask = cycle.tasks.find((task) => task.taskId === intent.sourceTaskId);
   if (sourceTask?.stunned) {
-    const label = `Stunned · ${intent.label}`;
+    const label = `Cancelled Today · ${intent.label}`;
     const stunnedCycle = {
       ...cycle,
       resolvedIntents: [...cycle.resolvedIntents, label],

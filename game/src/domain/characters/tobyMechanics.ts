@@ -5,7 +5,6 @@ export interface TobyConversionRequirement {
   target: number;
   verified: number;
   unverified: number;
-  guard?: number;
 }
 
 export interface TobyConversionTask {
@@ -111,17 +110,6 @@ export function tobyIncomingMorale(intents: readonly TobyIntentSnapshot[]): numb
 /** Above and Beyond gains its flat two Block before doubling the whole pool. */
 export function aboveAndBeyondBlock(currentBlock: number): number {
   return (nonNegative(currentBlock) + 2) * 2;
-}
-
-/** Guard triggers for Keep It Humming, in requirement board order, omitting zero meters. */
-export function tobyGuardTriggerPackets(
-  task: TobyConversionTask,
-): readonly { taskId: string; requirementIndex: number; block: number }[] {
-  if (task.status === "shipped") return [];
-  return task.requirements.flatMap((requirement, requirementIndex) => {
-    const block = nonNegative(requirement.guard ?? 0);
-    return block > 0 ? [{ taskId: task.taskId, requirementIndex, block }] : [];
-  });
 }
 
 /**

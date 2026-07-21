@@ -95,7 +95,6 @@ function taskState(definition: TaskDefinition): TaskState {
       verified: 0,
       unverified: 0,
       scriptPower: 0,
-      scriptBlock: 0,
     })),
   };
 }
@@ -110,6 +109,7 @@ function fixtureRun(): { run: RunState; cycle: CycleState } {
     day: 1,
     focus: 3,
     block: 0,
+    guardPower: 0,
     tasks: [taskState(fixtureProject)],
     drawPile: [],
     hand: [],
@@ -456,7 +456,9 @@ describe("Final Release boss engine", () => {
         (requirement) => requirement.unverified === 0,
       ),
     ).toBe(true);
-    expect(stunnedState.run?.cycle?.resolvedIntents).toContain("Stunned · I Built This Bit");
+    expect(stunnedState.run?.cycle?.resolvedIntents).toContain(
+      "Cancelled Today · I Built This Bit",
+    );
 
     ({ run, cycle } = resolveBossDayIntent(run, cycle, boss));
     expect(cycle.tasks[0]?.requirements).toEqual([
@@ -479,7 +481,7 @@ describe("Final Release boss engine", () => {
     expect(cycle.tasks[0]?.requirements.every((requirement) => requirement.unverified === 0)).toBe(
       true,
     );
-    expect(cycle.resolvedIntents).toContain("Stunned · I Built This Bit");
+    expect(cycle.resolvedIntents).toContain("Cancelled Today · I Built This Bit");
   });
 
   it("spawns Mateja's required Platform Task at Stakeholder Review", () => {

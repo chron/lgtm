@@ -398,7 +398,7 @@ const sharedCards: readonly CardDefinition[] = [
     amount: 0,
     block: 3,
     stun: true,
-    rules: "Gain 3 Block. Stun one intent.",
+    rules: "Gain 3 Block. Cancel one Task's End Day effect.",
     tags: ["defense", "stun", "reward"],
   },
   {
@@ -408,7 +408,7 @@ const sharedCards: readonly CardDefinition[] = [
     kind: "tactic",
     amount: 0,
     stun: true,
-    rules: "Stun one intent.",
+    rules: "Cancel one Task's End Day effect.",
     tags: ["stun", "reward"],
   },
   {
@@ -960,5 +960,5 @@ export function describeIntent(intent: IntentDefinition): string {
     }
   })();
 
-  return `${consequence} Ship this Task or Stun its intent before End Day to stop it.`;
+  return `${consequence} This happens if the Task is still open when you End Day. Shipping or cancelling the Task stops it.`;
 }

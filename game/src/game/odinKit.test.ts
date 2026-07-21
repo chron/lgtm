@@ -162,7 +162,7 @@ describe("Odin's Review control engine", () => {
     expect(state.run?.cycle?.tasks[0]).toMatchObject({ stunned: true });
     expect(state.run?.history.at(-1)).toMatchObject({
       cardId: "design-review",
-      label: "Verify 5 · Stun · Focus +2",
+      label: "Verify 5 · Cancel · Focus +2",
     });
 
     if (!state.run?.cycle) throw new Error("Expected an active Cycle");
@@ -347,7 +347,7 @@ describe("Odin's Review control engine", () => {
       cardId: "architecture-review",
       taskId: undefined,
       discipline: undefined,
-      label: "Verify 5 · 2 Tasks · Stun 2 · Focus +2 · Draw 2",
+      label: "Verify 5 · 2 Tasks · Cancel 2 · Focus +2 · Draw 2",
       generated: false,
       generatedByCardId: undefined,
       exhausted: true,
@@ -385,7 +385,7 @@ describe("Odin's Review control engine", () => {
 
     expect(state.run?.cycle?.tasks.map((task) => task.stunned)).toEqual([true, false]);
     expect(state.run?.history.at(-1)).toMatchObject({
-      label: "Verify 5 · 1 Task · Stun 1 · Draw 1",
+      label: "Verify 5 · 1 Task · Cancel 1 · Draw 1",
     });
   });
 });

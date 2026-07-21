@@ -106,12 +106,8 @@ describe("support roster integration", () => {
       "triage",
     );
     const task = state.run!.cycle!.tasks[0]!;
-    state = play(state, "useful-alerting", {
-      taskId: task.taskId,
-      discipline: task.requirements[0]!.discipline,
-    });
-    expect(state.run?.cycle).toMatchObject({ block: 2 });
-    expect(state.run?.cycle?.tasks[0]?.requirements[0]?.scriptBlock).toBe(2);
+    state = play(state, "useful-alerting", { kind: "squad" });
+    expect(state.run?.cycle).toMatchObject({ block: 2, guardPower: 2 });
 
     state = play(state, "keep-it-humming", {
       taskId: task.taskId,
@@ -175,7 +171,6 @@ describe("support roster integration", () => {
                   verified: 0,
                   unverified: 0,
                   scriptPower: 0,
-                  scriptBlock: 0,
                 },
               ],
             },
@@ -213,9 +208,8 @@ describe("support roster integration", () => {
       verified: 1,
       scriptPower: 1,
     });
-    state = play(state, "guardrails-not-gatekeepers", target);
-    expect(state.run?.cycle).toMatchObject({ focus: 30, block: 2 });
-    expect(state.run?.cycle?.tasks[0]?.requirements[0]?.scriptBlock).toBe(2);
+    state = play(state, "guardrails-not-gatekeepers", { kind: "squad" });
+    expect(state.run?.cycle).toMatchObject({ focus: 30, block: 2, guardPower: 2 });
     state = play(state, "automate-this-bit", target);
     expect(state.run?.cycle?.focus).toBe(30);
     expect(state.run?.cycle?.triggeredPassiveIds).toContain("steph");
@@ -257,7 +251,14 @@ describe("support roster integration", () => {
       "hot-reload",
       "make-it-a-command",
     );
-    state = setRequirement(state, 0, 0, { target: 20, scriptPower: 2, scriptBlock: 1 });
+    state = setRequirement(state, 0, 0, { target: 20, scriptPower: 2 });
+    state = {
+      ...state,
+      run: {
+        ...state.run!,
+        cycle: { ...state.run!.cycle!, guardPower: 1 },
+      },
+    };
     const requirement = state.run!.cycle!.tasks[0]!.requirements[0]!;
     const target = {
       taskId: state.run!.cycle!.tasks[0]!.taskId,
@@ -266,8 +267,8 @@ describe("support roster integration", () => {
     state = play(state, "refactor-the-workflow", target);
     expect(state.run?.cycle?.tasks[0]?.requirements[0]).toMatchObject({
       scriptPower: 4,
-      scriptBlock: 2,
     });
+    expect(state.run?.cycle?.guardPower).toBe(2);
     expect(state.run?.cycle?.focus).toBe(31);
     state = play(state, "hot-reload", target);
     expect(state.run?.cycle?.tasks[0]?.requirements[0]?.verified).toBe(8);
@@ -324,7 +325,7 @@ describe("support roster integration", () => {
       discipline: state.run!.cycle!.tasks[0]!.requirements[0]!.discipline,
     });
     expect(state.run?.cycle?.block).toBe(10);
-    expect(state.run?.cycle?.tasks[0]?.requirements[0]?.scriptBlock).toBe(2);
+    expect(state.run?.cycle?.guardPower).toBe(2);
     state = play(state, "sustainable-pace", { kind: "squad" });
     expect(state.run?.cycle?.block).toBe(20);
     expect(state.run?.cycle?.focus).toBe(29);

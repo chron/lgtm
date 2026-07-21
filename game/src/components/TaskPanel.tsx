@@ -89,10 +89,10 @@ export function TaskPanel({
             disabled={!intentForHelp}
             aria-describedby={intentForHelp ? intentTooltipId : undefined}
           >
-            <span className="intent-badge__label">Intent</span>
+            <span className="intent-badge__label">End Day</span>
             <strong>
               {task.stunned && scheduledIntent
-                ? `Stunned · ${formatIntent(scheduledIntent)}`
+                ? "Cancelled Today"
                 : intent
                   ? formatIntent(intent)
                   : taskRole === "side-quest" || taskRole === "bounty"
@@ -101,9 +101,9 @@ export function TaskPanel({
             </strong>
             {intentForHelp && (
               <span className="game-tooltip" id={intentTooltipId} role="tooltip">
-                <strong>{task.stunned ? "Stunned" : "At End Day"}</strong>
+                <strong>{task.stunned ? "Cancelled Today" : "When you End Day"}</strong>
                 <span>
-                  {task.stunned ? "Cancelled for today. " : ""}
+                  {task.stunned ? `${formatIntent(intentForHelp)} will not happen today. ` : ""}
                   {describeIntent(intentForHelp)}
                 </span>
               </span>
@@ -180,13 +180,12 @@ export function TaskPanel({
                   ))}
                 </span>
               </span>
-              {(requirement.scriptPower > 0 || requirement.scriptBlock > 0) && (
+              {requirement.scriptPower > 0 && (
                 <span
                   className="requirement__script"
-                  aria-label={`${requirement.scriptPower > 0 ? `Script ${requirement.scriptPower}` : ""}${requirement.scriptPower > 0 && requirement.scriptBlock > 0 ? ", " : ""}${requirement.scriptBlock > 0 ? `Guard ${requirement.scriptBlock}` : ""}`}
+                  aria-label={`Script ${requirement.scriptPower}`}
                 >
-                  {requirement.scriptPower > 0 && <b>Script +{requirement.scriptPower}</b>}
-                  {requirement.scriptBlock > 0 && <b>Guard +{requirement.scriptBlock}</b>}
+                  <b>Script +{requirement.scriptPower}</b>
                   <small>Each Day</small>
                 </span>
               )}
