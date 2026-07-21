@@ -46,6 +46,8 @@ export interface EventResolutionProgress {
   pending?: EventPendingSelection;
 }
 
+export const skipEventSelectionId = "__skip_event_selection__";
+
 export interface ResolvedEventChoice {
   disabledReason?: string;
   outcome: readonly EventOutcomeChip[];
@@ -564,6 +566,9 @@ function resolvePendingEventSelection(
   pending: EventPendingSelection,
   optionId: string,
 ): { run: RunState; outcome: string } | undefined {
+  if (optionId === skipEventSelectionId && pending.kind !== "card") {
+    return { run, outcome: pending.kind === "tool" ? "Skipped Tool" : "Skipped Card" };
+  }
   const option = pending.options.find((candidate) => candidate.id === optionId);
   if (!option) return undefined;
   if (effect.kind === "deck-surgery" && effect.operation !== "add") {

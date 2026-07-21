@@ -346,8 +346,8 @@ const sharedCards: readonly CardDefinition[] = [
     discipline: "flexible",
     amount: 0,
     workKind: "verified",
-    automation: { kind: "install", power: 2 },
-    rules: "Install Script 2.",
+    automation: { kind: "install", power: 3 },
+    rules: "Install Script 3.",
     tags: ["automation", "flexible", "reward"],
   },
   {

@@ -120,6 +120,7 @@ export type CardResolution =
       kind: "tactic";
       taskId?: string;
       targetDiscipline?: Discipline;
+      previewWorkAmount?: number;
       stun: boolean;
       sideQuestDiscipline?: Discipline;
     })
@@ -711,6 +712,14 @@ function resolveCardTargetOnce(
         ? Math.min(triggeredAutomationAmount(run, card.automation.power), previewRemaining)
         : 0;
     previewRemaining -= ciRunAmount;
+    const triggerScriptRunAmount = card.triggerTargetAutomation?.script
+      ? Math.min(
+          triggeredAutomationAmount(run, installedScriptPower) * card.triggerTargetAutomation.times,
+          previewRemaining,
+        )
+      : 0;
+    previewRemaining -= triggerScriptRunAmount;
+    let afterInstallWorkAmount = 0;
     const afterInstallLabels = (card.triggerAutomationAfterInstall ?? []).map((meter) => {
       if (meter === "guard") {
         return automationPacketLabel(
@@ -724,6 +733,7 @@ function resolveCardTargetOnce(
         previewRemaining,
       );
       previewRemaining -= amount;
+      afterInstallWorkAmount += amount;
       return amount > 0 ? automationPacketLabel("Run", amount, run) : undefined;
     });
     return {
@@ -731,6 +741,7 @@ function resolveCardTargetOnce(
       kind: "tactic",
       taskId: task.taskId,
       targetDiscipline: requirement.discipline,
+      previewWorkAmount: ciRunAmount + triggerScriptRunAmount + afterInstallWorkAmount,
       stun: false,
       label: [
         card.automation?.kind === "install" && card.automation.power > 0

@@ -5,7 +5,7 @@ import { normalizeSeed, sampleOne } from "../game/random";
 
 export type WeekendChoiceId = "rest" | "refactor" | "side-gig" | "squad-draft";
 
-export const weekendRestAmount = 4;
+export const weekendRestAmount = 6;
 export const weekendSideGigCredits = 80;
 export const weekendSideGigMoraleCost = 2;
 export const weekendSquadDraftMoraleCost = 2;

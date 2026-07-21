@@ -30,6 +30,9 @@ describe("ShopScreen", () => {
     expect(markup).toContain("sharkimedes");
     expect(markup).toContain(getCard(inventory.cardOffers[0]!.cardId).name.split(" ")[0]);
     expect(markup).toContain(getTool(inventory.toolOffers[0]!.toolId).name);
+    expect(markup).toContain(
+      `aria-label="Costs ${getCard(inventory.cardOffers[0]!.cardId).cost} Focus"`,
+    );
     expect(markup).toContain("Refactor");
     expect(markup).toContain("Clone");
     expect(markup).toContain("Clean Debt");

@@ -46,7 +46,7 @@ function startWeekend(morale = 6, nodeId: "weekend-1" | "weekend-2" = "weekend-1
 }
 
 describe("Weekend stop", () => {
-  it("rests for up to four Morale and completes the node", () => {
+  it("rests for up to six Morale and completes the node", () => {
     let state = startWeekend(8);
     expect(state.screen).toEqual({ name: "weekend", nodeId: "weekend-1" });
 
@@ -61,6 +61,9 @@ describe("Weekend stop", () => {
       choiceId: "rest",
       outcome: ["+4 Morale"],
     });
+
+    const tired = startWeekend(6);
+    expect(getWeekendChoiceState("rest", tired.run!).outcomes).toEqual(["+6 Morale"]);
   });
 
   it("makes a Side Gig lucrative but never lets it zero Morale", () => {

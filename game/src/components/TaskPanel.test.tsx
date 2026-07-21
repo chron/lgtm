@@ -82,4 +82,50 @@ describe("TaskPanel", () => {
     expect(markup).toContain(`data-card-target="${task.taskId}:${requirement.discipline}"`);
     expect(markup).toContain("is-targetable");
   });
+
+  it("keeps Script and Unverified metadata inside the fixed requirement line", () => {
+    const baseRun = cycleFixture(["seb", "toby", "steph"] as const);
+    const task = {
+      ...baseRun.cycle!.tasks[0]!,
+      requirements: baseRun.cycle!.tasks[0]!.requirements.map((requirement) => ({
+        ...requirement,
+        scriptPower: 2,
+        unverified: 1,
+      })),
+    };
+    const run = { ...baseRun, cycle: { ...baseRun.cycle!, tasks: [task] } };
+    const markup = renderToStaticMarkup(
+      <TaskPanel
+        run={run}
+        task={task}
+        taskName={task.name ?? task.taskId}
+        onTarget={() => undefined}
+        onShip={() => undefined}
+      />,
+    );
+
+    expect(markup).toMatch(
+      /requirement__line.*requirement__script.*Script \+2\/Day.*requirement__unverified.*1 Unverified/s,
+    );
+    expect(markup).not.toContain("requirement__foot");
+  });
+
+  it("previews immediate CI work from Automate This Bit as progress segments", () => {
+    const baseRun = cycleFixture(["seb", "toby", "steph"] as const);
+    const run = { ...baseRun, tools: [...baseRun.tools, "ci-runner" as const] };
+    const task = run.cycle!.tasks[0]!;
+    const markup = renderToStaticMarkup(
+      <TaskPanel
+        run={run}
+        task={task}
+        taskName={task.name ?? task.taskId}
+        selectedCard={{ cardId: "automate-this-bit", instanceId: "test-automate" }}
+        onTarget={() => undefined}
+        onShip={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain("CI +2");
+    expect(markup.match(/is-preview-verified/g)?.length).toBeGreaterThanOrEqual(2);
+  });
 });

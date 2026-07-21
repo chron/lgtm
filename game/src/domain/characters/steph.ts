@@ -8,7 +8,7 @@ export const stephContent = {
     name: "Steph",
     role: "Toolsmith",
     passiveName: "Paved Road",
-    passiveRules: "Whenever a Script or Guard is installed or upgraded, gain 1 Focus per meter.",
+    passiveRules: "Whenever a Script or Guard is installed or upgraded, gain 1 Focus for each.",
     startingCardId: "one-click-setup",
     accent: "oklch(0.58 0.18 252)",
     art: {

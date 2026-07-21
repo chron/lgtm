@@ -4,7 +4,11 @@ import { GameCard } from "../components/GameCard";
 import { getCard, getCardForInstance } from "../domain/content";
 import type { CardInstance } from "../domain/models";
 import { getEvent } from "../domain/events";
-import { resolveEventChoice, type EventPendingSelection } from "../game/eventResolution";
+import {
+  resolveEventChoice,
+  skipEventSelectionId,
+  type EventPendingSelection,
+} from "../game/eventResolution";
 
 type EventScreenProps = DispatchProps &
   RunProps & {
@@ -89,6 +93,17 @@ export function EventScreen({
               );
             })}
           </div>
+          {resolution.pending.kind !== "card" && (
+            <button
+              className="button button--text event-selection__skip"
+              type="button"
+              onClick={() =>
+                dispatch({ type: "CHOOSE_EVENT_OPTION", optionId: skipEventSelectionId })
+              }
+            >
+              {resolution.pending.kind === "tool" ? "Skip Tool" : "Skip Card"}
+            </button>
+          )}
         </div>
       ) : (
         <div className="choice-stack">

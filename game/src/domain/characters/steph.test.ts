@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { stephContent } from "./steph";
+import { getCard } from "../content";
 import {
   automationMeterTriggerPackets,
   automationTriggerPackets,
@@ -20,6 +21,14 @@ describe("Steph's staged catalogue", () => {
     expect(stephContent.rewardCards.filter((card) => card.rarity === "normal")).toHaveLength(5);
     expect(stephContent.rewardCards.filter((card) => card.rarity === "rare")).toHaveLength(1);
     expect(stephContent.generatedCards.map((card) => card.id)).toEqual(["macro"]);
+  });
+
+  it("makes the two-Focus Cron Job worth three Script", () => {
+    expect(getCard("cron-job")).toMatchObject({
+      cost: 2,
+      automation: { kind: "install", power: 3 },
+      rules: "Install Script 3.",
+    });
   });
 
   it("refunds once per automation meter that actually increases", () => {

@@ -142,6 +142,7 @@ describe("EventScreen", () => {
     expect(markup).toContain("event-selection__options is-card-options");
     expect(markup.match(/class="game-card /g)).toHaveLength(3);
     expect(markup).not.toContain("event-option--draft");
+    expect(markup).toContain("Skip Card");
   });
 
   it("reveals requested encounter titles without revealing Event identities", () => {

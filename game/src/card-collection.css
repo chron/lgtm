@@ -163,6 +163,7 @@ button.collection-card:not(:disabled):hover,
 .collection-card__owner,
 .collection-card > strong,
 .collection-card__output,
+.collection-card__rules,
 .collection-card__tags {
   position: relative;
   z-index: 2;
@@ -199,6 +200,14 @@ button.collection-card:not(:disabled):hover,
   font-size: 0.68rem;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.collection-card__rules {
+  max-width: 76%;
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 750;
+  line-height: 1.25;
 }
 
 .collection-card__tags {

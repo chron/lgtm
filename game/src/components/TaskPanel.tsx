@@ -67,7 +67,7 @@ export function TaskPanel({
 
   return (
     <article
-      className={`task-panel${taskRole ? ` task-panel--${taskRole}` : ""}${ready ? " is-ready" : ""}${shipped ? " is-shipped" : ""}${task.stunned ? " is-stunned" : ""}${resolving ? " is-resolving" : ""}`}
+      className={`task-panel${taskRole ? ` task-panel--${taskRole}` : ""}${ready ? " is-ready" : ""}${shipped ? " is-shipped" : ""}${task.stunned ? " is-stunned" : ""}${resolving ? " is-resolving" : ""}${taskTargeting ? " is-task-targetable" : ""}`}
     >
       <header className="task-panel__header">
         <div>
@@ -125,14 +125,16 @@ export function TaskPanel({
             preview?.legal &&
             (preview.kind === "work" || preview.kind === "tactic");
           const progress = requirementProgress(requirement);
-          const verifiedPercent = (requirement.verified / requirement.target) * 100;
-          const unverifiedPercent = (requirement.unverified / requirement.target) * 100;
           const targetKey = `${task.taskId}:${requirement.discipline}`;
           const aimed = hoveredTargetKey === targetKey;
-          const previewPercent =
+          const previewAmount =
             legalTarget && preview.kind === "work"
-              ? ((preview.amount + preview.scriptRunAmount) / requirement.target) * 100
-              : 0;
+              ? preview.amount + preview.scriptRunAmount
+              : legalTarget && preview.kind === "tactic"
+                ? (preview.previewWorkAmount ?? 0)
+                : 0;
+          const previewWorkKind =
+            legalTarget && preview.kind === "work" ? preview.workKind : "verified";
 
           return (
             <button
@@ -141,7 +143,7 @@ export function TaskPanel({
               key={requirement.discipline}
               disabled={!legalTarget}
               onClick={() => onTarget(task.taskId, requirement.discipline)}
-              aria-label={`${disciplineLabel(requirement.discipline)} ${progress} of ${requirement.target}${legalTarget ? `. Play card: ${preview.label}` : ""}`}
+              aria-label={`${disciplineLabel(requirement.discipline)} ${progress} of ${requirement.target}${requirement.scriptPower > 0 ? `. Script ${requirement.scriptPower} runs each Day` : ""}${requirement.unverified > 0 ? `. ${requirement.unverified} Unverified` : ""}${legalTarget ? `. Play card: ${preview.label}` : ""}`}
               data-card-target={legalTarget ? targetKey : undefined}
               data-task-id={legalTarget ? task.taskId : undefined}
               data-target-discipline={legalTarget ? requirement.discipline : undefined}
@@ -150,50 +152,41 @@ export function TaskPanel({
                 <strong>{disciplineLabel(requirement.discipline)}</strong>
                 <span>
                   {legalTarget && <b>{preview.label}</b>}
+                  {requirement.scriptPower > 0 && (
+                    <span
+                      className="requirement__script"
+                      aria-label={`Script ${requirement.scriptPower}, runs each Day`}
+                    >
+                      Script +{requirement.scriptPower}/Day
+                    </span>
+                  )}
+                  {requirement.unverified > 0 && (
+                    <span className="requirement__unverified">
+                      {requirement.unverified} Unverified
+                    </span>
+                  )}
                   {progress}/{requirement.target}
                 </span>
               </span>
               <span className="requirement__track" aria-hidden="true">
                 <span
-                  className="requirement__fill requirement__fill--verified"
-                  style={{ width: `${verifiedPercent}%` }}
-                />
-                <span
-                  className="requirement__fill requirement__fill--unverified"
-                  style={{
-                    left: `${verifiedPercent}%`,
-                    width: `${unverifiedPercent}%`,
-                  }}
-                />
-                {legalTarget && preview.kind === "work" && (
-                  <span
-                    className={`requirement__fill requirement__fill--preview requirement__fill--preview-${preview.workKind}`}
-                    style={{
-                      left: `${verifiedPercent + unverifiedPercent}%`,
-                      width: `${previewPercent}%`,
-                    }}
-                  />
-                )}
-                <span className="requirement__segments">
-                  {Array.from({ length: requirement.target }, (_, index) => (
-                    <span key={index} />
-                  ))}
+                  className="requirement__segments"
+                  style={{ "--requirement-segments": requirement.target } as React.CSSProperties}
+                >
+                  {Array.from({ length: requirement.target }, (_, index) => {
+                    const segment = index + 1;
+                    const state =
+                      segment <= requirement.verified
+                        ? "verified"
+                        : segment <= requirement.verified + requirement.unverified
+                          ? "unverified"
+                          : segment <= progress + previewAmount
+                            ? `preview-${previewWorkKind}`
+                            : "empty";
+                    return <span className={`is-${state}`} key={index} />;
+                  })}
                 </span>
               </span>
-              {requirement.scriptPower > 0 && (
-                <span
-                  className="requirement__script"
-                  aria-label={`Script ${requirement.scriptPower}`}
-                >
-                  <b>Script +{requirement.scriptPower}</b>
-                  <small>Each Day</small>
-                </span>
-              )}
-              {requirement.unverified > 0 && (
-                <span className="requirement__foot">
-                  <span>{requirement.unverified} Unverified</span>
-                </span>
-              )}
             </button>
           );
         })}
@@ -207,7 +200,7 @@ export function TaskPanel({
           data-card-target={`${task.taskId}:${selectedDefinition.kind}`}
           data-task-id={task.taskId}
         >
-          {selectedDefinition.label}
+          <span>{selectedDefinition.label}</span>
         </button>
       )}
 

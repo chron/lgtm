@@ -264,6 +264,7 @@ function CollectionCard({
         <b>{outputValue}</b>
         <small>{output}</small>
       </span>
+      <p className="collection-card__rules">{card.rules}</p>
       <span className="collection-card__tags">
         {(instance?.generated || instance?.generatedBy) && <span>Generated</span>}
         {instance?.exhausted && <span>Exhausted</span>}

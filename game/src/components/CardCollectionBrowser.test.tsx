@@ -85,6 +85,8 @@ describe("CardCollectionBrowser", () => {
     expect(markup).toContain("<small>Block</small>");
     expect(markup).toContain("<small>Cancel</small>");
     expect(markup).not.toContain("<small>Status</small>");
+    expect(markup).toContain("Gain 3 Block.");
+    expect(markup).toContain("Cancel one Task&#x27;s End Day effect.");
   });
 
   it("keeps Generated provenance and Exhaust lifecycle visible in pile inspection", () => {

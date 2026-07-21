@@ -220,6 +220,9 @@ function ShopCard({ offer, credits, sold, onBuy }: ShopCardProps) {
       aria-label={`${sold ? "Installed: " : "Buy "}${card.name} for ${offer.price} Credits. ${card.rules}`}
     >
       <span className="shop-card__price">{sold ? "Installed" : `$${offer.price}`}</span>
+      <span className="shop-card__focus" aria-label={`Costs ${card.cost} Focus`}>
+        {card.cost}
+      </span>
       <small>{offer.kind === "wildcard" ? "Wildcard" : owner?.name}</small>
       <strong>{card.name}</strong>
       <p>{card.rules}</p>

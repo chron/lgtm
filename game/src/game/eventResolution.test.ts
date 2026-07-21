@@ -8,6 +8,7 @@ import {
   continueEventResolution,
   reconcileTechDebt,
   resolveEventChoice,
+  skipEventSelectionId,
 } from "./eventResolution";
 import { gameReducer, initialGameState, type GameState } from "./gameReducer";
 
@@ -90,6 +91,34 @@ describe("Event outcome engine", () => {
       eventId: "karaoke-night",
       choiceId: "duet",
       outcome: ["−15 Credits", `Duplicated ${selected.label}`],
+    });
+  });
+
+  it("allows an optional draft reward to be skipped before later effects resolve", () => {
+    const run = playableRun(4242);
+    const state: GameState = {
+      screen: { name: "event", nodeId: "event-1", eventId: "founder-hackathon" },
+      run: { ...run, currentNodeId: "event-1" },
+    };
+    const pending = gameReducer(state, { type: "CHOOSE_EVENT", choiceId: "let-mateja-cook" });
+    if (pending.screen.name !== "event" || !pending.screen.resolution) {
+      throw new Error("Expected a pending draft");
+    }
+    const offeredCardIds = pending.screen.resolution.pending.options.map((option) => option.cardId);
+
+    const resolved = gameReducer(pending, {
+      type: "CHOOSE_EVENT_OPTION",
+      optionId: skipEventSelectionId,
+    });
+
+    expect(resolved.screen.name).toBe("map");
+    expect(resolved.run?.deck).toHaveLength(run.deck.length + 1);
+    expect(resolved.run?.deck.filter((card) => offeredCardIds.includes(card.cardId))).toHaveLength(
+      0,
+    );
+    expect(resolved.run?.techDebt).toBe(run.techDebt + 3);
+    expect(resolved.run?.history.at(-1)).toMatchObject({
+      outcome: ["Skipped Card", "+3 Tech Debt"],
     });
   });
 

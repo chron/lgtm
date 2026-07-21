@@ -942,6 +942,9 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
           <div className="launch-confirm__copy">
             <span>Final Release · Confirm</span>
             <h2 id="launch-confirm-title">Launch {boss.projectTitle}?</h2>
+            <p className="launch-confirm__decision">
+              Launching ends the run. Ship with this quality, or keep working while time remains.
+            </p>
             <strong className={`launch-outcome launch-outcome--${launchPreview.outcome}`}>
               {launchPreview.outcome === "clean"
                 ? "Clean Victory"
