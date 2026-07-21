@@ -401,6 +401,30 @@ main:focus {
   text-transform: uppercase;
 }
 
+.squad-heading__buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.squad-randomize {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.squad-randomize svg {
+  width: 19px;
+  height: 19px;
+  transition: transform 220ms var(--ease-out-quint);
+}
+
+.squad-randomize:hover svg,
+.squad-randomize:focus-visible svg {
+  transform: rotate(105deg);
+}
+
 .squad-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -5788,6 +5812,11 @@ main:focus {
 
   .squad-heading__count {
     text-align: left;
+  }
+
+  .squad-heading__buttons {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .squad-grid,

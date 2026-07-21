@@ -1,3 +1,4 @@
+import { Shuffle } from "lucide-react";
 import type { DispatchProps, RunProps } from "../app/types";
 import { CharacterPortrait } from "../components/CharacterPortrait";
 import { developers } from "../domain/content";
@@ -17,14 +18,24 @@ export function SquadScreen({ dispatch, run }: SquadScreenProps) {
           <span className="squad-heading__count" aria-live="polite">
             {selected.length}/3 squad members chosen
           </span>
-          <button
-            className="button button--primary"
-            type="button"
-            disabled={selected.length !== 3}
-            onClick={() => dispatch({ type: "CONFIRM_SQUAD" })}
-          >
-            Lock In
-          </button>
+          <div className="squad-heading__buttons">
+            <button
+              className="button button--secondary squad-randomize"
+              type="button"
+              onClick={() => dispatch({ type: "RANDOMIZE_SQUAD" })}
+            >
+              <Shuffle aria-hidden="true" strokeWidth={3} />
+              Randomize
+            </button>
+            <button
+              className="button button--primary"
+              type="button"
+              disabled={selected.length !== 3}
+              onClick={() => dispatch({ type: "CONFIRM_SQUAD" })}
+            >
+              Lock In
+            </button>
+          </div>
         </div>
       </div>
 

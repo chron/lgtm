@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   describeIntent,
+  developers,
   eligibleRewardCardIds,
   formatIntent,
   getActMap,
@@ -1538,6 +1539,31 @@ describe("gameReducer", () => {
       state = gameReducer(state, { type: "TOGGLE_DEVELOPER", developerId });
     }
     expect(state.run?.squad).toEqual(["paul", "odin", "irene"]);
+  });
+
+  it("randomizes exactly three developers without starting the run", () => {
+    let state = gameReducer(initialGameState, { type: "START_RUN", seed: 42 });
+    if (!state.run) throw new Error("Expected a run");
+    const firstShuffle = shuffle(
+      developers.map((developer) => developer.id),
+      state.run.rngState,
+    );
+
+    state = gameReducer(state, { type: "RANDOMIZE_SQUAD" });
+
+    expect(state.screen).toEqual({ name: "squad" });
+    expect(state.run?.squad).toEqual(firstShuffle.items.slice(0, 3));
+    expect(new Set(state.run?.squad).size).toBe(3);
+    expect(state.run?.rngState).toBe(firstShuffle.rngState);
+
+    const secondShuffle = shuffle(
+      developers.map((developer) => developer.id),
+      firstShuffle.rngState,
+    );
+    state = gameReducer(state, { type: "RANDOMIZE_SQUAD" });
+    expect(state.screen).toEqual({ name: "squad" });
+    expect(state.run?.squad).toEqual(secondShuffle.items.slice(0, 3));
+    expect(state.run?.rngState).toBe(secondShuffle.rngState);
   });
 
   it("keeps locked map nodes unavailable", () => {

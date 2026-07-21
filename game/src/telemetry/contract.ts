@@ -4,6 +4,7 @@ export const maxTelemetryEventsPerBatch = 25;
 const telemetryActionTypes = [
   "START_RUN",
   "TOGGLE_DEVELOPER",
+  "RANDOMIZE_SQUAD",
   "CONFIRM_SQUAD",
   "VISIT_NODE",
   "PLAY_CARD",

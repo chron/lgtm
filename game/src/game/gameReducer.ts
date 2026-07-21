@@ -1,4 +1,5 @@
 import {
+  developers,
   eligibleRewardCardIds,
   formatIntent,
   getCard,
@@ -123,6 +124,7 @@ export interface GameState {
 export type GameAction =
   | { type: "START_RUN"; seed?: number }
   | { type: "TOGGLE_DEVELOPER"; developerId: DeveloperId }
+  | { type: "RANDOMIZE_SQUAD" }
   | { type: "CONFIRM_SQUAD" }
   | { type: "VISIT_NODE"; nodeId: string }
   | {
@@ -1321,6 +1323,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ? [...state.run.squad, action.developerId]
           : state.run.squad;
       return { ...state, run: { ...state.run, squad } };
+    }
+
+    case "RANDOMIZE_SQUAD": {
+      if (state.screen.name !== "squad" || !state.run) return state;
+      const randomized = shuffle(
+        developers.map((developer) => developer.id),
+        state.run.rngState,
+      );
+      return {
+        ...state,
+        run: {
+          ...state.run,
+          squad: randomized.items.slice(0, 3),
+          rngState: randomized.rngState,
+        },
+      };
     }
 
     case "CONFIRM_SQUAD": {

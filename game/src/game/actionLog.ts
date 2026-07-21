@@ -118,6 +118,7 @@ function productionActionDetails(action: GameAction): TelemetryDetails {
         ...(action.instanceId ? { instanceId: action.instanceId } : {}),
       };
     case "CONFIRM_SQUAD":
+    case "RANDOMIZE_SQUAD":
     case "DEBUG_WIN_CYCLE":
     case "END_DAY":
     case "ACKNOWLEDGE_BOSS_TRANSITION":
