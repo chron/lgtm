@@ -429,6 +429,12 @@ export function resolveCardTarget(
       : [];
   const chainedTaskBeforePlay =
     "taskId" in target && target.taskId ? cycle.chain.taskId === target.taskId : false;
+  const momentumBeforePlay =
+    "taskId" in target &&
+    target.taskId &&
+    (cycle.chain.taskId === target.taskId || cycle.chain.transfersBetweenTasks)
+      ? cycle.chain.count
+      : 0;
   let chainAfterPlay =
     "taskId" in target && target.taskId ? advanceChain(cycle, target.taskId) : cycle.chain;
   if (card.additionalChain && chainAfterPlay.taskId) {
@@ -1104,7 +1110,7 @@ export function resolveCardTarget(
       cycle.hand.filter((candidate) => candidate.retained || getCardForInstance(candidate).retain)
         .length;
     if (run.squad.includes("levi")) {
-      amount += chainAfterPlay.count;
+      amount += momentumBeforePlay;
       triggeredPassiveIds = addTriggeredPassive(triggeredPassiveIds, "levi");
     }
   }

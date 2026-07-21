@@ -89,7 +89,7 @@ Presentation cues are derived deterministically from the same card resolution us
 
 - The cycle is a fixed tactical stage on ordinary desktop viewports, not a vertically stacked page.
 - The upper HUD contains long-term run resources and Tools on the left, squad passives in the centre, and Day on the right.
-- Morale, Focus, Block, shared Guard, and temporary player effects live in one non-wrapping strip directly above the hand. Tooltips open upward from the strip.
+- Morale and Focus anchor opposite edges of the player strip directly above the hand. Positive Block, shared Guard, and temporary player effects flow between them; zero Block stays hidden. Tooltips open upward from the strip.
 - The player strip is the visible target for squad cards. The task field remains a forgiving invisible extension of that drop target without gaining a second heavy outline.
 - Task names carry encounter flavour; persistent cycle numbers and encounter titles are omitted.
 - Task consequence badges use the functional `End Day` label. Player-facing control language is `Cancel` / `Cancelled Today`; `Intent` and `Stun` remain engine terms only.

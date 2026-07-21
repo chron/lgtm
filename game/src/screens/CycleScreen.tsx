@@ -526,6 +526,157 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
                 {run.morale}/{run.maxMorale}
               </b>
             </span>
+            <span className="player-state-statuses">
+              {cycle.block > 0 && (
+                <span className="status-buff status-buff--block">Block {cycle.block}</span>
+              )}
+              {cycle.guardPower > 0 && (
+                <button
+                  className="status-buff status-buff--guard"
+                  type="button"
+                  aria-label={`Guard ${cycle.guardPower}. At the start of each Day, gain ${cycle.guardPower} Block before Tool bonuses.`}
+                >
+                  Guard {cycle.guardPower}
+                  <span className="game-tooltip" role="tooltip">
+                    At the start of each Day, gain {cycle.guardPower} Block before Tool bonuses.
+                  </span>
+                </button>
+              )}
+              {cycle.prototypePower > 0 && (
+                <button
+                  className="status-buff status-buff--prototype"
+                  type="button"
+                  aria-label={`Prototype ${cycle.prototypePower}. Every Work card gains ${cycle.prototypePower} Work this Cycle.`}
+                >
+                  Prototype +{cycle.prototypePower}
+                  <span className="game-tooltip" role="tooltip">
+                    Every Work card gains +{cycle.prototypePower} Work this Cycle.
+                  </span>
+                </button>
+              )}
+              {cycle.fullStackPower > 0 && (
+                <button
+                  className="status-buff status-buff--variety"
+                  type="button"
+                  aria-label={`Full Stack ${cycle.fullStackPower}. Switching target discipline adds ${cycle.fullStackPower} Work.`}
+                >
+                  Full Stack +{cycle.fullStackPower}
+                  <span className="game-tooltip" role="tooltip">
+                    Switching target discipline adds +{cycle.fullStackPower} Work.
+                  </span>
+                </button>
+              )}
+              {(Object.entries(cycle.cardTagWorkBonuses) as [CardTag, number][]).map(
+                ([tag, amount]) =>
+                  amount > 0 && (
+                    <button
+                      className="status-buff status-buff--automation"
+                      type="button"
+                      key={tag}
+                      aria-label={`${cardTagLabel(tag)} Work gains ${amount} this Cycle.`}
+                    >
+                      {cardTagLabel(tag)} +{amount}
+                      <span className="game-tooltip" role="tooltip">
+                        {cardTagLabel(tag)} Work gains +{amount} this Cycle.
+                      </span>
+                    </button>
+                  ),
+              )}
+              {cycle.dayWorkBonuses.map((bonus, index) => (
+                <button
+                  className="status-buff status-buff--variety"
+                  type="button"
+                  key={`${bonus.amount}-${bonus.excludedTags.join("-")}-${index}`}
+                  aria-label={`Eligible Work gains ${bonus.amount} this Day. Excludes ${bonus.excludedTags.map(cardTagLabel).join(", ") || "nothing"}.`}
+                >
+                  Non-{bonus.excludedTags.map(cardTagLabel).join("/")} Work +{bonus.amount}
+                  <span className="game-tooltip" role="tooltip">
+                    Eligible Work gains +{bonus.amount} this Day.
+                  </span>
+                </button>
+              ))}
+              {cycle.reviewStunFocusBonus > 0 && (
+                <button
+                  className="status-buff status-buff--prototype"
+                  type="button"
+                  aria-label={`Gain ${cycle.reviewStunFocusBonus} Focus whenever a Review cancels an End Day effect this Day.`}
+                >
+                  Review Cancel · +{cycle.reviewStunFocusBonus} Focus
+                  <span className="game-tooltip" role="tooltip">
+                    Gain +{cycle.reviewStunFocusBonus} Focus whenever a Review cancels an End Day
+                    effect this Day.
+                  </span>
+                </button>
+              )}
+              {cycle.queuedCardsDrawn > 0 && (
+                <span className="status-counter">Next Draw +{cycle.queuedCardsDrawn}</span>
+              )}
+              {cycle.queuedDistractions > 0 && (
+                <span className="status-debuff">
+                  Next Day · {cycle.queuedDistractions} Distraction
+                  {cycle.queuedDistractions === 1 ? "" : "s"}
+                </span>
+              )}
+              {cycle.cardsPlayedThisDay > 0 && (
+                <span className="status-counter">Plays {cycle.cardsPlayedThisDay}</span>
+              )}
+              {cycle.chain.count > 0 && cycle.chain.taskId && (
+                <button
+                  className="status-counter status-counter--button"
+                  type="button"
+                  aria-label={`Chain ${cycle.chain.count} on ${cycle.tasks.find((task) => task.taskId === cycle.chain.taskId)?.name ?? cycle.chain.taskId}. Consecutive targeted cards on this Task increase Chain.`}
+                >
+                  Chain ×{cycle.chain.count}
+                  <span className="game-tooltip" role="tooltip">
+                    Consecutive targeted cards on the same Task build Chain.
+                  </span>
+                </button>
+              )}
+              {cycle.lastWorkCard && (
+                <button
+                  className="status-counter status-counter--button"
+                  type="button"
+                  aria-label={`Last printed Work: ${lastWorkLabel} ${cycle.lastWorkCard.amount}. Quick Study will copy this discipline and amount.`}
+                >
+                  Last Work · {lastWorkLabel} {cycle.lastWorkCard.amount}
+                  <span className="game-tooltip" role="tooltip">
+                    Quick Study copies this printed discipline and amount.
+                  </span>
+                </button>
+              )}
+              {cycle.exhaustPile.length > 0 && (
+                <button
+                  className="status-counter status-counter--button"
+                  type="button"
+                  onClick={() => onInspectCards("Exhaust", cycle.exhaustPile)}
+                >
+                  Exhaust {cycle.exhaustPile.length}
+                </button>
+              )}
+              {cycle.blockedDisciplines.map((discipline) => (
+                <span className="status-debuff" key={discipline}>
+                  {disciplineLabel(discipline)} +1 Cost
+                </span>
+              ))}
+              {sideQuestTargetable && (
+                <span className="side-quest-targets" aria-label="Choose Side Quest discipline">
+                  {sideQuestTargets.map(({ discipline, resolution }) => (
+                    <button
+                      className={`side-quest-target${aim?.hoveredTargetKey === `discipline:${discipline}` ? " is-aimed" : ""}`}
+                      type="button"
+                      key={discipline}
+                      data-card-target={`discipline:${discipline}`}
+                      data-target-kind="discipline"
+                      data-target-discipline={discipline}
+                      aria-label={resolution.legal ? resolution.label : disciplineLabel(discipline)}
+                    >
+                      {disciplineLabel(discipline)}
+                    </button>
+                  ))}
+                </span>
+              )}
+              {squadTargetable && <b>{squadTargetLabel}</b>}
+            </span>
             <button
               className="player-state-vital player-state-vital--focus"
               type="button"
@@ -538,153 +689,6 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
                 Start each Day with 3 Focus. Effects can raise it above 3.
               </span>
             </button>
-            <span className="status-buff status-buff--block">Block {cycle.block}</span>
-            {cycle.guardPower > 0 && (
-              <button
-                className="status-buff status-buff--guard"
-                type="button"
-                aria-label={`Guard ${cycle.guardPower}. At the start of each Day, gain ${cycle.guardPower} Block before Tool bonuses.`}
-              >
-                Guard {cycle.guardPower}
-                <span className="game-tooltip" role="tooltip">
-                  At the start of each Day, gain {cycle.guardPower} Block before Tool bonuses.
-                </span>
-              </button>
-            )}
-            {cycle.prototypePower > 0 && (
-              <button
-                className="status-buff status-buff--prototype"
-                type="button"
-                aria-label={`Prototype ${cycle.prototypePower}. Every Work card gains ${cycle.prototypePower} Work this Cycle.`}
-              >
-                Prototype +{cycle.prototypePower}
-                <span className="game-tooltip" role="tooltip">
-                  Every Work card gains +{cycle.prototypePower} Work this Cycle.
-                </span>
-              </button>
-            )}
-            {cycle.fullStackPower > 0 && (
-              <button
-                className="status-buff status-buff--variety"
-                type="button"
-                aria-label={`Full Stack ${cycle.fullStackPower}. Switching target discipline adds ${cycle.fullStackPower} Work.`}
-              >
-                Full Stack +{cycle.fullStackPower}
-                <span className="game-tooltip" role="tooltip">
-                  Switching target discipline adds +{cycle.fullStackPower} Work.
-                </span>
-              </button>
-            )}
-            {(Object.entries(cycle.cardTagWorkBonuses) as [CardTag, number][]).map(
-              ([tag, amount]) =>
-                amount > 0 && (
-                  <button
-                    className="status-buff status-buff--automation"
-                    type="button"
-                    key={tag}
-                    aria-label={`${cardTagLabel(tag)} Work gains ${amount} this Cycle.`}
-                  >
-                    {cardTagLabel(tag)} +{amount}
-                    <span className="game-tooltip" role="tooltip">
-                      {cardTagLabel(tag)} Work gains +{amount} this Cycle.
-                    </span>
-                  </button>
-                ),
-            )}
-            {cycle.dayWorkBonuses.map((bonus, index) => (
-              <button
-                className="status-buff status-buff--variety"
-                type="button"
-                key={`${bonus.amount}-${bonus.excludedTags.join("-")}-${index}`}
-                aria-label={`Eligible Work gains ${bonus.amount} this Day. Excludes ${bonus.excludedTags.map(cardTagLabel).join(", ") || "nothing"}.`}
-              >
-                Non-{bonus.excludedTags.map(cardTagLabel).join("/")} Work +{bonus.amount}
-                <span className="game-tooltip" role="tooltip">
-                  Eligible Work gains +{bonus.amount} this Day.
-                </span>
-              </button>
-            ))}
-            {cycle.reviewStunFocusBonus > 0 && (
-              <button
-                className="status-buff status-buff--prototype"
-                type="button"
-                aria-label={`Gain ${cycle.reviewStunFocusBonus} Focus whenever a Review cancels an End Day effect this Day.`}
-              >
-                Review Cancel · +{cycle.reviewStunFocusBonus} Focus
-                <span className="game-tooltip" role="tooltip">
-                  Gain +{cycle.reviewStunFocusBonus} Focus whenever a Review cancels an End Day
-                  effect this Day.
-                </span>
-              </button>
-            )}
-            {cycle.queuedCardsDrawn > 0 && (
-              <span className="status-counter">Next Draw +{cycle.queuedCardsDrawn}</span>
-            )}
-            {cycle.queuedDistractions > 0 && (
-              <span className="status-debuff">
-                Next Day · {cycle.queuedDistractions} Distraction
-                {cycle.queuedDistractions === 1 ? "" : "s"}
-              </span>
-            )}
-            {cycle.cardsPlayedThisDay > 0 && (
-              <span className="status-counter">Plays {cycle.cardsPlayedThisDay}</span>
-            )}
-            {cycle.chain.count > 0 && cycle.chain.taskId && (
-              <button
-                className="status-counter status-counter--button"
-                type="button"
-                aria-label={`Chain ${cycle.chain.count} on ${cycle.tasks.find((task) => task.taskId === cycle.chain.taskId)?.name ?? cycle.chain.taskId}. Consecutive targeted cards on this Task increase Chain.`}
-              >
-                Chain ×{cycle.chain.count}
-                <span className="game-tooltip" role="tooltip">
-                  Consecutive targeted cards on the same Task build Chain.
-                </span>
-              </button>
-            )}
-            {cycle.lastWorkCard && (
-              <button
-                className="status-counter status-counter--button"
-                type="button"
-                aria-label={`Last printed Work: ${lastWorkLabel} ${cycle.lastWorkCard.amount}. Quick Study will copy this discipline and amount.`}
-              >
-                Last Work · {lastWorkLabel} {cycle.lastWorkCard.amount}
-                <span className="game-tooltip" role="tooltip">
-                  Quick Study copies this printed discipline and amount.
-                </span>
-              </button>
-            )}
-            {cycle.exhaustPile.length > 0 && (
-              <button
-                className="status-counter status-counter--button"
-                type="button"
-                onClick={() => onInspectCards("Exhaust", cycle.exhaustPile)}
-              >
-                Exhaust {cycle.exhaustPile.length}
-              </button>
-            )}
-            {cycle.blockedDisciplines.map((discipline) => (
-              <span className="status-debuff" key={discipline}>
-                {disciplineLabel(discipline)} +1 Cost
-              </span>
-            ))}
-            {sideQuestTargetable && (
-              <span className="side-quest-targets" aria-label="Choose Side Quest discipline">
-                {sideQuestTargets.map(({ discipline, resolution }) => (
-                  <button
-                    className={`side-quest-target${aim?.hoveredTargetKey === `discipline:${discipline}` ? " is-aimed" : ""}`}
-                    type="button"
-                    key={discipline}
-                    data-card-target={`discipline:${discipline}`}
-                    data-target-kind="discipline"
-                    data-target-discipline={discipline}
-                    aria-label={resolution.legal ? resolution.label : disciplineLabel(discipline)}
-                  >
-                    {disciplineLabel(discipline)}
-                  </button>
-                ))}
-              </span>
-            )}
-            {squadTargetable && <b>{squadTargetLabel}</b>}
           </div>
         </div>
 
@@ -811,6 +815,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
                       }
                     : undefined
                 }
+                aimed={aim?.hoveredTargetKey === `hand:${instance.instanceId}`}
                 onPointerDown={
                   unplayable ? undefined : (event) => beginAim(instance.instanceId, event)
                 }

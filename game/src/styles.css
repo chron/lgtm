@@ -2136,18 +2136,18 @@ main:focus {
 }
 
 .squad-status-rack {
-  display: flex;
+  display: grid;
   width: 100%;
   min-width: 0;
   min-height: 44px;
-  padding: 0.3rem 0.5rem;
-  border: 2px solid var(--ink);
+  padding: 0.25rem;
+  border: 0;
   border-radius: 0.55rem 0.35rem 0.65rem 0.4rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: flex-start;
   gap: 0.35rem;
-  background: color-mix(in oklch, var(--panel) 94%, var(--blue));
-  box-shadow: 3px 3px 0 var(--ink);
+  background: color-mix(in oklch, var(--panel) 82%, transparent);
+  box-shadow: none;
   overflow: visible;
   scrollbar-width: thin;
   white-space: nowrap;
@@ -2158,8 +2158,7 @@ main:focus {
 
 .squad-status-rack.is-targetable {
   cursor: crosshair;
-  background: color-mix(in oklch, var(--yellow) 44%, var(--panel));
-  box-shadow: 5px 5px 0 var(--ink);
+  background: color-mix(in oklch, var(--yellow) 28%, var(--panel));
 }
 
 .squad-status-rack.is-aimed {
@@ -2180,10 +2179,11 @@ main:focus {
   display: grid;
   min-width: 76px;
   padding: 0.22rem 0.5rem;
-  border: 0;
-  border-right: 2px solid var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 0.45rem 0.3rem 0.5rem 0.35rem;
   color: var(--ink);
-  background: transparent;
+  background: var(--panel);
+  box-shadow: 2px 2px 0 var(--ink);
   font-family: inherit;
   grid-template-columns: auto auto;
   align-items: baseline;
@@ -2205,6 +2205,31 @@ main:focus {
 
 .player-state-vital--focus {
   cursor: help;
+}
+
+.player-state-statuses {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.35rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.game-card.is-hand-targetable:not(.is-selected) {
+  background: color-mix(in oklch, var(--yellow) 32%, var(--panel));
+  box-shadow:
+    7px 7px 0 var(--ink),
+    0 0 0 4px color-mix(in oklch, var(--yellow) 72%, transparent);
+  transform: translateY(-8px) rotate(0deg);
+}
+
+.game-card.is-hand-targetable.is-aimed:not(.is-selected) {
+  background: color-mix(in oklch, var(--mint) 52%, var(--panel));
+  box-shadow:
+    9px 9px 0 var(--ink),
+    0 0 0 5px color-mix(in oklch, var(--mint) 76%, transparent);
+  transform: translateY(-16px) rotate(0deg);
 }
 
 .player-state-vital--focus:hover .game-tooltip,

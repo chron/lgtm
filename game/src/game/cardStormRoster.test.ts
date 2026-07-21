@@ -288,7 +288,7 @@ describe("Levi's Chain combo", () => {
     ).toBe(true);
   });
 
-  it("advances Chain before Momentum and converts the combo into draw, Block, and tokens", () => {
+  it("uses the Chain already built before advancing it, then converts the combo", () => {
     let state = withDraw(
       withHand(
         startCycle(["levi", "irene", "paul"], "marketing-site-astro"),
@@ -304,10 +304,10 @@ describe("Levi's Chain combo", () => {
     expect(state.run?.cycle).toMatchObject({
       chain: { taskId: "astro-migration", count: 2 },
     });
-    expect(state.run?.cycle?.tasks[0]?.requirements[0]?.verified).toBe(5);
+    expect(state.run?.cycle?.tasks[0]?.requirements[0]?.verified).toBe(3);
 
     state = play(state, "tiny-commit", { taskId: "astro-migration", discipline: "frontend" });
-    expect(state.run?.cycle?.tasks[0]?.requirements[0]?.verified).toBe(9);
+    expect(state.run?.cycle?.tasks[0]?.requirements[0]?.verified).toBe(6);
     state = play(state, "keep-the-thread", {
       taskId: "astro-migration",
       discipline: "frontend",

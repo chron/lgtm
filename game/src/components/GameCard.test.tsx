@@ -78,4 +78,20 @@ describe("GameCard", () => {
     expect(markup).toContain('<span class="game-card__owner">Status</span>');
     expect(markup).not.toContain("game-card__cost");
   });
+
+  it("visibly distinguishes legal and hovered hand-card targets", () => {
+    const markup = renderToStaticMarkup(
+      <GameCard
+        instance={{ cardId: "frontend-3", instanceId: "target-card" }}
+        effectiveCost={1}
+        selected={false}
+        cardTarget={{ key: "hand:target-card", kind: "hand-card", instanceId: "target-card" }}
+        aimed
+      />,
+    );
+
+    expect(markup).toContain("is-hand-targetable");
+    expect(markup).toContain("is-aimed");
+    expect(markup).toContain('data-target-kind="hand-card"');
+  });
 });

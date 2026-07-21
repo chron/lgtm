@@ -16,6 +16,7 @@ interface GameCardProps {
   onPointerUp?: PointerEventHandler<HTMLButtonElement>;
   onPointerCancel?: PointerEventHandler<HTMLButtonElement>;
   cardTarget?: { key: string; kind: "hand-card"; instanceId: string };
+  aimed?: boolean;
 }
 
 export function GameCard({
@@ -30,6 +31,7 @@ export function GameCard({
   onPointerUp,
   onPointerCancel,
   cardTarget,
+  aimed,
 }: GameCardProps) {
   const card = getCardForInstance(instance);
   const glossaryId = useId();
@@ -77,7 +79,7 @@ export function GameCard({
 
   return (
     <button
-      className={`game-card game-card--${card.kind}${rare ? " game-card--rare" : ""}${harmfulStatus ? " game-card--harmful-status" : ""}${owner ? " has-owner" : ""}${longTitle ? " game-card--long-title" : ""}${selected ? " is-selected" : ""}`}
+      className={`game-card game-card--${card.kind}${rare ? " game-card--rare" : ""}${harmfulStatus ? " game-card--harmful-status" : ""}${owner ? " has-owner" : ""}${longTitle ? " game-card--long-title" : ""}${selected ? " is-selected" : ""}${cardTarget ? " is-hand-targetable" : ""}${aimed ? " is-aimed" : ""}`}
       style={{ "--card-accent": cardAccent } as React.CSSProperties}
       type="button"
       disabled={disabled || unplayable}

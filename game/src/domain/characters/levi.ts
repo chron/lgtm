@@ -9,7 +9,7 @@ export const leviContent = {
     name: "Levi",
     role: "Web Developer",
     passiveName: "Momentum",
-    passiveRules: "Targeted Work gains Work equal to the resulting Chain.",
+    passiveRules: "Targeted Work gains Work equal to the Chain already built on that Task.",
     startingCardId: "heads-down",
     accent: "oklch(0.62 0.17 205)",
     art: { idle: leviIdle, thinking: leviThinking, success: leviSuccess },
