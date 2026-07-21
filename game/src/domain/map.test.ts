@@ -87,6 +87,42 @@ describe("seeded act map", () => {
     }
   });
 
+  it("keeps branch lanes balanced and avoids backwards single-choice crossings", () => {
+    const branchLayers = [
+      {
+        sources: ["incident-1", "cycle-safe-1"],
+        targets: ["shop-1", "event-2"],
+      },
+      {
+        sources: ["incident-2", "cycle-safe-2"],
+        targets: ["shop-2", "event-4"],
+      },
+    ] as const;
+
+    for (let seed = 1; seed <= 250; seed += 1) {
+      const { nodes, edges } = getActMap(seed);
+      const nodesById = new Map(nodes.map((node) => [node.id, node]));
+      const outgoing = outgoingEdges(edges);
+
+      for (const layer of branchLayers) {
+        const childCounts = layer.sources.map((sourceId) => outgoing.get(sourceId)?.length ?? 0);
+        expect(new Set(childCounts).size, `balanced choices for seed ${seed}`).toBe(1);
+        expect([1, 2]).toContain(childCounts[0]);
+
+        if (childCounts[0] === 1) {
+          const orderedSources = [...layer.sources].sort(
+            (first, second) => nodesById.get(first)!.position.x - nodesById.get(second)!.position.x,
+          );
+          const orderedTargets = [...layer.targets].sort(
+            (first, second) => nodesById.get(first)!.position.x - nodesById.get(second)!.position.x,
+          );
+          expect(outgoing.get(orderedSources[0]!)![0]).toBe(orderedTargets[0]);
+          expect(outgoing.get(orderedSources[1]!)![0]).toBe(orderedTargets[1]);
+        }
+      }
+    }
+  });
+
   it("offers only roots initially and the generated direct children after a choice", () => {
     for (const seed of [1, 42, 0x5eed1234]) {
       const { nodes, edges } = getActMap(seed);

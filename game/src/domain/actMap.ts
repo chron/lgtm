@@ -159,33 +159,24 @@ function branchEdges(
   sources: readonly [string, string],
   targets: readonly [string, string],
   variant: number,
+  positionsById: ReadonlyMap<string, number>,
 ): MapEdge[] {
-  const [sourceA, sourceB] = sources;
-  const [targetA, targetB] = targets;
+  const [sourceLeft, sourceRight] = [...sources].sort(
+    (first, second) => positionsById.get(first)! - positionsById.get(second)!,
+  );
+  const [targetLeft, targetRight] = [...targets].sort(
+    (first, second) => positionsById.get(first)! - positionsById.get(second)!,
+  );
   const patterns = [
     [
-      [sourceA, targetA],
-      [sourceB, targetB],
+      [sourceLeft, targetLeft],
+      [sourceRight, targetRight],
     ],
     [
-      [sourceA, targetB],
-      [sourceB, targetA],
-    ],
-    [
-      [sourceA, targetA],
-      [sourceA, targetB],
-      [sourceB, targetB],
-    ],
-    [
-      [sourceA, targetA],
-      [sourceB, targetA],
-      [sourceB, targetB],
-    ],
-    [
-      [sourceA, targetA],
-      [sourceA, targetB],
-      [sourceB, targetA],
-      [sourceB, targetB],
+      [sourceLeft, targetLeft],
+      [sourceLeft, targetRight],
+      [sourceRight, targetLeft],
+      [sourceRight, targetRight],
     ],
   ] as const;
   return patterns[variant % patterns.length]!.map(([fromNodeId, toNodeId]) => ({
@@ -213,6 +204,7 @@ export function getActMap(seed: number): ActMap {
       y: node.position.y,
     },
   }));
+  const positionsById = new Map(nodes.map((node) => [node.id, node.position.x]));
 
   const fixedEdges: MapEdge[] = [
     { fromNodeId: "cycle-1", toNodeId: "event-1" },
@@ -240,12 +232,14 @@ export function getActMap(seed: number): ActMap {
     ...branchEdges(
       ["incident-1", "cycle-safe-1"],
       ["shop-1", "event-2"],
-      seededIndex(seed, 0x51a7, 5),
+      seededIndex(seed, 0x51a7, 2),
+      positionsById,
     ),
     ...branchEdges(
       ["incident-2", "cycle-safe-2"],
       ["shop-2", "event-4"],
-      seededIndex(seed, 0x92c3, 5),
+      seededIndex(seed, 0x92c3, 2),
+      positionsById,
     ),
   ];
 

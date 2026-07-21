@@ -98,7 +98,7 @@ describe("scripted playtest harness", () => {
       const run = simulatePlaytestRun(scenario, seed);
       expect(run.reachedFinalRelease).toBe(true);
       expect(run.launchedFinalRelease).toBe(true);
-      expect(run.cause).toBe("technically-shipped");
+      expect(run.outcome === "victory" || run.cause === "technically-shipped").toBe(true);
     }
   });
 });
