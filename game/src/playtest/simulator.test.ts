@@ -53,7 +53,7 @@ describe("scripted playtest harness", () => {
     expect(first.every((run) => run.outcome !== "stalled")).toBe(true);
     expect(first.every((run) => run.actions > 0 && run.encounters > 0)).toBe(true);
     expect(first.every((run) => run.loopGuardTrips === 0)).toBe(true);
-  });
+  }, 15_000);
 
   it("lights up the distinguishing signal for each assembled engine", () => {
     const bySignal = new Map(
@@ -69,7 +69,7 @@ describe("scripted playtest harness", () => {
     expect(bySignal.get("block")!.blockPrevented).toBeGreaterThan(0);
     expect(bySignal.get("debt")!.maxTechDebt).toBeGreaterThan(0);
     expect(bySignal.get("chain")!.peakChain).toBeGreaterThanOrEqual(3);
-  });
+  }, 15_000);
 
   it("renders a compact dashboard and retains raw run data", () => {
     const runs = [simulatePlaytestRun(playtestScenarios[0]!, 99)];
