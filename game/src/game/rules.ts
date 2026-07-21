@@ -384,6 +384,19 @@ export function resolveCardTarget(
   const cost = effectiveCardCost(card, cycle, run.squad, instance);
   if (cost > cycle.focus) return { legal: false, reason: "Not enough Focus." };
 
+  const exhaustedCardInstanceIds = card.exhaustHandTags
+    ? cycle.hand
+        .filter(
+          (candidate) =>
+            candidate.instanceId !== instance.instanceId &&
+            card.exhaustHandTags?.some((tag) => getCardForInstance(candidate).tags.includes(tag)),
+        )
+        .map((candidate) => candidate.instanceId)
+    : card.exhaustOtherHand
+      ? cycle.hand
+          .filter((candidate) => candidate.instanceId !== instance.instanceId)
+          .map((candidate) => candidate.instanceId)
+      : [];
   const generatedCardSpecs = card.generatedCards
     ? Array.isArray(card.generatedCards)
       ? card.generatedCards
@@ -409,24 +422,18 @@ export function resolveCardTarget(
       })),
     );
   }
+  if (card.generatedCardPerExhaustedHandCard) {
+    generatedCards.push(
+      ...exhaustedCardInstanceIds.map(() => ({
+        cardId: card.generatedCardPerExhaustedHandCard!,
+      })),
+    );
+  }
   if (generatedCards.length > 0 && run.tools.includes("boilerplate-generator")) {
     generatedCards.push({ cardId: "snippet" });
   }
   const generatedOutputBonus =
     run.squad.includes("kirsten") && isGeneratedCardInstance(instance) ? 1 : 0;
-  const exhaustedCardInstanceIds = card.exhaustHandTags
-    ? cycle.hand
-        .filter(
-          (candidate) =>
-            candidate.instanceId !== instance.instanceId &&
-            card.exhaustHandTags?.some((tag) => getCardForInstance(candidate).tags.includes(tag)),
-        )
-        .map((candidate) => candidate.instanceId)
-    : card.exhaustOtherHand
-      ? cycle.hand
-          .filter((candidate) => candidate.instanceId !== instance.instanceId)
-          .map((candidate) => candidate.instanceId)
-      : [];
   const chainedTaskBeforePlay =
     "taskId" in target && target.taskId ? cycle.chain.taskId === target.taskId : false;
   const momentumBeforePlay =

@@ -520,12 +520,19 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
             data-target-kind={squadTargetable ? "squad" : undefined}
             aria-label={squadTargetLabel}
           >
-            <span className="player-state-vital player-state-vital--morale">
+            <button
+              className="player-state-vital player-state-vital--morale"
+              type="button"
+              aria-label={`Morale ${run.morale} of ${run.maxMorale}. Morale at zero ends the run.`}
+            >
               <small>Morale</small>
               <b>
                 {run.morale}/{run.maxMorale}
               </b>
-            </span>
+              <span className="game-tooltip" role="tooltip">
+                Reach zero and the run ends. Block prevents incoming Morale loss.
+              </span>
+            </button>
             <span className="player-state-statuses">
               {cycle.block > 0 && (
                 <span className="status-buff status-buff--block">Block {cycle.block}</span>
@@ -681,12 +688,12 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
               className="player-state-vital player-state-vital--focus"
               type="button"
               data-tutorial-anchor="focus"
-              aria-label={`Focus ${cycle.focus}. Start each Day with 3 Focus. Effects can raise it above 3.`}
+              aria-label={`Focus ${cycle.focus}. Spend Focus to play cards. Start each Day with 3.`}
             >
               <small>Focus</small>
               <b>{cycle.focus}</b>
               <span className="game-tooltip" role="tooltip">
-                Start each Day with 3 Focus. Effects can raise it above 3.
+                Spend Focus to play cards. Start each Day with 3; effects can raise it higher.
               </span>
             </button>
           </div>
@@ -799,12 +806,13 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
                 effectiveCost={cost}
                 selected={activeInstanceId === instance.instanceId}
                 disabled={
-                  unplayable ||
-                  resolvingDay ||
-                  resolvingCard ||
-                  resolvingBoss ||
-                  Boolean(cycle.pendingCardChoice) ||
-                  cost > cycle.focus
+                  !handTargetable &&
+                  (unplayable ||
+                    resolvingDay ||
+                    resolvingCard ||
+                    resolvingBoss ||
+                    Boolean(cycle.pendingCardChoice) ||
+                    cost > cycle.focus)
                 }
                 cardTarget={
                   handTargetable

@@ -57,7 +57,9 @@ describe("TaskPanel", () => {
     );
 
     expect(markup).toContain("5 Defects");
-    expect(markup).toContain("+7 Debt");
+    expect(markup).toContain("+7 Tech Debt");
+    expect(markup).toContain("Defects are recorded for this run");
+    expect(markup).toContain("persists into later Cycles");
     expect(markup).not.toContain("Morale lost");
   });
 

@@ -40,11 +40,11 @@ export const paulContent = {
       cost: 0,
       kind: "work",
       discipline: "flexible",
-      amount: 3,
+      amount: 4,
       workKind: "unverified",
       exhaust: true,
       rarity: "normal",
-      rules: "Any 3. Unverified. Exhaust.",
+      rules: "Any 4. Unverified. Exhaust.",
       tags: ["character", "ai-assisted", "exhaust", "flexible", "reward"],
     },
     {

@@ -93,14 +93,17 @@ export function GameCard({
       onPointerUp={unplayable || presentationOnly ? undefined : onPointerUp}
       onPointerCancel={unplayable || presentationOnly ? undefined : onPointerCancel}
       aria-label={
-        unplayable
-          ? `${card.name}. ${card.rules}`
-          : `${selected ? "Selected: " : ""}${card.name}, costs ${effectiveCost} Focus. ${card.rules}`
+        cardTarget
+          ? `Choose ${card.name} as the hand target.`
+          : unplayable
+            ? `${card.name}. ${card.rules}`
+            : `${selected ? "Selected: " : ""}${card.name}, costs ${effectiveCost} Focus. ${card.rules}`
       }
       data-card-target={cardTarget?.key}
       data-target-kind={cardTarget?.kind}
       data-target-instance-id={cardTarget?.instanceId}
     >
+      {cardTarget && <span className="game-card__target-hint">Choose</span>}
       {!unplayable && (
         <span className="game-card__cost" aria-label={`${effectiveCost} Focus`}>
           {effectiveCost}

@@ -281,6 +281,7 @@ const glossary: readonly GlossaryDefinition[] = [
     appliesTo: (card) =>
       card.tags.includes("generated") ||
       Boolean(card.generatedCards) ||
+      Boolean(card.generatedCardPerExhaustedHandCard) ||
       Boolean(card.generateLastWorkCopy),
   },
   {

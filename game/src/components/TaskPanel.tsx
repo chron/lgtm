@@ -213,17 +213,32 @@ export function TaskPanel({
 
       {ready && (
         <div className="task-ship">
-          <span>
+          <button
+            className="task-ship__quality"
+            type="button"
+            aria-label={`${ship.defects > 0 ? defectLabel : "Clean ship"}. ${ship.defects > 0 ? "Defects are recorded for this run." : "No Defects recorded."} ${ship.techDebt > 0 ? `${ship.techDebt} Tech Debt persists into later Cycles.` : "No Tech Debt added."}`}
+          >
             {[
               ship.defects > 0 ? `${defectLabel}` : "Clean",
-              ship.techDebt > 0 ? `+${ship.techDebt} Debt` : undefined,
+              ship.techDebt > 0 ? `+${ship.techDebt} Tech Debt` : undefined,
               shippingRewards.cardsDrawn > 0 ? `Draw ${shippingRewards.cardsDrawn}` : undefined,
               shippingRewards.focusGained > 0 ? `+${shippingRewards.focusGained} Focus` : undefined,
               task.prototypeReward ? `Prototype +${task.prototypeReward}` : undefined,
             ]
               .filter(Boolean)
               .join(" · ")}
-          </span>
+            <span className="game-tooltip" role="tooltip">
+              <strong>{ship.defects > 0 ? "Recorded quality" : "Clean ship"}</strong>
+              <span>
+                {ship.defects > 0
+                  ? `${defectLabel} will appear in reports. `
+                  : "No Defects will be recorded. "}
+                {ship.techDebt > 0
+                  ? `The ${ship.techDebt} Tech Debt persists into later Cycles.`
+                  : "No Tech Debt follows you."}
+              </span>
+            </span>
+          </button>
           {releaseTask ? (
             <strong className="task-ship__release-ready">Ready for Launch</strong>
           ) : (

@@ -1492,12 +1492,30 @@ main:focus {
   gap: 0.75rem;
 }
 
-.task-ship > span {
+.task-ship__quality {
+  position: relative;
   max-width: 22ch;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: help;
+  font-family: inherit;
   font-size: 0.62rem;
   font-weight: 900;
   line-height: 1.2;
+  text-align: left;
   text-transform: uppercase;
+}
+
+.task-ship__quality:hover .game-tooltip,
+.task-ship__quality:focus-visible .game-tooltip {
+  display: grid;
+}
+
+.task-ship__quality .game-tooltip {
+  width: min(290px, calc(100vw - 2rem));
+  text-transform: none;
 }
 
 .task-ship__button {
@@ -2000,7 +2018,7 @@ main:focus {
   gap: 0.55rem;
 }
 
-.run-vitals > span,
+.run-vital,
 .cycle-counters > span {
   position: relative;
   display: grid;
@@ -2012,7 +2030,17 @@ main:focus {
   line-height: 1;
 }
 
-.run-vital--debt:hover .game-tooltip {
+.run-vital {
+  color: inherit;
+  cursor: help;
+  font-family: inherit;
+  text-align: left;
+}
+
+.run-vital:hover .game-tooltip,
+.run-vital:focus-visible .game-tooltip,
+.player-state-vital--morale:hover .game-tooltip,
+.player-state-vital--morale:focus-visible .game-tooltip {
   display: block;
 }
 
@@ -2207,6 +2235,10 @@ main:focus {
   cursor: help;
 }
 
+.player-state-vital--morale {
+  cursor: help;
+}
+
 .player-state-statuses {
   display: flex;
   min-width: 0;
@@ -2217,11 +2249,33 @@ main:focus {
 }
 
 .game-card.is-hand-targetable:not(.is-selected) {
+  z-index: 3;
   background: color-mix(in oklch, var(--yellow) 32%, var(--panel));
   box-shadow:
     7px 7px 0 var(--ink),
     0 0 0 4px color-mix(in oklch, var(--yellow) 72%, transparent);
   transform: translateY(-8px) rotate(0deg);
+}
+
+.game-card__target-hint {
+  position: absolute;
+  z-index: 7;
+  top: -0.72rem;
+  left: 50%;
+  padding: 0.3rem 0.5rem;
+  border: 2px solid var(--ink);
+  background: var(--yellow);
+  box-shadow: 2px 2px 0 var(--ink);
+  font-size: 0.58rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  transform: translateX(-50%) rotate(-1deg);
+}
+
+.game-card.is-hand-targetable.is-aimed .game-card__target-hint {
+  background: var(--mint);
 }
 
 .game-card.is-hand-targetable.is-aimed:not(.is-selected) {
@@ -2501,6 +2555,37 @@ main:focus {
   display: none;
 }
 
+.cycle-screen--boss .task-board--1 .task-panel {
+  padding: 0.55rem 0.8rem;
+}
+
+.cycle-screen--boss .task-board--1 .task-panel__header {
+  padding-bottom: 0.3rem;
+}
+
+.cycle-screen--boss .task-board--1 .requirement-stack {
+  gap: 0.05rem;
+  margin-top: 0.2rem;
+}
+
+.cycle-screen--boss .task-board--1 .requirement {
+  padding: 0.16rem 0.4rem;
+}
+
+.cycle-screen--boss .task-board--1 .requirement__track {
+  height: 10px;
+  margin: 0.15rem 0;
+}
+
+.cycle-screen--boss .task-board--1 .requirement__foot {
+  min-height: 0.65rem;
+  font-size: 0.54rem;
+}
+
+.cycle-screen--boss .task-board--1 .task-ship {
+  padding-top: 0.3rem;
+}
+
 .task-board::before {
   display: none;
 }
@@ -2742,10 +2827,6 @@ main:focus {
 
   .cycle-screen--boss > .cycle-bottom {
     grid-row: 5;
-  }
-
-  .cycle-screen--boss .task-board--1 .requirement-stack {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .cycle-screen--boss .task-board--1 .requirement {
@@ -5601,7 +5682,7 @@ main:focus {
     justify-self: stretch;
   }
 
-  .cycle-hud .run-vitals > span,
+  .cycle-hud .run-vital,
   .cycle-hud .cycle-counters > span {
     flex: 1;
   }

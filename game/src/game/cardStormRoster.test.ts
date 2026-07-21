@@ -179,7 +179,7 @@ describe("Nick's Exhaust planner", () => {
     ).toBe(true);
   });
 
-  it("Exhausts chosen and Status cards for uncapped Focus and replacement draw", () => {
+  it("Exhausts a whole hand into Focus, Review, and funded Action Items", () => {
     let state = withDraw(
       withHand(
         startCycle(["nick", "irene", "paul"]),
@@ -191,8 +191,6 @@ describe("Nick's Exhaust planner", () => {
       ),
       "backend-3",
       "infra-3",
-      "flexible-2",
-      "review-3",
     );
     if (!state.run?.cycle) throw new Error("Expected an active Cycle");
     state = {
@@ -224,12 +222,25 @@ describe("Nick's Exhaust planner", () => {
 
     state = play(state, "inbox-zero", { kind: "squad" });
     expect(state.run?.cycle?.exhaustPile.map((card) => card.cardId)).toEqual(
-      expect.arrayContaining(["distraction", "tech-debt", "inbox-zero"]),
+      expect.arrayContaining(["distraction", "tech-debt", "backend-3", "infra-3", "inbox-zero"]),
     );
-    expect(state.run?.cycle?.cardsExhaustedThisDay).toBe(4);
+    expect(state.run?.cycle?.cardsExhaustedThisDay).toBe(6);
+    expect(state.run?.cycle?.hand.map((card) => card.cardId)).toEqual([
+      "action-item",
+      "action-item",
+      "action-item",
+      "action-item",
+    ]);
+    expect(state.run?.cycle?.focus).toBe(focusBefore + 5);
     expect(
       state.run?.cycle?.tasks.reduce((total, task) => total + taskUnverifiedWork(task), 0),
     ).toBe(0);
+
+    state = play(state, "action-item", {
+      taskId: "status-composer",
+      discipline: "frontend",
+    });
+    expect(state.run?.cycle?.focus).toBe(focusBefore + 4);
   });
 
   it("Retains discounted plans, reorders Draw, and cashes setup into Work and Block", () => {

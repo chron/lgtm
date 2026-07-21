@@ -84,6 +84,7 @@ export interface CardDefinition {
   automation?: { kind: "install"; power: number; blockPower?: number } | { kind: "trigger" };
   exhaust?: boolean;
   generatedCards?: { cardId: string; count: number } | readonly { cardId: string; count: number }[];
+  generatedCardPerExhaustedHandCard?: string;
   focusGained?: number;
   cardsDrawn?: number;
   nextDayCardsDrawn?: number;

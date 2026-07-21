@@ -7,6 +7,7 @@ import {
   evaluateAchievements,
   type AchievementId,
 } from "../achievements/achievementStore";
+import { AchievementToast } from "../achievements/AchievementToast";
 import { CardCollectionBrowser } from "../components/CardCollectionBrowser";
 import { RunVitals } from "../components/RunVitals";
 import { gameReducer, initialGameState } from "../game/gameReducer";
@@ -527,6 +528,7 @@ export function App() {
   const [unlockedAchievements, setUnlockedAchievements] = useState<readonly AchievementId[]>(() =>
     loadAchievements(),
   );
+  const [achievementQueue, setAchievementQueue] = useState<readonly AchievementId[]>([]);
   const mainRef = useRef<HTMLElement>(null);
   const hasRun = Boolean(state.run);
   const retroOutcome = state.screen.name === "retro" ? state.screen.outcome : undefined;
@@ -541,16 +543,27 @@ export function App() {
 
   useEffect(() => {
     if (!state.run) return;
-    setUnlockedAchievements((current) => {
-      const next = evaluateAchievements(current, {
-        run: state.run,
-        victory: retroOutcome === "victory",
-      });
-      if (haveSameAchievements(current, next)) return current;
-      saveAchievements(next);
-      return next;
+    const next = evaluateAchievements(unlockedAchievements, {
+      run: state.run,
+      victory: retroOutcome === "victory",
     });
-  }, [retroOutcome, state.run]);
+    if (haveSameAchievements(unlockedAchievements, next)) return;
+    const newlyUnlocked = next.filter((id) => !unlockedAchievements.includes(id));
+    saveAchievements(next);
+    setUnlockedAchievements(next);
+    setAchievementQueue((current) => [
+      ...current,
+      ...newlyUnlocked.filter((id) => !current.includes(id)),
+    ]);
+  }, [retroOutcome, state.run, unlockedAchievements]);
+
+  const activeAchievement = achievementQueue[0];
+
+  useEffect(() => {
+    if (!activeAchievement) return;
+    const timer = window.setTimeout(() => setAchievementQueue((current) => current.slice(1)), 3200);
+    return () => window.clearTimeout(timer);
+  }, [activeAchievement]);
 
   useEffect(() => {
     if (!hasRun) return;
@@ -686,6 +699,12 @@ export function App() {
       <main id="main" ref={mainRef} tabIndex={-1}>
         {screen}
       </main>
+      {activeAchievement && (
+        <AchievementToast
+          achievementId={activeAchievement}
+          onDismiss={() => setAchievementQueue((current) => current.slice(1))}
+        />
+      )}
       {cardCollection && (
         <CardCollectionBrowser
           cards={cardCollection.cards}

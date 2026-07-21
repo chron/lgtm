@@ -93,5 +93,7 @@ describe("GameCard", () => {
     expect(markup).toContain("is-hand-targetable");
     expect(markup).toContain("is-aimed");
     expect(markup).toContain('data-target-kind="hand-card"');
+    expect(markup).toContain('aria-label="Choose Frontend as the hand target."');
+    expect(markup).toContain('class="game-card__target-hint">Choose</span>');
   });
 });

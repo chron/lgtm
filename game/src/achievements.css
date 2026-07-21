@@ -149,6 +149,106 @@
   margin-top: 2.5rem;
 }
 
+.achievement-toast {
+  position: fixed;
+  z-index: 80;
+  top: 1rem;
+  left: 50%;
+  display: grid;
+  width: min(430px, calc(100vw - 2rem));
+  padding: 0.75rem;
+  border: var(--line);
+  border-radius: 0.65rem 0.35rem 0.8rem 0.45rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.8rem;
+  background: var(--yellow);
+  box-shadow: 7px 7px 0 var(--ink);
+  transform: translateX(-50%) rotate(-0.5deg);
+  animation: achievement-toast-in 360ms var(--ease-out-quint) both;
+}
+
+.achievement-toast__icon {
+  display: grid;
+  width: 3.5rem;
+  aspect-ratio: 1;
+  border: 3px solid var(--ink);
+  place-items: center;
+  background: var(--mint);
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: rotate(-4deg);
+}
+
+.achievement-toast__icon svg {
+  width: 65%;
+  height: 65%;
+  stroke-width: 3;
+}
+
+.achievement-toast__copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.1rem;
+}
+
+.achievement-toast__copy small {
+  font-size: 0.62rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.achievement-toast__copy strong {
+  font-family: var(--display);
+  font-size: 1.45rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.achievement-toast__copy > span {
+  font-size: 0.74rem;
+  font-weight: 750;
+}
+
+.achievement-toast > button {
+  display: grid;
+  width: 2rem;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 2px solid transparent;
+  place-items: center;
+  background: transparent;
+}
+
+.achievement-toast > button:hover,
+.achievement-toast > button:focus-visible {
+  border-color: var(--ink);
+  background: var(--panel);
+}
+
+.achievement-toast > button svg {
+  width: 1.2rem;
+  stroke-width: 3;
+}
+
+@keyframes achievement-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -1.25rem) rotate(-2deg) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) rotate(-0.5deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .achievement-toast {
+    animation: none;
+  }
+}
+
 @media (max-width: 680px) {
   .achievements-heading {
     align-items: flex-end;
