@@ -2017,8 +2017,12 @@ describe("gameReducer", () => {
     const state = withTools(startCycle(), "venture-debt");
     if (!state.run) throw new Error("Expected a run");
     const indebted = reconcileTechDebt(state.run, 3);
-    expect(indebted).toMatchObject({ techDebt: 3, credits: 70 });
-    expect(reconcileTechDebt(indebted, -2)).toMatchObject({ techDebt: 1, credits: 70 });
+    expect(indebted).toMatchObject({ techDebt: 3, peakTechDebt: 3, credits: 70 });
+    expect(reconcileTechDebt(indebted, -2)).toMatchObject({
+      techDebt: 1,
+      peakTechDebt: 3,
+      credits: 70,
+    });
   });
 
   it("converts each $50 held into opening Focus with Healthy Runway", () => {

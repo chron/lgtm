@@ -4,7 +4,7 @@ import {
   haveSameAchievements,
   loadAchievements,
   saveAchievements,
-  unlockVictoryAchievements,
+  evaluateAchievements,
   type AchievementId,
 } from "../achievements/achievementStore";
 import { CardCollectionBrowser } from "../components/CardCollectionBrowser";
@@ -126,6 +126,7 @@ function createAppInitialState(base: GameState): GameState {
         tools: ["merge-queue", "test-suite"],
         morale: retro === "morale" ? 0 : 6,
         techDebt: 3,
+        peakTechDebt: 3,
         history: [
           ...state.run.history,
           {
@@ -313,6 +314,7 @@ function createAppInitialState(base: GameState): GameState {
         credits:
           Number.isFinite(requestedCredits) && requestedCredits >= 0 ? requestedCredits : 260,
         techDebt: 3,
+        peakTechDebt: 3,
         currentNodeId: "cycle-safe-1",
         completedNodeIds: ["cycle-1", "event-1", "cycle-2", "cycle-safe-1"],
       },
@@ -540,13 +542,12 @@ export function App() {
   }, [state.screen.name]);
 
   useEffect(() => {
-    if (retroOutcome !== "victory" || !state.run) return;
+    if (!state.run) return;
     setUnlockedAchievements((current) => {
-      const next = unlockVictoryAchievements(
-        current,
-        state.run?.squad ?? [],
-        state.run?.selectedBossId,
-      );
+      const next = evaluateAchievements(current, {
+        run: state.run,
+        victory: retroOutcome === "victory",
+      });
       if (haveSameAchievements(current, next)) return current;
       saveAchievements(next);
       return next;

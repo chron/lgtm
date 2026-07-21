@@ -1,13 +1,22 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { AchievementsScreen } from "../screens/AchievementsScreen";
+import type { AchievementId } from "./achievementStore";
+import type { RunState } from "../domain/models";
+import { gameReducer, initialGameState } from "../game/gameReducer";
 import {
   achievementStorageKey,
+  evaluateAchievements,
   loadAchievements,
   saveAchievements,
-  unlockVictoryAchievements,
   type AchievementStorage,
 } from "./achievementStore";
+
+function testRun(overrides: Partial<RunState> = {}): RunState {
+  const run = gameReducer(initialGameState, { type: "START_RUN", seed: 42 }).run;
+  if (!run) throw new Error("Expected a run fixture.");
+  return { ...run, squad: ["paul", "irene", "madi"], ...overrides };
+}
 
 function createStorage(initial?: string): AchievementStorage & { value?: string } {
   return {
@@ -23,12 +32,17 @@ function createStorage(initial?: string): AchievementStorage & { value?: string 
 
 describe("achievement progress", () => {
   it("unlocks a run win and every developer in the victorious squad", () => {
-    expect(unlockVictoryAchievements([], ["paul", "irene", "madi"])).toEqual([
-      "game-won",
-      "win-paul",
-      "win-irene",
-      "win-madi",
-    ]);
+    const unlocked = evaluateAchievements([], { run: testRun(), victory: true });
+    expect(unlocked).toEqual(
+      expect.arrayContaining([
+        "game-won",
+        "win-paul",
+        "win-irene",
+        "win-madi",
+        "original-research",
+        "responsible-engineering",
+      ]),
+    );
   });
 
   it("persists known achievements and safely ignores corrupt or retired ids", () => {
@@ -66,35 +80,166 @@ describe("achievement progress", () => {
     expect(markup).toContain('aria-label="Ship With Odin, locked"');
     expect(markup).toContain("achievement-tile--major is-unlocked");
     expect(markup).toContain("is-locked");
-    expect(markup).toContain("2 of 15 unlocked");
+    expect(markup).toContain("2 of 32 unlocked");
   });
 
   it("unlocks achievements for every newly playable roster member", () => {
-    expect(unlockVictoryAchievements([], ["kirsten", "nick", "levi"])).toEqual([
-      "game-won",
-      "win-kirsten",
-      "win-nick",
-      "win-levi",
-    ]);
-    expect(unlockVictoryAchievements([], ["seb", "matt"])).toEqual([
-      "game-won",
-      "win-seb",
-      "win-matt",
-    ]);
-    expect(unlockVictoryAchievements([], ["toby", "steph", "elspeth"])).toEqual([
-      "game-won",
-      "win-toby",
-      "win-steph",
-      "win-elspeth",
-    ]);
+    expect(
+      evaluateAchievements([], {
+        run: testRun({ squad: ["kirsten", "nick", "levi"] }),
+        victory: true,
+      }),
+    ).toEqual(expect.arrayContaining(["win-kirsten", "win-nick", "win-levi"]));
+    expect(
+      evaluateAchievements([], {
+        run: testRun({ squad: ["seb", "matt", "toby"] }),
+        victory: true,
+      }),
+    ).toEqual(expect.arrayContaining(["win-seb", "win-matt", "win-toby"]));
+    expect(
+      evaluateAchievements([], {
+        run: testRun({ squad: ["toby", "steph", "elspeth"] }),
+        victory: true,
+      }),
+    ).toEqual(expect.arrayContaining(["win-toby", "win-steph", "win-elspeth"]));
   });
 
   it("unlocks the selected boss achievement from the boss catalogue id", () => {
     expect(
-      unlockVictoryAchievements([], ["paul", "odin", "irene"], "mateja-weekend-pivot"),
+      evaluateAchievements([], {
+        run: testRun({ selectedBossId: "mateja-weekend-pivot" }),
+        victory: true,
+      }),
     ).toContain("beat-mateja-weekend-pivot");
     expect(
-      unlockVictoryAchievements([], ["paul", "odin", "irene"], "tristan-significance-test"),
+      evaluateAchievements([], {
+        run: testRun({ selectedBossId: "tristan-significance-test" }),
+        victory: true,
+      }),
     ).toContain("beat-tristan-significance-test");
+  });
+
+  it("unlocks transient run feats without requiring a victory", () => {
+    const run = testRun({
+      credits: 200,
+      techDebt: 10,
+      peakTechDebt: 10,
+      tools: ["ci-runner", "merge-queue", "venture-debt"],
+      history: [
+        ...testRun().history,
+        {
+          kind: "card-played",
+          nodeId: "cycle-1",
+          day: 2,
+          cardId: "frontend-work",
+          label: "Frontend Work",
+          generated: false,
+          exhausted: false,
+          cardsPlayedThisDay: 10,
+          chain: { taskId: "primary", count: 6 },
+        },
+      ],
+    });
+
+    expect(evaluateAchievements([], { run, victory: false })).toEqual(
+      expect.arrayContaining([
+        "credits-200",
+        "tech-debt-10",
+        "chain-6",
+        "cards-in-day-10",
+        "three-tools",
+      ]),
+    );
+  });
+
+  it("unlocks victory feats from the final release and full-run peak", () => {
+    const run = testRun({
+      morale: 1,
+      techDebt: 0,
+      peakTechDebt: 10,
+      history: [
+        ...testRun().history,
+        {
+          kind: "final-release-launched",
+          bossId: "mateja-weekend-pivot",
+          day: 9,
+          unverifiedWork: 0,
+          defects: 0,
+          moraleLoss: 0,
+          outcome: "clean",
+        },
+      ],
+    });
+
+    expect(evaluateAchievements([], { run, victory: true })).toEqual(
+      expect.arrayContaining([
+        "tech-debt-10",
+        "debt-cleanup",
+        "clean-final-release",
+        "one-morale-win",
+        "final-day-win",
+      ]),
+    );
+  });
+
+  it("recognises known-issues launches, perfect sprints, and original squads", () => {
+    const run = testRun({
+      squad: ["seb", "toby", "steph"],
+      history: [
+        ...testRun().history,
+        {
+          kind: "task-shipped",
+          nodeId: "cycle-1",
+          taskId: "primary",
+          unverifiedWork: 0,
+          defects: 0,
+          moraleLoss: 0,
+          techDebtAdded: 0,
+          focusGained: 0,
+        },
+        { kind: "cycle-finished", nodeId: "cycle-1", outcome: "shipped", day: 2 },
+        {
+          kind: "final-release-launched",
+          bossId: "mateja-weekend-pivot",
+          day: 4,
+          unverifiedWork: 2,
+          defects: 1,
+          moraleLoss: 1,
+          outcome: "known-issues",
+        },
+      ],
+    });
+
+    expect(evaluateAchievements([], { run, victory: true })).toEqual(
+      expect.arrayContaining(["original-platform", "known-issues-win", "perfect-sprint"]),
+    );
+  });
+
+  it("unlocks catalogue capstones after their component achievements", () => {
+    const characterWins = [
+      "win-paul",
+      "win-odin",
+      "win-irene",
+      "win-madi",
+      "win-kirsten",
+      "win-nick",
+      "win-levi",
+      "win-seb",
+      "win-matt",
+      "win-toby",
+      "win-steph",
+      "win-elspeth",
+    ] satisfies AchievementId[];
+    const bossWins = [
+      "beat-mateja-weekend-pivot",
+      "beat-tristan-significance-test",
+    ] satisfies AchievementId[];
+
+    expect(
+      evaluateAchievements([...characterWins, ...bossWins], {
+        run: testRun(),
+        victory: false,
+      }),
+    ).toEqual(expect.arrayContaining(["all-character-wins", "all-boss-wins"]));
   });
 });
