@@ -169,6 +169,7 @@ function createRun(seed = 0x5eed1234): RunState {
     morale: 12,
     maxMorale: 12,
     techDebt: 0,
+    peakTechDebt: 0,
     credits: 40,
     currentNodeId: null,
     completedNodeIds: [],

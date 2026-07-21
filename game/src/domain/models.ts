@@ -395,7 +395,7 @@ export type EventMapModifier =
   | { kind: "reveal"; nodeIds: readonly string[] }
   | { kind: "connection"; edge: MapEdge };
 
-type RunHistoryEvent =
+export type RunHistoryEvent =
   | {
       kind: "cycle-finished";
       nodeId: string;
@@ -478,6 +478,7 @@ export interface RunState {
   morale: number;
   maxMorale: number;
   techDebt: number;
+  peakTechDebt: number;
   credits: number;
   currentNodeId: string | null;
   completedNodeIds: string[];

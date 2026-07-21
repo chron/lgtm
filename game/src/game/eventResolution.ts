@@ -296,6 +296,7 @@ export function reconcileTechDebt(run: RunState, amount: number): RunState {
   return {
     ...run,
     techDebt,
+    peakTechDebt: Math.max(run.peakTechDebt, techDebt),
     credits: run.credits + (run.tools.includes("venture-debt") ? debtGained * 10 : 0),
     deck,
     nextCardInstanceId,
