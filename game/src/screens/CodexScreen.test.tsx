@@ -24,8 +24,19 @@ describe("CodexScreen", () => {
 
     expect(markup).toContain(">CODEX</h1>");
     expect(markup).toContain(">Back</button>");
-    expect(markup).toContain('aria-label="1 Focus"');
+    expect(markup).toContain('class="game-card__cost" aria-label="1 Focus"');
+    expect(markup).toContain("game-card--reference");
+    expect(markup).not.toContain("collection-card");
     expect(markup).toContain("Frontend");
+  });
+
+  it("uses the combat renderer for automation output language", () => {
+    const team = buildCodexCategories(cards, developers).find((category) => category.id === "team");
+    const cronJob = team?.cards.find((card) => card.id === "cron-job");
+    const runItNow = team?.cards.find((card) => card.id === "run-it-now");
+
+    expect(cronJob?.automation).toEqual({ kind: "install", power: 3 });
+    expect(runItNow?.automation).toEqual({ kind: "trigger" });
   });
 
   it("keeps Matt's rare in his catalogue", () => {

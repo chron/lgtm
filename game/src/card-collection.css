@@ -170,13 +170,6 @@ button.collection-card:not(:disabled):hover,
   font-weight: 900;
 }
 
-.collection-card__count--cost {
-  border-radius: 50%;
-  background: var(--yellow);
-  font-family: var(--display);
-  font-size: 1.15rem;
-}
-
 .collection-card__owner,
 .collection-card > strong,
 .collection-card__output,

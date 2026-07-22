@@ -96,4 +96,41 @@ describe("GameCard", () => {
     expect(markup).toContain('aria-label="Choose Frontend as the hand target."');
     expect(markup).toContain('class="game-card__target-hint">Choose</span>');
   });
+
+  it("renders the exact card face as a non-interactive reference", () => {
+    const cronJobMarkup = renderToStaticMarkup(
+      <GameCard
+        instance={{ cardId: "cron-job", instanceId: "codex-cron-job" }}
+        effectiveCost={2}
+        selected={false}
+        referenceOnly
+      />,
+    );
+    const runItNowMarkup = renderToStaticMarkup(
+      <GameCard
+        instance={{ cardId: "run-it-now", instanceId: "codex-run-it-now" }}
+        effectiveCost={1}
+        selected={false}
+        referenceOnly
+      />,
+    );
+    const mattMarkup = renderToStaticMarkup(
+      <GameCard
+        instance={{ cardId: "pixel-perfect", instanceId: "codex-pixel-perfect" }}
+        effectiveCost={1}
+        selected={false}
+        referenceOnly
+      />,
+    );
+
+    expect(cronJobMarkup).toContain(
+      '<article class="game-card game-card--work game-card--reference"',
+    );
+    expect(cronJobMarkup).toContain('class="game-card__cost" aria-label="2 Focus">2</span>');
+    expect(cronJobMarkup).toContain("<b>3</b><small>Script</small>");
+    expect(cronJobMarkup).not.toContain("<button");
+    expect(runItNowMarkup).toContain("<b>▶</b><small>Run</small>");
+    expect(mattMarkup).toContain("game-card--rare has-owner");
+    expect(mattMarkup).toContain("character-portrait--card");
+  });
 });

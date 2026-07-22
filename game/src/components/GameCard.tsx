@@ -8,6 +8,7 @@ interface GameCardProps {
   instance: CardInstance;
   effectiveCost: number;
   selected: boolean;
+  referenceOnly?: boolean;
   disabled?: boolean;
   presentationOnly?: boolean;
   onSelect?: () => void;
@@ -23,6 +24,7 @@ export function GameCard({
   instance,
   effectiveCost,
   selected,
+  referenceOnly,
   disabled,
   presentationOnly,
   onSelect,
@@ -76,33 +78,13 @@ export function GameCard({
       ? disciplineLabel(card.discipline)
       : undefined;
   const longTitle = card.name.length >= 15;
-
-  return (
-    <button
-      className={`game-card game-card--${card.kind}${rare ? " game-card--rare" : ""}${harmfulStatus ? " game-card--harmful-status" : ""}${owner ? " has-owner" : ""}${longTitle ? " game-card--long-title" : ""}${selected ? " is-selected" : ""}${cardTarget ? " is-hand-targetable" : ""}${aimed ? " is-aimed" : ""}`}
-      style={{ "--card-accent": cardAccent } as React.CSSProperties}
-      type="button"
-      disabled={disabled || unplayable}
-      tabIndex={presentationOnly ? -1 : undefined}
-      aria-hidden={presentationOnly ? true : undefined}
-      aria-describedby={glossaryEntries.length > 0 ? glossaryId : undefined}
-      aria-pressed={unplayable || !onSelect ? undefined : selected}
-      onClick={unplayable || presentationOnly ? undefined : onSelect}
-      onPointerDown={unplayable || presentationOnly ? undefined : onPointerDown}
-      onPointerMove={unplayable || presentationOnly ? undefined : onPointerMove}
-      onPointerUp={unplayable || presentationOnly ? undefined : onPointerUp}
-      onPointerCancel={unplayable || presentationOnly ? undefined : onPointerCancel}
-      aria-label={
-        cardTarget
-          ? `Choose ${card.name} as the hand target.`
-          : unplayable
-            ? `${card.name}. ${card.rules}`
-            : `${selected ? "Selected: " : ""}${card.name}, costs ${effectiveCost} Focus. ${card.rules}`
-      }
-      data-card-target={cardTarget?.key}
-      data-target-kind={cardTarget?.kind}
-      data-target-instance-id={cardTarget?.instanceId}
-    >
+  const className = `game-card game-card--${card.kind}${rare ? " game-card--rare" : ""}${harmfulStatus ? " game-card--harmful-status" : ""}${owner ? " has-owner" : ""}${longTitle ? " game-card--long-title" : ""}${referenceOnly ? " game-card--reference" : ""}${selected ? " is-selected" : ""}${cardTarget ? " is-hand-targetable" : ""}${aimed ? " is-aimed" : ""}`;
+  const style = { "--card-accent": cardAccent } as React.CSSProperties;
+  const accessibleLabel = unplayable
+    ? `${card.name}. ${card.rules}`
+    : `${selected ? "Selected: " : ""}${card.name}, costs ${effectiveCost} Focus. ${card.rules}`;
+  const content = (
+    <>
       {cardTarget && <span className="game-card__target-hint">Choose</span>}
       {!unplayable && (
         <span className="game-card__cost" aria-label={`${effectiveCost} Focus`}>
@@ -177,6 +159,43 @@ export function GameCard({
           </span>
         </>
       )}
+    </>
+  );
+
+  if (referenceOnly) {
+    return (
+      <article
+        className={className}
+        style={style}
+        aria-label={accessibleLabel}
+        aria-describedby={glossaryEntries.length > 0 ? glossaryId : undefined}
+      >
+        {content}
+      </article>
+    );
+  }
+
+  return (
+    <button
+      className={className}
+      style={style}
+      type="button"
+      disabled={disabled || unplayable}
+      tabIndex={presentationOnly ? -1 : undefined}
+      aria-hidden={presentationOnly ? true : undefined}
+      aria-describedby={glossaryEntries.length > 0 ? glossaryId : undefined}
+      aria-pressed={unplayable || !onSelect ? undefined : selected}
+      onClick={unplayable || presentationOnly ? undefined : onSelect}
+      onPointerDown={unplayable || presentationOnly ? undefined : onPointerDown}
+      onPointerMove={unplayable || presentationOnly ? undefined : onPointerMove}
+      onPointerUp={unplayable || presentationOnly ? undefined : onPointerUp}
+      onPointerCancel={unplayable || presentationOnly ? undefined : onPointerCancel}
+      aria-label={cardTarget ? `Choose ${card.name} as the hand target.` : accessibleLabel}
+      data-card-target={cardTarget?.key}
+      data-target-kind={cardTarget?.kind}
+      data-target-instance-id={cardTarget?.instanceId}
+    >
+      {content}
     </button>
   );
 }

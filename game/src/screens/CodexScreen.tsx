@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties } from "react";
-import { CardReferenceCard } from "../components/CardCollectionBrowser";
+import { GameCard } from "../components/GameCard";
 import { cards, developers } from "../domain/content";
 import type { CardDefinition, Developer } from "../domain/models";
 
@@ -93,7 +93,13 @@ export function CodexScreen({ onBack }: CodexScreenProps) {
 
       <div className="codex-grid" aria-live="polite" aria-label={`${activeCategory.label} cards`}>
         {activeCategory.cards.map((card) => (
-          <CardReferenceCard cardId={card.id} showCost key={card.id} />
+          <GameCard
+            instance={{ cardId: card.id, instanceId: `codex-${card.id}` }}
+            effectiveCost={card.cost}
+            selected={false}
+            referenceOnly
+            key={card.id}
+          />
         ))}
       </div>
     </section>
