@@ -5,13 +5,13 @@
   gap: 0.85rem;
 }
 
-.title-achievements-button {
+.title-menu-button {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
 }
 
-.title-achievements-button svg {
+.title-menu-button svg {
   width: 1.25rem;
   height: 1.25rem;
   stroke-width: 3;

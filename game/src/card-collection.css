@@ -122,6 +122,16 @@ button.collection-card:not(:disabled):active,
   text-align: left;
 }
 
+.collection-card.is-rare {
+  background-color: color-mix(in oklch, var(--collection-accent) 24%, var(--panel));
+  background-image: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--collection-accent) 70%, var(--ink)) 1.5px,
+    transparent 1.5px
+  );
+  background-size: 12px 12px;
+}
+
 button.collection-card {
   transition:
     transform 160ms var(--ease-out-quint),
@@ -158,6 +168,13 @@ button.collection-card:not(:disabled):hover,
   box-shadow: 3px 3px 0 var(--ink);
   font-size: 0.82rem;
   font-weight: 900;
+}
+
+.collection-card__count--cost {
+  border-radius: 50%;
+  background: var(--yellow);
+  font-family: var(--display);
+  font-size: 1.15rem;
 }
 
 .collection-card__owner,
@@ -229,6 +246,10 @@ button.collection-card:not(:disabled):hover,
 
 .collection-card__tags > .is-risk {
   background: var(--pink);
+}
+
+.collection-card__tags > .is-rare {
+  background: var(--yellow);
 }
 
 .collection-card .character-portrait--card {

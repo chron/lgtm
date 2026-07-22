@@ -246,6 +246,11 @@ main:focus {
   background: var(--pink);
 }
 
+.title-screen__actions .title-codex-button:hover,
+.title-screen__actions .title-codex-button:focus-visible {
+  background: var(--mint);
+}
+
 .title-screen__actions .button:not(:disabled):active {
   box-shadow: 2px 2px 0 var(--ink);
   transform: translate(4px, 4px);

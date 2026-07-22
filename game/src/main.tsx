@@ -4,6 +4,7 @@ import { App } from "./app/App";
 import "./styles.css";
 import "./card-collection.css";
 import "./achievements.css";
+import "./codex.css";
 import "./tutorial/combat-tutorial.css";
 import "./settings/settings.css";
 

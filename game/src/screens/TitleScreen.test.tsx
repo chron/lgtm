@@ -5,7 +5,11 @@ import { TitleScreen } from "./TitleScreen";
 describe("TitleScreen", () => {
   it("keeps the squad art as a control-free ambient slideshow", () => {
     const markup = renderToStaticMarkup(
-      <TitleScreen dispatch={() => undefined} onOpenAchievements={() => undefined} />,
+      <TitleScreen
+        dispatch={() => undefined}
+        onOpenAchievements={() => undefined}
+        onOpenCodex={() => undefined}
+      />,
     );
 
     expect(markup).toContain('<figcaption class="sr-only">LGTM team artwork</figcaption>');
@@ -13,5 +17,6 @@ describe("TitleScreen", () => {
     expect(markup).not.toContain("title-art-picker");
     expect(markup).not.toContain("aria-pressed");
     expect(markup).not.toContain("Tutorial Run");
+    expect(markup).toContain("Codex");
   });
 });

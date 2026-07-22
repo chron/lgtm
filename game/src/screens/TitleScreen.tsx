@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Trophy } from "lucide-react";
+import { LibraryBig, Trophy } from "lucide-react";
 import type { DispatchProps } from "../app/types";
 import titleLeviSolo from "../assets/title/title-levi-solo-v1.webp";
 import titleMergeConflict from "../assets/title/title-merge-conflict-v1.webp";
@@ -13,6 +13,7 @@ import { createRequestedRunSeed } from "../game/random";
 
 interface TitleScreenProps extends DispatchProps {
   onOpenAchievements: () => void;
+  onOpenCodex: () => void;
 }
 
 const titleHeroOptions = {
@@ -29,7 +30,7 @@ type TitleHeroKey = keyof typeof titleHeroOptions;
 
 const titleHeroKeys = Object.keys(titleHeroOptions) as TitleHeroKey[];
 
-export function TitleScreen({ dispatch, onOpenAchievements }: TitleScreenProps) {
+export function TitleScreen({ dispatch, onOpenAchievements, onOpenCodex }: TitleScreenProps) {
   const [expansionIndex, setExpansionIndex] = useState(() =>
     Math.floor(Math.random() * lgtmExpansions.length),
   );
@@ -82,12 +83,20 @@ export function TitleScreen({ dispatch, onOpenAchievements }: TitleScreenProps) 
             New Run
           </button>
           <button
-            className="button button--text title-achievements-button"
+            className="button button--text title-menu-button title-achievements-button"
             type="button"
             onClick={onOpenAchievements}
           >
             <Trophy aria-hidden="true" />
             Achievements
+          </button>
+          <button
+            className="button button--text title-menu-button title-codex-button"
+            type="button"
+            onClick={onOpenCodex}
+          >
+            <LibraryBig aria-hidden="true" />
+            Codex
           </button>
         </div>
       </div>

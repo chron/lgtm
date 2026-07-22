@@ -13,6 +13,7 @@ import { RunVitals } from "../components/RunVitals";
 import { gameReducer, initialGameState } from "../game/gameReducer";
 import { CycleScreen } from "../screens/CycleScreen";
 import { AchievementsScreen } from "../screens/AchievementsScreen";
+import { CodexScreen } from "../screens/CodexScreen";
 import { EventScreen } from "../screens/EventScreen";
 import { MapScreen } from "../screens/MapScreen";
 import { ReportScreen } from "../screens/ReportScreen";
@@ -541,6 +542,7 @@ export function App() {
   }, []);
   const [cardCollection, setCardCollection] = useState<OpenCardCollection>();
   const [achievementsOpen, setAchievementsOpen] = useState(false);
+  const [codexOpen, setCodexOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [telemetryEnabled, setTelemetryEnabled] = useState(loadTelemetryPreference);
   const [tutorialEnabled, setTutorialEnabled] = useState(shouldShowCombatTutorial);
@@ -554,7 +556,7 @@ export function App() {
 
   useEffect(() => {
     mainRef.current?.focus();
-  }, [state.screen.name, achievementsOpen]);
+  }, [state.screen.name, achievementsOpen, codexOpen]);
 
   useEffect(() => {
     setCardCollection(undefined);
@@ -602,7 +604,9 @@ export function App() {
   }, [hasRun]);
 
   let screen;
-  if (achievementsOpen) {
+  if (codexOpen) {
+    screen = <CodexScreen onBack={() => setCodexOpen(false)} />;
+  } else if (achievementsOpen) {
     screen = (
       <AchievementsScreen
         unlocked={unlockedAchievements}
@@ -613,7 +617,11 @@ export function App() {
     switch (state.screen.name) {
       case "title":
         screen = (
-          <TitleScreen dispatch={dispatch} onOpenAchievements={() => setAchievementsOpen(true)} />
+          <TitleScreen
+            dispatch={dispatch}
+            onOpenAchievements={() => setAchievementsOpen(true)}
+            onOpenCodex={() => setCodexOpen(true)}
+          />
         );
         break;
       case "squad":
