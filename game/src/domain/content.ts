@@ -382,13 +382,15 @@ const sharedCards: readonly CardDefinition[] = [
     tags: ["defense", "reward"],
   },
   {
-    id: "error-budget",
-    name: "Error Budget",
+    id: "buffer-time",
+    name: "Buffer Time",
     cost: 1,
     kind: "tactic",
     amount: 0,
     block: 4,
-    rules: "Gain 4 Block.",
+    cardsDrawn: 1,
+    display: { value: "4", label: "Block", rules: "Draw 1." },
+    rules: "Gain 4 Block. Draw 1.",
     tags: ["defense", "reward"],
   },
   {
