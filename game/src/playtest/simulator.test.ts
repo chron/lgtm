@@ -8,6 +8,7 @@ import {
   mixedPlaytestScenarios,
   playtestScenarios,
   runPlaytestBatch,
+  scorePlaytestCardInstance,
   scorePlaytestCardReward,
   simulatePlaytestRun,
   updatePlaytestMetrics,
@@ -61,6 +62,23 @@ describe("scripted playtest harness", () => {
     expect(first.every((run) => run.actions > 0 && run.encounters > 0)).toBe(true);
     expect(first.every((run) => run.loopGuardTrips === 0)).toBe(true);
   }, 15_000);
+
+  it("scores Irene's dynamically learned cards without catalogue lookup", () => {
+    const source = cards.find((card) => card.id === "approved-with-comments")!;
+    const learned = {
+      instanceId: "learned-test",
+      cardId: `learned-${source.id}`,
+      dynamicDefinition: {
+        ...source,
+        id: `learned-${source.id}`,
+        cost: 0,
+        exhaust: true,
+        tags: [...source.tags, "generated" as const, "exhaust" as const],
+      },
+    };
+
+    expect(scorePlaytestCardInstance(learned, playtestScenarios[0]!)).toBeGreaterThan(0);
+  });
 
   it("lights up the distinguishing signal for each assembled engine", () => {
     const bySignal = new Map(

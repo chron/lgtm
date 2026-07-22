@@ -1066,7 +1066,23 @@ export function scorePlaytestCardReward(
   scenario: PlaytestScenario,
   run?: RunState,
 ): number {
-  const card = getCard(cardId);
+  return scorePlaytestCard(getCard(cardId), cardId, scenario, run);
+}
+
+export function scorePlaytestCardInstance(
+  instance: CardInstance,
+  scenario: PlaytestScenario,
+  run?: RunState,
+): number {
+  return scorePlaytestCard(getCardForInstance(instance), instance.cardId, scenario, run);
+}
+
+function scorePlaytestCard(
+  card: CardDefinition,
+  cardId: string,
+  scenario: PlaytestScenario,
+  run?: RunState,
+): number {
   if (card.id === "tech-debt" || card.id === "distraction") return -40;
   const copies = run?.deck.filter((instance) => instance.cardId === cardId).length ?? 0;
   const automation =
@@ -1536,8 +1552,8 @@ function nextCycleAction(
   if (cycle.pendingCardChoice) {
     const instance = [...cycle.hand].sort(
       (left, right) =>
-        scorePlaytestCardReward(right.cardId, scenario, state.run!) -
-        scorePlaytestCardReward(left.cardId, scenario, state.run!),
+        scorePlaytestCardInstance(right, scenario, state.run!) -
+        scorePlaytestCardInstance(left, scenario, state.run!),
     )[0];
     return instance ? { type: "CHOOSE_CYCLE_CARD", instanceId: instance.instanceId } : undefined;
   }
