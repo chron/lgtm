@@ -289,6 +289,11 @@ export type PlaytestPolicy = "balanced" | "velocity" | "careful";
 type PlaytestPilot = PlaytestPolicy | "human";
 export type PlaytestDeckMode = "starter" | "showcase";
 
+export interface PlaytestDeckCard {
+  cardId: string;
+  copies: number;
+}
+
 export interface PlaytestRunResult {
   schemaVersion: 1;
   scenarioId: string;
@@ -331,6 +336,18 @@ export interface PlaytestRunResult {
   loopGuardTrips: number;
   tools: readonly string[];
   deckSize: number;
+  finalDeck: readonly PlaytestDeckCard[];
+}
+
+export function summarizePlaytestDeck(deck: readonly CardInstance[]): PlaytestDeckCard[] {
+  const copiesByCardId = new Map<string, number>();
+  for (const instance of deck) {
+    const cardId = getCardForInstance(instance).id;
+    copiesByCardId.set(cardId, (copiesByCardId.get(cardId) ?? 0) + 1);
+  }
+  return [...copiesByCardId]
+    .map(([cardId, copies]) => ({ cardId, copies }))
+    .sort((left, right) => left.cardId.localeCompare(right.cardId));
 }
 
 export interface PlaytestMetrics {
@@ -1270,6 +1287,7 @@ export function simulatePlaytestRun(
     endingTechDebt: state.run?.techDebt ?? 0,
     tools: state.run?.tools ?? [],
     deckSize: state.run?.deck.length ?? 0,
+    finalDeck: summarizePlaytestDeck(state.run?.deck ?? []),
   };
 }
 

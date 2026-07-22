@@ -1,3 +1,4 @@
+import { cards } from "../domain/content";
 import type { PlaytestRunResult, PlaytestScenario } from "./simulator";
 
 interface PlaytestScenarioSummary {
@@ -40,8 +41,26 @@ export interface PlaytestBatchReport {
     winRate: number;
   }[];
   outcomeCounts: { outcome: string; runs: number }[];
+  cardAssociations: CardAssociationSummary[];
   diagnostics: string[];
   runs: PlaytestRunResult[];
+}
+
+interface CardAssociationSummary {
+  cardId: string;
+  cardName: string;
+  ownerId?: string;
+  rare: boolean;
+  eligibleRuns: number;
+  presentRuns: number;
+  absentRuns: number;
+  winsWith: number;
+  winsWithout: number;
+  winRateWith: number | null;
+  winRateWithout: number | null;
+  winRateLift: number | null;
+  averageCopiesWhenPresent: number;
+  winningDeckInclusionRate: number | null;
 }
 
 function average(values: readonly number[]): number {
@@ -51,6 +70,48 @@ function average(values: readonly number[]): number {
 function round(value: number, places = 1): number {
   const scale = 10 ** places;
   return Math.round(value * scale) / scale;
+}
+
+function deckCopies(run: PlaytestRunResult, cardId: string): number {
+  return run.finalDeck?.find((card) => card.cardId === cardId)?.copies ?? 0;
+}
+
+function createCardAssociations(runs: readonly PlaytestRunResult[]): CardAssociationSummary[] {
+  return cards
+    .filter((card) => card.tags.includes("reward"))
+    .map((card) => {
+      const eligibleRuns = runs.filter(
+        (run) => !card.ownerId || run.squad.includes(card.ownerId) || deckCopies(run, card.id) > 0,
+      );
+      const presentRuns = eligibleRuns.filter((run) => deckCopies(run, card.id) > 0);
+      const absentRuns = eligibleRuns.filter((run) => deckCopies(run, card.id) === 0);
+      const winsWith = presentRuns.filter((run) => run.outcome === "victory").length;
+      const winsWithout = absentRuns.filter((run) => run.outcome === "victory").length;
+      const eligibleWins = winsWith + winsWithout;
+      const winRateWith = presentRuns.length === 0 ? null : winsWith / presentRuns.length;
+      const winRateWithout = absentRuns.length === 0 ? null : winsWithout / absentRuns.length;
+      return {
+        cardId: card.id,
+        cardName: card.name,
+        ...(card.ownerId ? { ownerId: card.ownerId } : {}),
+        rare: card.tags.includes("rare"),
+        eligibleRuns: eligibleRuns.length,
+        presentRuns: presentRuns.length,
+        absentRuns: absentRuns.length,
+        winsWith,
+        winsWithout,
+        winRateWith,
+        winRateWithout,
+        winRateLift:
+          winRateWith === null || winRateWithout === null ? null : winRateWith - winRateWithout,
+        averageCopiesWhenPresent: round(
+          average(presentRuns.map((run) => deckCopies(run, card.id))),
+          2,
+        ),
+        winningDeckInclusionRate: eligibleWins === 0 ? null : winsWith / eligibleWins,
+      };
+    })
+    .sort((left, right) => left.cardName.localeCompare(right.cardName));
 }
 
 function summarizeGroup(runs: readonly PlaytestRunResult[]): PlaytestScenarioSummary {
@@ -176,6 +237,7 @@ export function createPlaytestReport(
     summaries,
     bossWinRates,
     outcomeCounts,
+    cardAssociations: createCardAssociations(runs),
     diagnostics,
     runs: [...runs],
   };
@@ -193,6 +255,42 @@ function bar(value: number, width = 12): string {
 function pad(value: string | number, width: number, align: "left" | "right" = "right"): string {
   const text = String(value);
   return align === "left" ? text.padEnd(width) : text.padStart(width);
+}
+
+function signedPercent(value: number): string {
+  const rounded = Math.round(value * 100);
+  return `${rounded > 0 ? "+" : ""}${rounded}%`;
+}
+
+function formatCardAssociationRows(associations: readonly CardAssociationSummary[]): string[] {
+  const rankable = associations.filter(
+    (card) => card.presentRuns >= 5 && card.absentRuns >= 5 && card.winRateLift !== null,
+  );
+  const positive = rankable
+    .filter((card) => card.winRateLift! > 0)
+    .sort(
+      (left, right) =>
+        right.winRateLift! - left.winRateLift! || right.presentRuns - left.presentRuns,
+    )
+    .slice(0, 8);
+  const negative = rankable
+    .filter((card) => card.winRateLift! < 0)
+    .sort(
+      (left, right) =>
+        left.winRateLift! - right.winRateLift! || right.presentRuns - left.presentRuns,
+    )
+    .slice(0, 8);
+  const row = (card: CardAssociationSummary) =>
+    `  ${pad(card.cardName, 26, "left")} ${pad(card.presentRuns, 5)} with · ${pad(percent(card.winRateWith!), 4)} win · ${pad(card.absentRuns, 5)} without · ${pad(percent(card.winRateWithout!), 4)} base · ${pad(signedPercent(card.winRateLift!), 4)} lift · ${pad(percent(card.winningDeckInclusionRate ?? 0), 4)} of wins`;
+
+  if (positive.length === 0 && negative.length === 0) {
+    return ["  Not enough eligible with/without samples yet (need 5 of each)."];
+  }
+  return [
+    ...(positive.length > 0 ? ["  POSITIVE", ...positive.map(row)] : []),
+    ...(positive.length > 0 && negative.length > 0 ? [""] : []),
+    ...(negative.length > 0 ? ["  NEGATIVE", ...negative.map(row)] : []),
+  ];
 }
 
 export function formatPlaytestReport(report: PlaytestBatchReport): string {
@@ -246,6 +344,7 @@ export function formatPlaytestReport(report: PlaytestBatchReport): string {
   );
   const deckModes = [...new Set(report.runs.map((run) => run.deckMode))];
   const deckLabel = `${deckModes.join(" + ")} deck${deckModes.length === 1 ? "s" : " modes"}`;
+  const cardAssociationRows = formatCardAssociationRows(report.cardAssociations);
 
   return [
     human ? "LGTM! // HUMAN PLAYTESTS" : "LGTM! // SCRIPTED PLAYTESTS",
@@ -270,6 +369,14 @@ export function formatPlaytestReport(report: PlaytestBatchReport): string {
     "",
     "OUTCOMES",
     ...outcomes,
+    ...(!human
+      ? [
+          "",
+          "CARD ASSOCIATIONS",
+          "  Final permanent decks · owner-eligible runs · association, not causation",
+          ...cardAssociationRows,
+        ]
+      : []),
     "",
     "SMOKE SIGNALS",
     ...diagnostics,

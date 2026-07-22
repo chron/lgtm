@@ -40,6 +40,7 @@ describe("human playtest telemetry", () => {
       outcome: "incomplete",
       cause: "incomplete-on-cycle",
       encounters: 1,
+      finalDeck: expect.any(Array),
     });
   });
 

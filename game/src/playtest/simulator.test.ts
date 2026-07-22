@@ -5,6 +5,7 @@ import {
   playtestScenarios,
   runPlaytestBatch,
   simulatePlaytestRun,
+  type PlaytestRunResult,
 } from "./simulator";
 
 describe("scripted playtest harness", () => {
@@ -83,8 +84,65 @@ describe("scripted playtest harness", () => {
     expect(output).toContain("REACH");
     expect(output).toContain("CLEAN");
     expect(output).toContain("FINAL RELEASE BOSSES");
+    expect(output).toContain("CARD ASSOCIATIONS");
+    expect(output).toContain("association, not causation");
     expect(output).toContain("SMOKE SIGNALS");
   });
+
+  it("compares reward cards only within eligible squads and preserves every row in JSON", () => {
+    const base = simulatePlaytestRun(playtestScenarios[0]!, 6_100);
+    const makeRun = (
+      seed: number,
+      outcome: PlaytestRunResult["outcome"],
+      squad: PlaytestRunResult["squad"],
+      spikeCopies: number,
+    ): PlaytestRunResult => ({
+      ...base,
+      seed,
+      outcome,
+      squad,
+      finalDeck: spikeCopies > 0 ? [{ cardId: "spike-it", copies: spikeCopies }] : [],
+      deckSize: spikeCopies,
+    });
+    const runs = [
+      ...Array.from({ length: 5 }, (_, index) =>
+        makeRun(10 + index, index < 4 ? "victory" : "defeat", ["paul", "odin", "madi"], 2),
+      ),
+      ...Array.from({ length: 5 }, (_, index) =>
+        makeRun(20 + index, index === 0 ? "victory" : "defeat", ["paul", "irene", "madi"], 0),
+      ),
+      ...Array.from({ length: 4 }, (_, index) =>
+        makeRun(30 + index, "victory", ["odin", "irene", "madi"], 0),
+      ),
+    ];
+    const report = createPlaytestReport(runs, playtestScenarios);
+    const spike = report.cardAssociations.find((card) => card.cardId === "spike-it")!;
+    const neverPicked = report.cardAssociations.find((card) => card.cardId === "full-stack")!;
+
+    expect(spike).toMatchObject({
+      eligibleRuns: 10,
+      presentRuns: 5,
+      absentRuns: 5,
+      winsWith: 4,
+      winsWithout: 1,
+      winRateWith: 0.8,
+      winRateWithout: 0.2,
+      averageCopiesWhenPresent: 2,
+      winningDeckInclusionRate: 0.8,
+    });
+    expect(spike.winRateLift).toBeCloseTo(0.6);
+    expect(neverPicked).toMatchObject({
+      eligibleRuns: 10,
+      presentRuns: 0,
+      winRateWith: null,
+      winRateLift: null,
+      averageCopiesWhenPresent: 0,
+    });
+    expect(formatPlaytestReport(report)).toContain("Spike It");
+    expect(JSON.parse(JSON.stringify(report)).cardAssociations).toHaveLength(
+      report.cardAssociations.length,
+    );
+  }, 15_000);
 
   it("matches the launch shape of the three successful human calibration runs", () => {
     const calibrations = [

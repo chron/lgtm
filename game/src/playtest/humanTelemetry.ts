@@ -6,6 +6,7 @@ import {
   createPlaytestMetrics,
   hasPlayableCard,
   playtestScenarios,
+  summarizePlaytestDeck,
   updatePlaytestMetrics,
   type PlaytestRunResult,
 } from "./simulator";
@@ -112,5 +113,6 @@ export function summarizeHumanActionLog(sourceId: string, contents: string): Pla
     endingTechDebt: run.techDebt,
     tools: run.tools,
     deckSize: run.deck.length,
+    finalDeck: summarizePlaytestDeck(run.deck),
   };
 }
