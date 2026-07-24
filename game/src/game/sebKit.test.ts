@@ -84,6 +84,7 @@ describe("Seb's distributed Frontend kit", () => {
     expect(state.run?.cycle?.tasks.map((candidate) => candidate.requirements[0]?.verified)).toEqual(
       [3, 1, 2],
     );
+    expect(state.run?.cycle?.block).toBe(6);
     expect(state.run?.cycle?.triggeredPassiveIds).toContain("seb");
   });
 
@@ -176,6 +177,7 @@ describe("Seb's distributed Frontend kit", () => {
       expect.objectContaining({ discipline: "backend", verified: 1, unverified: 0 }),
     ]);
     expect(state.run?.cycle?.tasks[1]?.requirements[0]).toMatchObject({ verified: 1 });
+    expect(state.run?.cycle?.block).toBe(4);
     expect(state.run?.cycle?.triggeredPassiveIds).toEqual(expect.arrayContaining(["seb", "matt"]));
   });
 });

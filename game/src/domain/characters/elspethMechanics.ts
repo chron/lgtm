@@ -49,7 +49,7 @@ export function elspethIncomingMorale(intents: readonly ElspethIntentSnapshot[])
 }
 
 export function roomToBreatheDraw(block: number, incomingMorale: number): number {
-  return nonNegative(block) >= nonNegative(incomingMorale) ? 2 : 0;
+  return nonNegative(block) >= nonNegative(incomingMorale) ? 1 : 0;
 }
 
 export function blockAfterHealthyPace(

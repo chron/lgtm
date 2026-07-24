@@ -41,9 +41,9 @@ describe("Elspeth's staged catalogue", () => {
     expect(
       countElspethOpenTasks([{ status: "open" }, { status: "ready" }, { status: "shipped" }]),
     ).toBe(2);
-    expect(roomToBreatheDraw(5, 5)).toBe(2);
+    expect(roomToBreatheDraw(5, 5)).toBe(1);
     expect(roomToBreatheDraw(4, 5)).toBe(0);
-    expect(roomToBreatheDraw(0, 0)).toBe(2);
+    expect(roomToBreatheDraw(0, 0)).toBe(1);
     expect(roomToBreatheDraw(Number.NaN, 3)).toBe(0);
   });
 

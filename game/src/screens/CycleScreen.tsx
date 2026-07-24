@@ -552,12 +552,7 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
               );
             })}
           </div>
-          <div
-            className={`squad-status-rack${squadTargetable ? " is-targetable" : ""}${aim?.hoveredTargetKey === "squad" ? " is-aimed" : ""}`}
-            data-card-target={squadTargetable ? "squad" : undefined}
-            data-target-kind={squadTargetable ? "squad" : undefined}
-            aria-label={squadTargetLabel}
-          >
+          <div className="squad-status-rack">
             <button
               className="player-state-vital player-state-vital--morale"
               type="button"
@@ -720,7 +715,6 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
                   ))}
                 </span>
               )}
-              {squadTargetable && <b>{squadTargetLabel}</b>}
             </span>
             <button
               className="player-state-vital player-state-vital--focus"
@@ -791,6 +785,14 @@ export function CycleScreen({ dispatch, run, onInspectCards }: CycleScreenProps)
             />
           );
         })}
+        {squadTargetable && (
+          <div
+            className={`squad-drop-overlay${aim?.hoveredTargetKey === "squad" ? " is-aimed" : ""}`}
+            aria-hidden="true"
+          >
+            <span>{squadTargetLabel}</span>
+          </div>
+        )}
       </div>
 
       {launchPreview?.ready && boss && (

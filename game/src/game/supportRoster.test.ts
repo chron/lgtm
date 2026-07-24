@@ -301,7 +301,7 @@ describe("support roster integration", () => {
       discipline: state.run!.cycle!.tasks[0]!.requirements[0]!.discipline,
     });
     expect(state.run?.cycle?.block).toBe(4);
-    expect(state.run?.cycle?.hand).toHaveLength(2);
+    expect(state.run?.cycle?.hand).toHaveLength(1);
     expect(state.run?.cycle?.triggeredPassiveIds).toContain("elspeth");
   });
 

@@ -427,11 +427,11 @@ describe("gameReducer", () => {
     state = playCard(state, "health-check", "status-composer", "frontend");
 
     expect(state.run?.cycle?.guardPower).toBe(2);
-    expect(state.run?.cycle?.block).toBe(1);
+    expect(state.run?.cycle?.block).toBe(2);
 
     state = gameReducer(state, { type: "END_DAY" });
 
-    expect(state.run?.morale).toBe(14);
+    expect(state.run?.morale).toBe(15);
     expect(state.run?.cycle).toMatchObject({ day: 2, block: 2 });
   });
 

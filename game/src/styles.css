@@ -2267,22 +2267,43 @@ main:focus {
   pointer-events: auto;
 }
 
-.squad-status-rack.is-targetable {
-  cursor: crosshair;
-  background: color-mix(in oklch, var(--yellow) 28%, var(--panel));
-}
-
-.squad-status-rack.is-aimed {
-  background: color-mix(in oklch, var(--mint) 62%, var(--panel));
-}
-
 .task-board.is-squad-targetable {
-  border-radius: 0.8rem;
-  background: color-mix(in oklch, var(--yellow) 12%, transparent);
+  cursor: crosshair;
 }
 
-.task-board.is-squad-targetable.is-aimed {
-  background: color-mix(in oklch, var(--mint) 18%, transparent);
+.squad-drop-overlay {
+  position: absolute;
+  z-index: 8;
+  display: grid;
+  border-radius: 1rem 0.55rem 1.15rem 0.7rem;
+  background: color-mix(in oklch, var(--yellow) 18%, transparent);
+  inset: -0.4rem;
+  pointer-events: none;
+  place-items: center;
+  transition:
+    background 140ms var(--ease-out-quint),
+    transform 140ms var(--ease-out-quint);
+}
+
+.squad-drop-overlay > span {
+  padding: 0.42rem 0.7rem;
+  border: 3px solid var(--ink);
+  background: var(--yellow);
+  box-shadow: 3px 3px 0 var(--ink);
+  font-size: clamp(0.62rem, 0.9vw, 0.78rem);
+  font-weight: 950;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  transform: rotate(-1deg);
+}
+
+.squad-drop-overlay.is-aimed {
+  background: color-mix(in oklch, var(--mint) 30%, transparent);
+  transform: scale(1.008);
+}
+
+.squad-drop-overlay.is-aimed > span {
+  background: var(--mint);
 }
 
 .player-state-vital {
@@ -2484,11 +2505,6 @@ main:focus {
 
 .status-debuff {
   background: var(--pink);
-}
-
-.squad-status-rack > b {
-  border-color: transparent;
-  background: transparent;
 }
 
 .cycle-hud .cycle-counters {

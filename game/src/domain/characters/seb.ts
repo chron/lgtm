@@ -18,7 +18,7 @@ export const sebContent = {
     role: "Design System",
     passiveName: "Shared Components",
     passiveRules:
-      "Verified Frontend completions add 1 Verified Frontend Work to every other open Task.",
+      "Verified Frontend completions gain 2 Block and add 1 Verified Frontend Work to every other open Task.",
     startingCardId: "use-the-component",
     accent: "oklch(0.67 0.18 54)",
     art: {

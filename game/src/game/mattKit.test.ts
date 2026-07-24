@@ -100,7 +100,7 @@ describe("Matt's polish and overflow kit", () => {
       verified: 8,
       unverified: 0,
     });
-    expect(state.run?.cycle).toMatchObject({ block: 2, polishBudgetPower: 1 });
+    expect(state.run?.cycle).toMatchObject({ block: 4, polishBudgetPower: 1 });
     expect(state.run?.cycle?.triggeredPassiveIds).toContain("matt");
   });
 

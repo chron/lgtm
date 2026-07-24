@@ -84,10 +84,10 @@ export const elspethContent = {
       discipline: "flexible",
       amount: 3,
       workKind: "verified",
-      cardsDrawnIfBlockCoversIncoming: 2,
-      display: { value: "3", label: "Any", rules: "Verified. Safe: Draw 2." },
+      cardsDrawnIfBlockCoversIncoming: 1,
+      display: { value: "3", label: "Any", rules: "Verified. Safe: Draw 1." },
       rarity: "normal",
-      rules: "Any 3. Verified. If Block covers all incoming Morale, draw 2.",
+      rules: "Any 3. Verified. If Block covers all incoming Morale, draw 1.",
       tags: ["character", "defense", "flexible", "reward"],
     },
     {

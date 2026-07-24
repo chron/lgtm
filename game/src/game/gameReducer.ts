@@ -1,20 +1,17 @@
 import {
   developers,
-  eligibleRewardCardIds,
   formatIntent,
-  getCard,
   getCardForInstance,
   getCycle,
   getDeveloper,
   getActMap,
   getMapNodeCycleId,
   isMapNodeAvailable,
-  squadRewardCardIds,
   standardToolIds,
   starterBasicCardIds,
-  teamRewardCardIds,
 } from "../domain/content";
 import { getEvent } from "../domain/events";
+import { createCardRewardOffer } from "../domain/rewards";
 import {
   canDuplicateCard,
   canRefactorCard,
@@ -205,71 +202,15 @@ function createCardInstances(cardIds: readonly string[], startAt: number): CardI
 }
 
 function createCardReward(run: RunState, sourceNodeId: string): RunState {
-  let rngState = run.rngState;
-  const squadPool = squadRewardCardIds.filter((cardId) => {
-    const ownerId = getCard(cardId).ownerId;
-    return ownerId ? run.squad.includes(ownerId) : false;
-  });
-  const squadPick = sampleOne(squadPool, rngState);
-  rngState = squadPick.rngState;
-
-  const teamPool = teamRewardCardIds.filter((cardId) => cardId !== squadPick.item);
-  const teamPick = sampleOne(teamPool, rngState);
-  rngState = teamPick.rngState;
-
-  const wildcardPool = eligibleRewardCardIds(run.squad).filter(
-    (cardId) => cardId !== squadPick.item && cardId !== teamPick.item,
-  );
-  const wildcardPick = sampleOne(wildcardPool, rngState);
-
-  rngState = wildcardPick.rngState;
-  const choiceCount = Math.max(
-    3,
-    ...run.nextRewardModifiers.map((modifier) => modifier.choiceCount ?? 3),
-  );
-  const tagsAny = run.nextRewardModifiers.flatMap((modifier) => modifier.tagsAny ?? []);
-  const disciplines = run.nextRewardModifiers.flatMap((modifier) => modifier.disciplines ?? []);
-  const hasThemeFilter = tagsAny.length > 0 || disciplines.length > 0;
-  const cardIds = hasThemeFilter ? [] : [squadPick.item, teamPick.item, wildcardPick.item];
-  const eligiblePool = eligibleRewardCardIds(run.squad).filter((cardId) => {
-    const card = getCard(cardId);
-    return (
-      (!hasThemeFilter ||
-        tagsAny.some((tag) => card.tags.includes(tag)) ||
-        (card.discipline ? disciplines.includes(card.discipline) : false)) &&
-      !cardIds.includes(cardId)
-    );
-  });
-  while (cardIds.length < choiceCount && eligiblePool.some((cardId) => !cardIds.includes(cardId))) {
-    const pick = sampleOne(
-      eligiblePool.filter((cardId) => !cardIds.includes(cardId)),
-      rngState,
-    );
-    cardIds.push(pick.item);
-    rngState = pick.rngState;
-  }
-
-  if (
-    run.nextRewardModifiers.some((modifier) => modifier.guaranteedRarity === "rare") &&
-    !cardIds.some((cardId) => getCard(cardId).rarity === "rare")
-  ) {
-    const rarePool = eligibleRewardCardIds(run.squad).filter(
-      (cardId) => getCard(cardId).rarity === "rare" && !cardIds.includes(cardId),
-    );
-    if (rarePool.length > 0) {
-      const pick = sampleOne(rarePool, rngState);
-      cardIds[cardIds.length - 1] = pick.item;
-      rngState = pick.rngState;
-    }
-  }
+  const offer = createCardRewardOffer(run);
 
   return {
     ...run,
-    rngState,
+    rngState: offer.rngState,
     nextRewardModifiers: [],
     pendingCardReward: {
       sourceNodeId,
-      cardIds,
+      cardIds: offer.cardIds,
     },
   };
 }
@@ -951,6 +892,7 @@ function applyStartDayRosterEffects(
     for (const packet of scripts.packets) {
       if (packet.discipline !== "frontend" || !packet.completed) continue;
       mark("seb");
+      block += 2;
       for (const task of tasks) {
         if (task.taskId !== packet.taskId) {
           initialPackets.push({
@@ -981,6 +923,7 @@ function applyStartDayRosterEffects(
       cardsDrawn += run.squad.includes("irene")
         ? cascade.packets.filter((packet) => packet.completed).length
         : 0;
+      block += cascade.packets.filter((packet) => packet.completed).length * 2;
     }
   }
 

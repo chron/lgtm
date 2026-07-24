@@ -822,26 +822,28 @@ function resolveCardTargetOnce(
     if (card.exhaustAllTechDebtCards && exhaustedCardInstanceIds.length === 0) {
       return { legal: false, reason: "No Tech Debt cards to exhaust." };
     }
-    if (card.verifiedWorkPerOpenTask) {
+    if (card.exhaustHandTags && exhaustedCardInstanceIds.length === 0) {
+      return { legal: false, reason: "No matching cards in hand to exhaust." };
+    }
+    const verifiedWorkPerOpenTask = card.verifiedWorkPerOpenTask;
+    if (verifiedWorkPerOpenTask) {
       const verifiedWorkHits = cycle.tasks.flatMap((task) => {
         if (task.status === "shipped") return [];
-        const targetRequirement = task.requirements
+        let workRemaining = verifiedWorkPerOpenTask;
+        return task.requirements
           .map((requirement, index) => ({
             requirement,
             index,
             remaining: remainingWork(requirement),
           }))
           .filter(({ remaining }) => remaining > 0)
-          .sort((left, right) => left.remaining - right.remaining || left.index - right.index)[0];
-        return targetRequirement
-          ? [
-              {
-                taskId: task.taskId,
-                discipline: targetRequirement.requirement.discipline,
-                amount: Math.min(card.verifiedWorkPerOpenTask!, targetRequirement.remaining),
-              },
-            ]
-          : [];
+          .sort((left, right) => left.remaining - right.remaining || left.index - right.index)
+          .flatMap(({ requirement, remaining }) => {
+            if (workRemaining === 0) return [];
+            const amount = Math.min(workRemaining, remaining);
+            workRemaining -= amount;
+            return [{ taskId: task.taskId, discipline: requirement.discipline, amount }];
+          });
       });
       if (verifiedWorkHits.length === 0) {
         return { legal: false, reason: "No open Tasks need Work." };
@@ -1641,6 +1643,7 @@ export function applyRosterBoardEffects(
   const labels: string[] = [];
   let cardsDrawn = 0;
   let blockGained = 0;
+  let sharedComponentsBlockGained = 0;
   let guardPower = run.cycle?.guardPower ?? 0;
   const guardPowerBefore = guardPower;
   let focusGained = 0;
@@ -1649,6 +1652,11 @@ export function applyRosterBoardEffects(
 
   const markPassive = (id: DeveloperId) => {
     if (!triggeredPassiveIds.includes(id)) triggeredPassiveIds.push(id);
+  };
+  const triggerSharedComponents = () => {
+    markPassive("seb");
+    blockGained += 2;
+    sharedComponentsBlockGained += 2;
   };
 
   const applyMattReview = (sourceTaskId: string, overflow: number, everyTask = false) => {
@@ -1719,7 +1727,7 @@ export function applyRosterBoardEffects(
       markPassive("irene");
     }
     if (completed && discipline === "frontend" && run.squad.includes("seb")) {
-      markPassive("seb");
+      triggerSharedComponents();
       for (const candidate of tasks) {
         if (candidate.taskId !== taskId) {
           queue.push({ taskId: candidate.taskId, amount: 1, source: "shared-components" });
@@ -1872,8 +1880,12 @@ export function applyRosterBoardEffects(
       resolution.discipline === "frontend" &&
       resolution.requirementCompleted
     ) {
-      markPassive("seb");
+      triggerSharedComponents();
       const triggers = 1 + (card.extraSharedComponentsOnCompletion ?? 0);
+      if (triggers > 1) {
+        blockGained += (triggers - 1) * 2;
+        sharedComponentsBlockGained += (triggers - 1) * 2;
+      }
       for (let trigger = 0; trigger < triggers; trigger += 1) {
         for (const task of tasks) {
           if (task.taskId !== resolution.taskId) {
@@ -1902,7 +1914,7 @@ export function applyRosterBoardEffects(
       beforeRemaining > 0 &&
       hit.amount >= beforeRemaining
     ) {
-      markPassive("seb");
+      triggerSharedComponents();
       for (const task of tasks) {
         if (task.taskId !== hit.taskId) {
           queue.push({ taskId: task.taskId, amount: 1, source: "shared-components" });
@@ -1995,7 +2007,7 @@ export function applyRosterBoardEffects(
     tasks = tasks.map((candidate, index) => (index === taskIndex ? updated : candidate));
     applyMattReview(task.taskId, Math.max(0, packet.amount - applied));
     if (completed && run.squad.includes("seb")) {
-      markPassive("seb");
+      triggerSharedComponents();
       for (const candidate of tasks) {
         if (candidate.taskId !== task.taskId) {
           queue.push({
@@ -2010,6 +2022,9 @@ export function applyRosterBoardEffects(
 
   const appliedPackets = queue.length;
   if (appliedPackets > 0) labels.push(`Frontend spread · ${appliedPackets} packets`);
+  if (sharedComponentsBlockGained > 0) {
+    labels.push(`Shared Components · Block ${sharedComponentsBlockGained}`);
+  }
   return {
     tasks,
     cardsDrawn,

@@ -86,14 +86,17 @@ describe("shared rare catalogue", () => {
     }
   });
 
-  it("sends All Hands to each open Task's smallest unfinished requirement", () => {
+  it("spends All Hands' four Work across each open Task's unfinished requirements", () => {
     let state = withHand(startCycle(), "all-hands");
     state = play(state, "all-hands", { kind: "squad" });
     const tasks = state.run?.cycle?.tasks ?? [];
-    expect(tasks.map(totalVerified)).toEqual([3, 4]);
+    expect(tasks.map(totalVerified)).toEqual([4, 4]);
     expect(
       tasks[0]?.requirements.find((requirement) => requirement.discipline === "backend"),
     ).toMatchObject({ verified: 3 });
+    expect(
+      tasks[0]?.requirements.find((requirement) => requirement.discipline === "frontend"),
+    ).toMatchObject({ verified: 1 });
   });
 
   it("runs every Script and the shared Guard with Deploy Train", () => {

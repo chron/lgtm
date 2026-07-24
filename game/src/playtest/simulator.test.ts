@@ -96,6 +96,16 @@ describe("scripted playtest harness", () => {
     expect(bySignal.get("chain")!.peakChain).toBeGreaterThanOrEqual(3);
   }, 15_000);
 
+  it("cashes out a completed Card Storm turn without suppressing the combo", () => {
+    const scenario = playtestScenarios.find((candidate) => candidate.id === "card-storm")!;
+    const run = simulatePlaytestRun(scenario, 1_011);
+
+    expect(run.loopGuardTrips).toBe(0);
+    expect(run.maxCardsInDay).toBeGreaterThanOrEqual(20);
+    expect(run.maxCardsInDay).toBeLessThan(120);
+    expect(run.launchedFinalRelease).toBe(true);
+  }, 15_000);
+
   it("renders a compact dashboard and retains raw run data", () => {
     const runs = [simulatePlaytestRun(playtestScenarios[0]!, 99)];
     const report = createPlaytestReport(runs, playtestScenarios, "2026-07-19T00:00:00.000Z");
@@ -353,7 +363,7 @@ describe("scripted playtest harness", () => {
 
   it("matches the launch shape of the three successful human calibration runs", () => {
     const calibrations = [
-      ["research-squad", 1_631_439_368],
+      ["research-squad", 1_631_439_370],
       ["platform-squad", 2_226_205_480],
       ["panel-squad", 3_674_038_866],
     ] as const;

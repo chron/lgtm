@@ -1103,6 +1103,15 @@ function scorePlaytestCard(
     (card.exhaustAllTechDebtCards
       ? (run?.deck.filter((instance) => instance.cardId === "tech-debt").length ?? 0) * 8
       : 0) +
+    (card.exhaustHandTags
+      ? Math.max(
+          1,
+          run?.deck.filter((instance) =>
+            card.exhaustHandTags?.some((tag) => getCardForInstance(instance).tags.includes(tag)),
+          ).length ?? 0,
+          Math.floor((run?.techDebt ?? 0) / 3),
+        ) * 6
+      : 0) +
     (card.exhaust ? 2 : 0) +
     automation +
     bespokeCardUtility(card, scenario, run);
@@ -1556,6 +1565,16 @@ function nextCycleAction(
         scorePlaytestCardInstance(left, scenario, state.run!),
     )[0];
     return instance ? { type: "CHOOSE_CYCLE_CARD", instanceId: instance.instanceId } : undefined;
+  }
+
+  if (remainingWork(state.run) === 0 && unverifiedWork(state.run) === 0) {
+    const launch = { type: "LAUNCH_FINAL_RELEASE" } as const;
+    if (gameReducer(state, launch) !== state) return launch;
+    for (const task of cycle.tasks) {
+      if (task.status !== "ready") continue;
+      const ship = { type: "SHIP_TASK", taskId: task.taskId } as const;
+      if (gameReducer(state, ship) !== state) return ship;
+    }
   }
 
   if (cycle.cardsPlayedThisDay >= maxCardPlaysPerDay) {
